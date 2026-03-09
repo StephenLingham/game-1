@@ -6,6 +6,8 @@ signal enemy_killed
 @export var health: int = 2
 @export var damage: int = 1
 @export var attack_cooldown: float = 0.5
+@export var gold_drop_min: int = 1
+@export var gold_drop_max: int = 3
 
 var target: Node2D = null
 var can_attack: bool = true
@@ -43,7 +45,17 @@ func take_damage(amount: int = 1) -> void:
 	
 	if health <= 0:
 		enemy_killed.emit()
+		_drop_gold()
 		queue_free()
+
+func _drop_gold() -> void:
+	call_deferred("_spawn_gold_pickup")
+
+func _spawn_gold_pickup() -> void:
+	var pickup: Area2D = preload("res://scenes/GoldPickup.tscn").instantiate()
+	pickup.global_position = global_position
+	pickup.value = randi_range(gold_drop_min, gold_drop_max)
+	get_tree().current_scene.get_node("PickupContainer").add_child(pickup)
 
 func _on_hitbox_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player") and can_attack:

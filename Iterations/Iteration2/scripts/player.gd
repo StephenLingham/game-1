@@ -9,6 +9,10 @@ extends CharacterBody2D
 
 var health: int
 
+# Click / tap-to-move target (used especially on mobile)
+var _click_target: Vector2 = Vector2.ZERO
+var _has_click_target: bool = false
+
 @onready var shoot_timer: Timer = $ShootTimer
 @onready var hitbox: Area2D = $Hitbox
 
@@ -19,8 +23,39 @@ func _ready() -> void:
 
 func _physics_process(_delta: float) -> void:
 	var input_vec := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	velocity = input_vec * move_speed
+
+	# Keyboard / controller input takes priority when present
+	if input_vec.length() > 0.0:
+		_has_click_target = false
+		velocity = input_vec.normalized() * move_speed
+	elif _has_click_target:
+		var to_target := _click_target - global_position
+		if to_target.length() <= 4.0:
+			_has_click_target = false
+			velocity = Vector2.ZERO
+		else:
+			velocity = to_target.normalized() * move_speed
+	else:
+		velocity = Vector2.ZERO
+
 	move_and_slide()
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Support tap / click-to-move, mainly for mobile
+	if event is InputEventScreenTouch and event.pressed:
+		_set_click_target(event.position)
+	elif event is InputEventScreenDrag:
+		_set_click_target(event.position)
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_set_click_target(event.position)
+
+func _set_click_target(screen_pos: Vector2) -> void:
+	var world_pos := screen_pos
+	var cam := get_viewport().get_camera_2d()
+	if cam:
+		world_pos = cam.screen_to_world(screen_pos)
+	_click_target = world_pos
+	_has_click_target = true
 
 func _configure_shoot_timer() -> void:
 	shoot_timer.timeout.connect(_on_shoot_timer)
