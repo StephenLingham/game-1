@@ -52,7 +52,7 @@ func _close_shop() -> void:
 func _refresh_shop_text() -> void:
 	var dmg_cost := _shop_damage_cost()
 	var spd_cost := _shop_atkspd_cost()
-	$UI/ShopPanel/VBox/Info.text = "Between waves shop\nGold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f" % [
+	$UI/ShopPanel/VBox/Info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f" % [
 		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult
 	]
 	$UI/ShopPanel/VBox/BuyDamage.text = "Upgrade Damage (+5) - %d gold" % dmg_cost

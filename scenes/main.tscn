@@ -161,7 +161,7 @@ offset_right = -12.0
 offset_bottom = -12.0
 
 [node name="Info" type="Label" parent="UI/ShopPanel/VBox"]
-text = "Between waves shop"
+text = ""
 
 [node name="BuyDamage" type="Button" parent="UI/ShopPanel/VBox"]
 text = "Upgrade Damage (+5) - 10 gold"
@@ -170,7 +170,7 @@ text = "Upgrade Damage (+5) - 10 gold"
 text = "Upgrade Attack Speed (+10%) - 12 gold"
 
 [node name="Continue" type="Button" parent="UI/ShopPanel/VBox"]
-text = "Continue"
+text = "Next wave"
 
 [node name="GameOverPanel" type="Panel" parent="UI"]
 visible = false
