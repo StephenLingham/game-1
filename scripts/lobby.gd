@@ -6,6 +6,7 @@ extends Control
 
 func _ready() -> void:
 	$VBox/Start.pressed.connect(_start)
+	$VBox/Exit.pressed.connect(_exit_game)
 	btn_perm_dmg.pressed.connect(_buy_perm_damage)
 	btn_perm_spd.pressed.connect(_buy_perm_atkspd)
 	_refresh()
@@ -25,4 +26,7 @@ func _buy_perm_atkspd() -> void:
 
 func _start() -> void:
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
+
+func _exit_game() -> void:
+	get_tree().quit()
 

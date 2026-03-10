@@ -5,6 +5,7 @@ extends Node2D
 @onready var hud: CanvasLayer = $UI
 @onready var shop_panel: Control = $UI/ShopPanel
 @onready var game_over_panel: Control = $UI/GameOverPanel
+@onready var pause_panel: Control = $UI/PausePanel
 
 @onready var lbl_wave: Label = $UI/HUD/WaveLabel
 @onready var lbl_time: Label = $UI/HUD/TimeLabel
@@ -22,9 +23,14 @@ func _ready() -> void:
 	# Game over buttons
 	$UI/GameOverPanel/VBox/BackToLobby.pressed.connect(_back_to_lobby)
 	$UI/GameOverPanel/VBox/Retry.pressed.connect(_retry)
+	
+	# Pause buttons
+	$UI/PausePanel/VBox/Resume.pressed.connect(_resume)
+	$UI/PausePanel/VBox/Abandon.pressed.connect(_abandon_run)
 
 	shop_panel.visible = false
 	game_over_panel.visible = false
+	pause_panel.visible = false
 
 	wave_controller.start_run()
 
@@ -112,3 +118,20 @@ func _back_to_lobby() -> void:
 func _retry() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		if not shop_panel.visible and not game_over_panel.visible:
+			_toggle_pause()
+
+func _toggle_pause() -> void:
+	var is_paused := get_tree().paused
+	get_tree().paused = not is_paused
+	pause_panel.visible = not is_paused
+
+func _resume() -> void:
+	_toggle_pause()
+
+func _abandon_run() -> void:
+	end_run(false, wave_controller.wave)
+	pause_panel.visible = false
