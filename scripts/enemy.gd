@@ -2,12 +2,14 @@ extends CharacterBody2D
 
 signal enemy_killed
 
-@export var speed: float = 120.0
-@export var health: int = 2
-@export var damage: int = 1
-@export var attack_cooldown: float = 0.5
-@export var gold_drop_min: int = 1
-@export var gold_drop_max: int = 3
+@export_enum("Normal", "Fast", "Big") var enemy_type: String = "Normal"
+
+var speed: float
+var health: int
+var damage: int
+var attack_cooldown: float
+var gold_drop_min: int
+var gold_drop_max: int
 
 var target: Node2D = null
 var can_attack: bool = true
@@ -17,8 +19,30 @@ var attack_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("enemies")
-	# Find the player
 	target = get_tree().get_first_node_in_group("player")
+	
+	match enemy_type:
+		"Fast":
+			speed = GameConstants.ENEMY_FAST_SPEED
+			health = GameConstants.ENEMY_FAST_HEALTH
+			damage = GameConstants.ENEMY_FAST_DAMAGE
+			attack_cooldown = GameConstants.ENEMY_FAST_ATTACK_COOLDOWN
+			gold_drop_min = GameConstants.ENEMY_FAST_GOLD_MIN
+			gold_drop_max = GameConstants.ENEMY_FAST_GOLD_MAX
+		"Big":
+			speed = GameConstants.ENEMY_BIG_SPEED
+			health = GameConstants.ENEMY_BIG_HEALTH
+			damage = GameConstants.ENEMY_BIG_DAMAGE
+			attack_cooldown = GameConstants.ENEMY_BIG_ATTACK_COOLDOWN
+			gold_drop_min = GameConstants.ENEMY_BIG_GOLD_MIN
+			gold_drop_max = GameConstants.ENEMY_BIG_GOLD_MAX
+		_, "Normal":
+			speed = GameConstants.ENEMY_NORMAL_SPEED
+			health = GameConstants.ENEMY_NORMAL_HEALTH
+			damage = GameConstants.ENEMY_NORMAL_DAMAGE
+			attack_cooldown = GameConstants.ENEMY_NORMAL_ATTACK_COOLDOWN
+			gold_drop_min = GameConstants.ENEMY_NORMAL_GOLD_MIN
+			gold_drop_max = GameConstants.ENEMY_NORMAL_GOLD_MAX
 
 func _physics_process(delta: float) -> void:
 	if not can_attack:

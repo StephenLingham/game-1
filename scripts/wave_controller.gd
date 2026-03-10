@@ -3,8 +3,8 @@ extends Node
 @export var enemy_scene: PackedScene
 @export var arena_radius: float = 420.0
 
-const TOTAL_WAVES := 10
-const WAVE_SECONDS := 30.0
+var enemy_fast_scene := preload("res://scenes/enemy_fast.tscn")
+var enemy_big_scene := preload("res://scenes/enemy_big.tscn")
 
 var wave: int = 0
 var wave_time_left: float = 0.0
@@ -23,16 +23,16 @@ func start_run() -> void:
 
 func _next_wave() -> void:
 	wave += 1
-	if wave > TOTAL_WAVES:
-		game.call_deferred("end_run", true, TOTAL_WAVES)
+	if wave > GameConstants.TOTAL_WAVES:
+		game.call_deferred("end_run", true, GameConstants.TOTAL_WAVES)
 		return
 
-	wave_time_left = WAVE_SECONDS
+	wave_time_left = GameConstants.WAVE_SECONDS
 	spawning = true
 
-	# spawn rate ramps with wave (lower wait time == more enemies)
-	var base_wait: float = 0.75
-	var wait: float = max(base_wait - 0.05 * float(wave - 1), 0.25)
+	# spawn rate ramps with wave
+	var base_wait: float = GameConstants.WAVE_BASE_SPAWN_WAIT
+	var wait: float = max(base_wait - (GameConstants.WAVE_SPAWN_WAIT_DECREMENT * float(wave - 1)), GameConstants.WAVE_MIN_SPAWN_WAIT)
 	spawn_timer.wait_time = wait
 	spawn_timer.start()
 
@@ -65,7 +65,16 @@ func _spawn_tick() -> void:
 	# spawn a small burst each tick as waves increase
 	var burst := 1 + int(floor((wave - 1) / 2.0))
 	for i in range(burst):
-		var e := enemy_scene.instantiate()
+		var rand_val := randf()
+		var scene_to_spawn := enemy_scene
+		
+		# Probability logic
+		if rand_val < GameConstants.PROB_BIG_ENEMY:
+			scene_to_spawn = enemy_big_scene
+		elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY):
+			scene_to_spawn = enemy_fast_scene
+			
+		var e := scene_to_spawn.instantiate()
 
 		# Spawn just inside the arena walls instead of outside
 		# Arena interior is roughly x: 30-1250, y: 30-690 (inside the walls)

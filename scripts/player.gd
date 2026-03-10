@@ -2,10 +2,10 @@ extends CharacterBody2D
 
 signal player_died
 
-@export var speed: float = 300.0
-@export var fire_rate: float = 0.20
-@export var max_health: int = 5
-@export var base_damage: int = 1
+var speed: float = GameConstants.PLAYER_SPEED
+var fire_rate: float = GameConstants.PLAYER_FIRE_RATE
+var max_health: int = GameConstants.PLAYER_MAX_HEALTH
+var base_damage: int = GameConstants.PLAYER_BASE_DAMAGE
 
 var health: int
 var can_fire: bool = true
