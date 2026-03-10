@@ -77,11 +77,11 @@ func _spawn_tick() -> void:
 		var e := scene_to_spawn.instantiate()
 
 		# Spawn just inside the arena walls instead of outside
-		# Arena interior is roughly x: 30-1250, y: 30-690 (inside the walls)
+		# Arena interior is roughly x: 30-2530, y: 30-1410 (inside the walls)
 		var inner_left := 35.0
-		var inner_right := 1245.0
+		var inner_right := 2525.0
 		var inner_top := 35.0
-		var inner_bottom := 685.0
+		var inner_bottom := 1405.0
 		var edge_margin := 40.0  # How close to the wall they spawn
 
 		var spawn_pos := Vector2.ZERO

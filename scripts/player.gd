@@ -82,11 +82,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_set_click_target(event.position)
 
 func _set_click_target(screen_pos: Vector2) -> void:
-	var world_pos := screen_pos
-	var cam := get_viewport().get_camera_2d()
-	if cam:
-		world_pos = cam.screen_to_world(screen_pos)
-	_click_target = world_pos
+	_click_target = get_canvas_transform().affine_inverse() * screen_pos
 	_has_click_target = true
 
 func _get_nearest_enemy() -> Node2D:
