@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="3"]
 [ext_resource type="Script" path="res://scripts/wave_controller.gd" id="4"]
+[ext_resource type="Theme" path="res://ui_theme.tres" id="5"]
 
 [sub_resource type="RectangleShape2D" id="wall_top"]
 size = Vector2(1280, 20)
@@ -16,6 +17,18 @@ size = Vector2(20, 720)
 
 [sub_resource type="RectangleShape2D" id="wall_right"]
 size = Vector2(20, 720)
+
+[sub_resource type="LabelSettings" id="LabelSettings_shop_title"]
+font_size = 36
+font_color = Color(1, 0.85, 0.3, 1)
+shadow_size = 4
+shadow_color = Color(0, 0, 0, 0.8)
+
+[sub_resource type="LabelSettings" id="LabelSettings_shop_info"]
+font_size = 20
+font_color = Color(0.9, 0.9, 0.9, 1)
+shadow_size = 2
+shadow_color = Color(0, 0, 0, 0.5)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -116,87 +129,162 @@ autostart = false
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="HUD" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
-anchor_bottom = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("5")
 
 [node name="WaveLabel" type="Label" parent="UI/HUD"]
-offset_left = 16.0
-offset_top = 12.0
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 200.0
+offset_bottom = 56.0
 text = "Wave: 1 / 10"
+label_settings = SubResource("LabelSettings_shop_info")
 
 [node name="TimeLabel" type="Label" parent="UI/HUD"]
-offset_left = 16.0
-offset_top = 36.0
+layout_mode = 0
+offset_left = 24.0
+offset_top = 64.0
+offset_right = 200.0
+offset_bottom = 96.0
 text = "Time: 30s"
+label_settings = SubResource("LabelSettings_shop_info")
 
 [node name="GoldLabel" type="Label" parent="UI/HUD"]
-offset_left = 16.0
-offset_top = 60.0
+layout_mode = 0
+offset_left = 24.0
+offset_top = 104.0
+offset_right = 200.0
+offset_bottom = 136.0
 text = "Gold: 0"
+label_settings = SubResource("LabelSettings_shop_info")
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 
 [node name="HPLabel" type="Label" parent="UI/HUD"]
-offset_left = 16.0
-offset_top = 84.0
+layout_mode = 0
+offset_left = 24.0
+offset_top = 144.0
+offset_right = 200.0
+offset_bottom = 176.0
 text = "HP: 5"
+label_settings = SubResource("LabelSettings_shop_info")
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
 
 [node name="ShopPanel" type="Panel" parent="UI"]
 visible = false
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -160.0
-offset_right = 220.0
-offset_bottom = 160.0
+offset_left = -260.0
+offset_top = -240.0
+offset_right = 260.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("5")
 
 [node name="VBox" type="VBoxContainer" parent="UI/ShopPanel"]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 12.0
-offset_right = -12.0
-offset_bottom = -12.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="ShopTitle" type="Label" parent="UI/ShopPanel/VBox"]
+layout_mode = 2
+text = "Shop"
+label_settings = SubResource("LabelSettings_shop_title")
+horizontal_alignment = 1
 
 [node name="Info" type="Label" parent="UI/ShopPanel/VBox"]
+layout_mode = 2
 text = ""
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="UI/ShopPanel/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
 
 [node name="BuyDamage" type="Button" parent="UI/ShopPanel/VBox"]
+layout_mode = 2
 text = "Upgrade Damage (+5) - 10 gold"
 
 [node name="BuyAtkSpd" type="Button" parent="UI/ShopPanel/VBox"]
+layout_mode = 2
 text = "Upgrade Attack Speed (+10%) - 12 gold"
 
+[node name="Spacer2" type="Control" parent="UI/ShopPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
 [node name="Continue" type="Button" parent="UI/ShopPanel/VBox"]
-text = "Next wave"
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(0.6, 1, 0.6, 1)
+theme_override_font_sizes/font_size = 28
+text = "NEXT WAVE"
 
 [node name="GameOverPanel" type="Panel" parent="UI"]
 visible = false
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -240.0
-offset_top = -170.0
+offset_top = -200.0
 offset_right = 240.0
-offset_bottom = 170.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("5")
 
 [node name="VBox" type="VBoxContainer" parent="UI/GameOverPanel"]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 12.0
-offset_right = -12.0
-offset_bottom = -12.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
 
 [node name="Result" type="Label" parent="UI/GameOverPanel/VBox"]
+layout_mode = 2
 text = "Result"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="UI/GameOverPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
 
 [node name="Retry" type="Button" parent="UI/GameOverPanel/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
 text = "Retry"
 
 [node name="BackToLobby" type="Button" parent="UI/GameOverPanel/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
 text = "Back to Lobby"
 
