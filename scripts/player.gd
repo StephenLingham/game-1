@@ -90,8 +90,19 @@ func _get_nearest_enemy() -> Node2D:
 	var closest: Node2D = null
 	var closest_dist := INF
 	
+	var cam := get_viewport().get_camera_2d()
+	var screen_rect := Rect2()
+	if cam:
+		var center := cam.get_screen_center_position()
+		var size := get_viewport_rect().size
+		# Grow by slightly expanding the bounds so it acts right as they touch the edge
+		screen_rect = Rect2(center - size / 2.0, size).grow(16.0)
+	
 	for enemy in enemies:
 		if is_instance_valid(enemy):
+			if cam and not screen_rect.has_point(enemy.global_position):
+				continue
+				
 			var dist := global_position.distance_to(enemy.global_position)
 			if dist < closest_dist:
 				closest_dist = dist
