@@ -22,6 +22,7 @@ var _has_click_target: bool = false
 var bullet_scene: PackedScene = preload("res://scenes/bullet.tscn")
 
 func _ready() -> void:
+	add_to_group("player")
 	health = max_health
 
 func set_camera_limits(rect: Rect2) -> void:

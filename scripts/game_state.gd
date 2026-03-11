@@ -6,11 +6,13 @@ const SAVE_PATH := "user://save.json"
 var gems: int = 0
 var perm_damage_level: int = 0
 var perm_atkspd_level: int = 0
+var perm_pickup_radius_level: int = 0
 
 # Run-time values (reset per run)
 var run_gold: int = 0
 var run_damage_bonus: int = 0          # flat bonus (shop)
 var run_atkspd_mult: float = 1.0       # multiplicative (shop)
+var run_pickup_radius_bonus: float = 0.0
 
 func _ready() -> void:
 	load_save()
@@ -19,12 +21,18 @@ func reset_run() -> void:
 	run_gold = 0
 	run_damage_bonus = 0
 	run_atkspd_mult = 1.0
+	run_pickup_radius_bonus = 0.0
 
 func get_damage_multiplier() -> float:
 	return 1.0 + 0.10 * float(perm_damage_level)
 
 func get_atkspd_multiplier() -> float:
 	return 1.0 + 0.10 * float(perm_atkspd_level)
+
+func get_pickup_radius() -> float:
+	var base := GameConstants.BASE_COLLECTION_RADIUS
+	var perm := float(perm_pickup_radius_level) * GameConstants.PERM_COLLECTION_RADIUS_INCREMENT
+	return base + perm + run_pickup_radius_bonus
 
 func award_gems(amount: int) -> void:
 	gems += max(amount, 0)
@@ -35,6 +43,9 @@ func perm_damage_cost() -> int:
 
 func perm_atkspd_cost() -> int:
 	return 10 + perm_atkspd_level * 10
+
+func perm_pickup_radius_cost() -> int:
+	return 10 + perm_pickup_radius_level * 10
 
 func buy_perm_damage() -> bool:
 	var cost := perm_damage_cost()
@@ -54,11 +65,21 @@ func buy_perm_atkspd() -> bool:
 	save()
 	return true
 
+func buy_perm_pickup_radius() -> bool:
+	var cost := perm_pickup_radius_cost()
+	if gems < cost:
+		return false
+	gems -= cost
+	perm_pickup_radius_level += 1
+	save()
+	return true
+
 func save() -> void:
 	var data := {
 		"gems": gems,
 		"perm_damage_level": perm_damage_level,
-		"perm_atkspd_level": perm_atkspd_level
+		"perm_atkspd_level": perm_atkspd_level,
+		"perm_pickup_radius_level": perm_pickup_radius_level
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -77,4 +98,5 @@ func load_save() -> void:
 	gems = int(parsed.get("gems", 0))
 	perm_damage_level = int(parsed.get("perm_damage_level", 0))
 	perm_atkspd_level = int(parsed.get("perm_atkspd_level", 0))
+	perm_pickup_radius_level = int(parsed.get("perm_pickup_radius_level", 0))
 

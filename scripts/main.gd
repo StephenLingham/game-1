@@ -18,6 +18,14 @@ func _ready() -> void:
 	# Wire shop buttons
 	$UI/ShopPanel/VBox/BuyDamage.pressed.connect(_buy_damage)
 	$UI/ShopPanel/VBox/BuyAtkSpd.pressed.connect(_buy_atkspd)
+	
+	if not $UI/ShopPanel/VBox.has_node("BuyRadius"):
+		var btn := Button.new()
+		btn.name = "BuyRadius"
+		$UI/ShopPanel/VBox.add_child(btn)
+		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuyAtkSpd.get_index() + 1)
+	
+	$UI/ShopPanel/VBox/BuyRadius.pressed.connect(_buy_radius)
 	$UI/ShopPanel/VBox/Continue.pressed.connect(_close_shop)
 
 	# Game over buttons
@@ -126,11 +134,13 @@ func _close_shop() -> void:
 func _refresh_shop_text() -> void:
 	var dmg_cost := _shop_damage_cost()
 	var spd_cost := _shop_atkspd_cost()
-	$UI/ShopPanel/VBox/Info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f" % [
-		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult
+	var rad_cost := _shop_radius_cost()
+	$UI/ShopPanel/VBox/Info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f\nPickup Radius: %.0fpx" % [
+		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult, GameState.get_pickup_radius()
 	]
 	$UI/ShopPanel/VBox/BuyDamage.text = "Upgrade Damage (+5) - %d gold" % dmg_cost
 	$UI/ShopPanel/VBox/BuyAtkSpd.text = "Upgrade Attack Speed (+10%%) - %d gold" % spd_cost
+	$UI/ShopPanel/VBox/BuyRadius.text = "Upgrade Pickup Radius (+25px) - %d gold" % rad_cost
 
 func _shop_damage_cost() -> int:
 	# Scale with number of purchases
@@ -140,6 +150,10 @@ func _shop_atkspd_cost() -> int:
 	# Scale with multiplier
 	var steps := int(round((GameState.run_atkspd_mult - 1.0) / 0.10))
 	return 12 + steps * 10
+
+func _shop_radius_cost() -> int:
+	var steps := int(round(GameState.run_pickup_radius_bonus / GameConstants.COLLECTION_RADIUS_UPGRADE_AMOUNT))
+	return 15 + steps * 10
 
 func _buy_damage() -> void:
 	var cost := _shop_damage_cost()
@@ -155,6 +169,14 @@ func _buy_atkspd() -> void:
 		return
 	GameState.run_gold -= cost
 	GameState.run_atkspd_mult *= 1.10
+	_refresh_shop_text()
+
+func _buy_radius() -> void:
+	var cost := _shop_radius_cost()
+	if GameState.run_gold < cost:
+		return
+	GameState.run_gold -= cost
+	GameState.run_pickup_radius_bonus += GameConstants.COLLECTION_RADIUS_UPGRADE_AMOUNT
 	_refresh_shop_text()
 
 func _on_player_died() -> void:

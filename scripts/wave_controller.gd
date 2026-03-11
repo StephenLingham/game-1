@@ -55,6 +55,12 @@ func _process(delta: float) -> void:
 func _end_wave() -> void:
 	spawning = false
 	spawn_timer.stop()
+	
+	# Clear uncollected gold at the end of the wave
+	for g in get_tree().get_nodes_in_group("gold_pickups"):
+		if is_instance_valid(g):
+			g.queue_free()
+	
 	game.call_deferred("open_shop", wave)
 
 func resume_after_shop() -> void:
