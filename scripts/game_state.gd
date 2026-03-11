@@ -13,6 +13,7 @@ var run_gold: int = 0
 var run_damage_bonus: int = 0          # flat bonus (shop)
 var run_atkspd_mult: float = 1.0       # multiplicative (shop)
 var run_pickup_radius_bonus: float = 0.0
+var run_orb_level: int = 0
 
 func _ready() -> void:
 	load_save()
@@ -22,6 +23,7 @@ func reset_run() -> void:
 	run_damage_bonus = 0
 	run_atkspd_mult = 1.0
 	run_pickup_radius_bonus = 0.0
+	run_orb_level = 0
 
 func get_damage_multiplier() -> float:
 	return 1.0 + 0.10 * float(perm_damage_level)
@@ -33,6 +35,16 @@ func get_pickup_radius() -> float:
 	var base := GameConstants.BASE_COLLECTION_RADIUS
 	var perm := float(perm_pickup_radius_level) * GameConstants.PERM_COLLECTION_RADIUS_INCREMENT
 	return base + perm + run_pickup_radius_bonus
+
+func get_orb_count() -> int:
+	if run_orb_level >= 5: return 3
+	if run_orb_level >= 3: return 2
+	if run_orb_level >= 1: return 1
+	return 0
+
+func get_orb_speed() -> float:
+	if run_orb_level >= 2: return GameConstants.ORB_UPGRADE_ROTATE_SPEED
+	return GameConstants.ORB_BASE_ROTATE_SPEED
 
 func award_gems(amount: int) -> void:
 	gems += max(amount, 0)

@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/orb_controller.gd" id="2_orb"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 16.0
@@ -38,3 +39,6 @@ limit_top = 0
 limit_right = 1920
 limit_bottom = 1080
 position_smoothing_enabled = true
+
+[node name="OrbController" type="Node2D" parent="."]
+script = ExtResource("2_orb")

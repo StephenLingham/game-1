@@ -25,7 +25,14 @@ func _ready() -> void:
 		$UI/ShopPanel/VBox.add_child(btn)
 		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuyAtkSpd.get_index() + 1)
 	
+	if not $UI/ShopPanel/VBox.has_node("BuyOrbs"):
+		var btn := Button.new()
+		btn.name = "BuyOrbs"
+		$UI/ShopPanel/VBox.add_child(btn)
+		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuyRadius.get_index() + 1)
+
 	$UI/ShopPanel/VBox/BuyRadius.pressed.connect(_buy_radius)
+	$UI/ShopPanel/VBox/BuyOrbs.pressed.connect(_buy_orbs)
 	$UI/ShopPanel/VBox/Continue.pressed.connect(_close_shop)
 
 	# Game over buttons
@@ -112,7 +119,8 @@ func _setup_arena() -> void:
 
 func _process(_delta: float) -> void:
 	lbl_gold.text = "Gold: %d" % GameState.run_gold
-	lbl_hp.text = "HP: %d" % player.health
+	if is_instance_valid(player):
+		lbl_hp.text = "HP: %d" % player.health
 
 func on_wave_started(w: int) -> void:
 	lbl_wave.text = "Wave: %d / 10" % w
@@ -135,12 +143,23 @@ func _refresh_shop_text() -> void:
 	var dmg_cost := _shop_damage_cost()
 	var spd_cost := _shop_atkspd_cost()
 	var rad_cost := _shop_radius_cost()
-	$UI/ShopPanel/VBox/Info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f\nPickup Radius: %.0fpx" % [
-		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult, GameState.get_pickup_radius()
+	var orb_cost := _shop_orb_cost()
+	
+	$UI/ShopPanel/VBox/Info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f\nPickup Radius: %.0fpx\nOrb Level: %d" % [
+		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult, GameState.get_pickup_radius(), GameState.run_orb_level
 	]
 	$UI/ShopPanel/VBox/BuyDamage.text = "Upgrade Damage (+5) - %d gold" % dmg_cost
 	$UI/ShopPanel/VBox/BuyAtkSpd.text = "Upgrade Attack Speed (+10%%) - %d gold" % spd_cost
 	$UI/ShopPanel/VBox/BuyRadius.text = "Upgrade Pickup Radius (+25px) - %d gold" % rad_cost
+	
+	var orb_btn = $UI/ShopPanel/VBox/BuyOrbs
+	if GameState.run_orb_level >= GameConstants.ORB_MAX_LEVEL:
+		orb_btn.text = "Orb Ability (MAX LEVEL)"
+		orb_btn.disabled = true
+	else:
+		var next_text = _get_orb_upgrade_desc(GameState.run_orb_level + 1)
+		orb_btn.text = "Upgrade Orbs (%s) - %d gold" % [next_text, orb_cost]
+		orb_btn.disabled = false
 
 func _shop_damage_cost() -> int:
 	# Scale with number of purchases
@@ -154,6 +173,20 @@ func _shop_atkspd_cost() -> int:
 func _shop_radius_cost() -> int:
 	var steps := int(round(GameState.run_pickup_radius_bonus / GameConstants.COLLECTION_RADIUS_UPGRADE_AMOUNT))
 	return 15 + steps * 10
+
+func _shop_orb_cost() -> int:
+	if GameState.run_orb_level == 0: return 50
+	return 40 + GameState.run_orb_level * 30
+
+func _get_orb_upgrade_desc(lvl: int) -> String:
+	match lvl:
+		1: return "1 Orb"
+		2: return "Speed+"
+		3: return "2 Orbs"
+		4: return "Speed++"
+		5: return "3 Orbs"
+		6: return "Max Speed"
+	return "Level %d" % lvl
 
 func _buy_damage() -> void:
 	var cost := _shop_damage_cost()
@@ -177,6 +210,14 @@ func _buy_radius() -> void:
 		return
 	GameState.run_gold -= cost
 	GameState.run_pickup_radius_bonus += GameConstants.COLLECTION_RADIUS_UPGRADE_AMOUNT
+	_refresh_shop_text()
+
+func _buy_orbs() -> void:
+	var cost := _shop_orb_cost()
+	if GameState.run_gold < cost or GameState.run_orb_level >= GameConstants.ORB_MAX_LEVEL:
+		return
+	GameState.run_gold -= cost
+	GameState.run_orb_level += 1
 	_refresh_shop_text()
 
 func _on_player_died() -> void:

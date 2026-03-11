@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/orb.gd" id="1"]
+
+[sub_resource type="CircleShape2D" id="1"]
+radius = 10.0
+
+[node name="Orb" type="Area2D"]
+script = ExtResource("1")
+collision_layer = 16
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("1")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Circle" type="Polygon2D" parent="Visual"]
+color = Color(0, 0.8, 1, 1)
+polygon = PackedVector2Array(10, 0, 9.2388, 3.82683, 7.07107, 7.07107, 3.82683, 9.2388, 0, 10, -3.82683, 9.2388, -7.07107, 7.07107, -9.2388, 3.82683, -10, 0, -9.2388, -3.82683, -7.07107, -7.07107, -3.82683, -9.2388, 0, -10, 3.82683, -9.2388, 7.07107, -7.07107, 9.2388, -3.82683)
