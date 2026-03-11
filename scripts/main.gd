@@ -175,8 +175,9 @@ func _shop_radius_cost() -> int:
 	return 15 + steps * 10
 
 func _shop_orb_cost() -> int:
-	if GameState.run_orb_level == 0: return 50
-	return 40 + GameState.run_orb_level * 30
+	if GameState.run_orb_level == 0: 
+		return GameConstants.ORB_BASE_COST
+	return GameConstants.ORB_BASE_COST + GameState.run_orb_level * GameConstants.ORB_COST_INCREMENT_PER_LEVEL
 
 func _get_orb_upgrade_desc(lvl: int) -> String:
 	match lvl:

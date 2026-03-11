@@ -61,6 +61,8 @@ const MAGNET_SPEED: float = 600.0
 # --- ORB ABILITY SETTINGS ---
 const ORB_BASE_ROTATE_SPEED: float = 2.5
 const ORB_UPGRADE_ROTATE_SPEED: float = 4.5
-const ORB_RADIUS: float = 75.0
+const ORB_RADIUS: float = 100.0
 const ORB_DAMAGE: int = 2
 const ORB_MAX_LEVEL: int = 6
+const ORB_BASE_COST: int = 10
+const ORB_COST_INCREMENT_PER_LEVEL: int = 5
