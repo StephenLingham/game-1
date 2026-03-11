@@ -13,6 +13,11 @@ var spawning: bool = false
 @onready var spawn_timer: Timer = $SpawnTimer
 @onready var game: Node = get_tree().current_scene
 
+var arena_rect: Rect2
+
+func set_arena_bounds(rect: Rect2) -> void:
+	arena_rect = rect
+
 func _ready() -> void:
 	spawn_timer.timeout.connect(_spawn_tick)
 
@@ -77,11 +82,10 @@ func _spawn_tick() -> void:
 		var e := scene_to_spawn.instantiate()
 
 		# Spawn just inside the arena walls instead of outside
-		# Arena interior is roughly x: 30-1890, y: 30-1050 (inside the walls)
-		var inner_left := 35.0
-		var inner_right := 1885.0
-		var inner_top := 35.0
-		var inner_bottom := 1045.0
+		var inner_left := arena_rect.position.x + 35.0
+		var inner_right := arena_rect.position.x + arena_rect.size.x - 35.0
+		var inner_top := arena_rect.position.y + 35.0
+		var inner_bottom := arena_rect.position.y + arena_rect.size.y - 35.0
 		var edge_margin := 40.0  # How close to the wall they spawn
 
 		var spawn_pos := Vector2.ZERO

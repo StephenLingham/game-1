@@ -15,6 +15,10 @@ const PLAYER_BASE_DAMAGE: int = 1
 const TOTAL_WAVES: int = 10
 const WAVE_SECONDS: float = 30.0
 
+# --- ARENA SETTINGS ---
+const ARENA_WIDTH_MULTIPLIER: float = 1.1
+const ARENA_HEIGHT_MULTIPLIER: float = 1.1
+
 const WAVE_BASE_SPAWN_WAIT: float = 0.75
 const WAVE_MIN_SPAWN_WAIT: float = 0.25
 const WAVE_SPAWN_WAIT_DECREMENT: float = 0.05

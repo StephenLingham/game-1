@@ -24,6 +24,14 @@ var bullet_scene: PackedScene = preload("res://scenes/bullet.tscn")
 func _ready() -> void:
 	health = max_health
 
+func set_camera_limits(rect: Rect2) -> void:
+	var cam = $Camera2D as Camera2D
+	if cam:
+		cam.limit_left = int(rect.position.x)
+		cam.limit_top = int(rect.position.y)
+		cam.limit_right = int(rect.position.x + rect.size.x)
+		cam.limit_bottom = int(rect.position.y + rect.size.y)
+
 func _physics_process(delta: float) -> void:
 	# Movement
 	var input_dir := Vector2.ZERO
