@@ -20,6 +20,9 @@ var _has_click_target: bool = false
 @onready var collision: CollisionShape2D = $CollisionShape2D
 
 var bullet_scene: PackedScene = preload("res://scenes/bullet.tscn")
+var spike_ball_scene: PackedScene = preload("res://scenes/spike_ball.tscn")
+
+var spike_ball_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -70,6 +73,13 @@ func _physics_process(delta: float) -> void:
 	
 	if can_fire and nearest_enemy:
 		fire()
+
+	# Spike ball logic
+	if GameState.run_spike_ball_level > 0:
+		spike_ball_timer -= delta
+		if spike_ball_timer <= 0:
+			_fire_spike_ball(nearest_enemy)
+			spike_ball_timer = _get_spike_ball_cooldown()
 
 func get_damage() -> int:
 	var dmg := float(base_damage + GameState.run_damage_bonus)
@@ -140,3 +150,20 @@ func take_damage(amount: int = 1) -> void:
 	
 	if health <= 0:
 		player_died.emit()
+
+func _get_spike_ball_cooldown() -> float:
+	var cooldown = GameConstants.SPIKE_BALL_BASE_COOLDOWN - (GameState.run_spike_ball_level - 1) * GameConstants.SPIKE_BALL_COOLDOWN_REDUCTION_PER_LEVEL
+	return max(0.5, cooldown)
+
+func _fire_spike_ball(target: Node2D) -> void:
+	var ball = spike_ball_scene.instantiate() as Area2D
+	ball.global_position = global_position
+	
+	var dir := Vector2.RIGHT.rotated(rotation)
+	if is_instance_valid(target):
+		dir = (target.global_position - global_position).normalized()
+	
+	ball.direction = dir
+	ball.damage = GameConstants.SPIKE_BALL_BASE_DAMAGE + GameState.run_damage_bonus
+	ball.max_distance = GameConstants.SPIKE_BALL_BASE_DISTANCE + (GameState.run_spike_ball_level - 1) * GameConstants.SPIKE_BALL_DISTANCE_PER_LEVEL
+	get_tree().current_scene.add_child(ball)

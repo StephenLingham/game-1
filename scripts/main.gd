@@ -33,6 +33,14 @@ func _ready() -> void:
 
 	$UI/ShopPanel/VBox/BuyRadius.pressed.connect(_buy_radius)
 	$UI/ShopPanel/VBox/BuyOrbs.pressed.connect(_buy_orbs)
+	
+	if not $UI/ShopPanel/VBox.has_node("BuySpike"):
+		var btn := Button.new()
+		btn.name = "BuySpike"
+		$UI/ShopPanel/VBox.add_child(btn)
+		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuyOrbs.get_index() + 1)
+	$UI/ShopPanel/VBox/BuySpike.pressed.connect(_buy_spike_ball)
+
 	$UI/ShopPanel/VBox/Continue.pressed.connect(_close_shop)
 
 	# Game over buttons
@@ -44,6 +52,9 @@ func _ready() -> void:
 	$UI/PausePanel/VBox/Abandon.pressed.connect(_abandon_run)
 
 	shop_panel.visible = false
+	# Make shop full screen
+	shop_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	
 	game_over_panel.visible = false
 	pause_panel.visible = false
 
@@ -59,9 +70,9 @@ func _setup_arena() -> void:
 	var floor_rect := $ArenaFloor
 	floor_rect.size = arena_size
 	floor_rect.position = center - (arena_size / 2.0)
-	floor_rect.color = Color(0.15, 0.45, 0.2)
+	floor_rect.color = Color(0.15, 0.25, 0.5) # Blue-ish floor
 	
-	$Background.color = Color(0.05, 0.2, 0.1)
+	$Background.color = Color(0.05, 0.1, 0.2) # Deep blue background
 	$Background.position = floor_rect.position - Vector2(2000, 2000)
 	$Background.size = arena_size + Vector2(4000, 4000)
 	
@@ -144,9 +155,10 @@ func _refresh_shop_text() -> void:
 	var spd_cost := _shop_atkspd_cost()
 	var rad_cost := _shop_radius_cost()
 	var orb_cost := _shop_orb_cost()
+	var spike_cost := _shop_spike_ball_cost()
 	
-	$UI/ShopPanel/VBox/Info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f\nPickup Radius: %.0fpx\nOrb Level: %d" % [
-		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult, GameState.get_pickup_radius(), GameState.run_orb_level
+	$UI/ShopPanel/VBox/Info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f\nPickup Radius: %.0fpx\nOrb Level: %d\nSpike Ball Level: %d" % [
+		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult, GameState.get_pickup_radius(), GameState.run_orb_level, GameState.run_spike_ball_level
 	]
 	$UI/ShopPanel/VBox/BuyDamage.text = "Upgrade Damage (+5) - %d gold" % dmg_cost
 	$UI/ShopPanel/VBox/BuyAtkSpd.text = "Upgrade Attack Speed (+10%%) - %d gold" % spd_cost
@@ -160,6 +172,17 @@ func _refresh_shop_text() -> void:
 		var next_text = _get_orb_upgrade_desc(GameState.run_orb_level + 1)
 		orb_btn.text = "Upgrade Orbs (%s) - %d gold" % [next_text, orb_cost]
 		orb_btn.disabled = false
+	
+	var spike_btn = $UI/ShopPanel/VBox/BuySpike
+	if GameState.run_spike_ball_level >= GameConstants.SPIKE_BALL_MAX_LEVEL:
+		spike_btn.text = "Spike Ball (MAX LEVEL)"
+		spike_btn.disabled = true
+	elif GameState.run_spike_ball_level == 0:
+		spike_btn.text = "Unlock Spike Ball - %d gold" % spike_cost
+		spike_btn.disabled = false
+	else:
+		spike_btn.text = "Upgrade Spike Ball (Speed/Dist+) - %d gold" % spike_cost
+		spike_btn.disabled = false
 
 func _shop_damage_cost() -> int:
 	# Scale with number of purchases
@@ -178,6 +201,11 @@ func _shop_orb_cost() -> int:
 	if GameState.run_orb_level == 0: 
 		return GameConstants.ORB_BASE_COST
 	return GameConstants.ORB_BASE_COST + GameState.run_orb_level * GameConstants.ORB_COST_INCREMENT_PER_LEVEL
+
+func _shop_spike_ball_cost() -> int:
+	if GameState.run_spike_ball_level == 0:
+		return GameConstants.SPIKE_BALL_BASE_COST
+	return GameConstants.SPIKE_BALL_BASE_COST + GameState.run_spike_ball_level * GameConstants.SPIKE_BALL_COST_INCREMENT_PER_LEVEL
 
 func _get_orb_upgrade_desc(lvl: int) -> String:
 	match lvl:
@@ -219,6 +247,14 @@ func _buy_orbs() -> void:
 		return
 	GameState.run_gold -= cost
 	GameState.run_orb_level += 1
+	_refresh_shop_text()
+
+func _buy_spike_ball() -> void:
+	var cost := _shop_spike_ball_cost()
+	if GameState.run_gold < cost or GameState.run_spike_ball_level >= GameConstants.SPIKE_BALL_MAX_LEVEL:
+		return
+	GameState.run_gold -= cost
+	GameState.run_spike_ball_level += 1
 	_refresh_shop_text()
 
 func _on_player_died() -> void:

@@ -14,6 +14,7 @@ var run_damage_bonus: int = 0          # flat bonus (shop)
 var run_atkspd_mult: float = 1.0       # multiplicative (shop)
 var run_pickup_radius_bonus: float = 0.0
 var run_orb_level: int = 0
+var run_spike_ball_level: int = 0
 
 func _ready() -> void:
 	load_save()
@@ -24,6 +25,7 @@ func reset_run() -> void:
 	run_atkspd_mult = 1.0
 	run_pickup_radius_bonus = 0.0
 	run_orb_level = 0
+	run_spike_ball_level = 0
 
 func get_damage_multiplier() -> float:
 	return 1.0 + 0.10 * float(perm_damage_level)
