@@ -70,9 +70,9 @@ func _setup_arena() -> void:
 	var floor_rect := $ArenaFloor
 	floor_rect.size = arena_size
 	floor_rect.position = center - (arena_size / 2.0)
-	floor_rect.color = Color(0.15, 0.25, 0.5) # Blue-ish floor
+	floor_rect.color = Color(0.15, 0.45, 0.2) # Green floor (Grass)
 	
-	$Background.color = Color(0.05, 0.1, 0.2) # Deep blue background
+	$Background.color = Color(0.05, 0.2, 0.1) # Dark green background
 	$Background.position = floor_rect.position - Vector2(2000, 2000)
 	$Background.size = arena_size + Vector2(4000, 4000)
 	
@@ -143,6 +143,11 @@ func open_shop(_wave: int) -> void:
 	get_tree().paused = true
 	shop_panel.visible = true
 	shop_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	# Restore player health
+	if is_instance_valid(player):
+		player.health = player.max_health
+	
 	_refresh_shop_text()
 
 func _close_shop() -> void:
