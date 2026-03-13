@@ -258,23 +258,17 @@ theme_override_constants/h_separation = 30
 theme_override_constants/v_separation = 30
 columns = 2
 
-[node name="BuyDamage" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
+[node name="BuyGun" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Upgrade Damage"
+text = "Upgrade Gun"
 
-[node name="BuyAtkSpd" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
+[node name="BuyMagnet" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Upgrade Attack Speed"
-
-[node name="BuyRadius" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Upgrade Radius"
+text = "Upgrade Magnet"
 
 [node name="BuyOrbs" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
 custom_minimum_size = Vector2(0, 100)

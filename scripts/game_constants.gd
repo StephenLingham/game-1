@@ -11,6 +11,13 @@ const PLAYER_FIRE_RATE: float = 0.50
 const PLAYER_MAX_HEALTH: int = 5
 const PLAYER_BASE_DAMAGE: int = 1
 
+# --- GUN ABILITY SETTINGS (Combined Damage + Fire Rate) ---
+const GUN_MAX_LEVEL: int = 4 # Starts at 1, max 3 upgrades
+const GUN_BASE_COST: int = 15
+const GUN_COST_INCREMENT: int = 10
+const GUN_DAMAGE_PER_UPGRADE: int = 1
+const GUN_ATK_SPD_PER_UPGRADE: float = 0.15 # 15% increase per level
+
 # --- WAVES & SPAWN SETTINGS ---
 const TOTAL_WAVES: int = 10
 const WAVE_SECONDS: float = 30.0
@@ -55,6 +62,9 @@ const ENEMY_BIG_GOLD_MAX: int = 6
 # --- COLLECTION SETTINGS ---
 const BASE_COLLECTION_RADIUS: float = 50.0
 const COLLECTION_RADIUS_UPGRADE_AMOUNT: float = 25.0
+const MAGNET_MAX_LEVEL: int = 7
+const MAGNET_BASE_COST: int = 15
+const MAGNET_COST_INCREMENT: int = 10
 const PERM_COLLECTION_RADIUS_INCREMENT: float = 10.0
 const MAGNET_SPEED: float = 600.0
 
@@ -81,12 +91,12 @@ const SPIKE_BALL_COST_INCREMENT_PER_LEVEL: int = 15
 const SHOTGUN_BASE_COOLDOWN: float = 1.0
 const SHOTGUN_SPREAD_ANGLE: float = 45.0 # Degrees
 const SHOTGUN_MAX_LEVEL: int = 4
-const SHOTGUN_BASE_COST: int = 30
-const SHOTGUN_COST_INCREMENT_PER_LEVEL: int = 20
+const SHOTGUN_BASE_COST: int = 10
+const SHOTGUN_COST_INCREMENT_PER_LEVEL: int = 10
 
 # --- SNIPER ABILITY SETTINGS ---
 const SNIPER_BASE_COOLDOWN: float = 3.0
 const SNIPER_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.6
 const SNIPER_MAX_LEVEL: int = 4
-const SNIPER_BASE_COST: int = 50
-const SNIPER_COST_INCREMENT_PER_LEVEL: int = 25
+const SNIPER_BASE_COST: int = 10
+const SNIPER_COST_INCREMENT_PER_LEVEL: int = 10

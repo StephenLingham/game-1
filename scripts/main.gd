@@ -22,9 +22,8 @@ func _ready() -> void:
 	player.player_died.connect(_on_player_died)
 
 	# Wire shop buttons
-	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyDamage.pressed.connect(_buy_damage)
-	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyAtkSpd.pressed.connect(_buy_atkspd)
-	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyRadius.pressed.connect(_buy_radius)
+	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyGun.pressed.connect(_buy_gun)
+	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyMagnet.pressed.connect(_buy_magnet)
 	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyOrbs.pressed.connect(_buy_orbs)
 	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuySpike.pressed.connect(_buy_spike_ball)
 	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyShotgun.pressed.connect(_buy_shotgun)
@@ -145,22 +144,33 @@ func _close_shop() -> void:
 	wave_controller.resume_after_shop()
 
 func _refresh_shop_text() -> void:
-	var dmg_cost := _shop_damage_cost()
-	var spd_cost := _shop_atkspd_cost()
-	var rad_cost := _shop_radius_cost()
+	var gun_cost := _shop_gun_cost()
+	var magnet_cost := _shop_magnet_cost()
 	var orb_cost := _shop_orb_cost()
 	var spike_cost := _shop_spike_ball_cost()
 	var shotgun_cost := _shop_shotgun_cost()
 	var sniper_cost := _shop_sniper_cost()
 	
-	shop_col1.text = "Gold: %d\nDamage: +%d\nSpeed: x%.2f" % [GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult]
+	shop_col1.text = "Gold: %d\nGun Lvl: %d\nMagnet Lvl: %d" % [GameState.run_gold, GameState.run_gun_level, GameState.run_magnet_level]
 	shop_col2.text = "Radius: %.0fpx\nOrbs: %d\nSpike: %d" % [GameState.get_pickup_radius(), GameState.run_orb_level, GameState.run_spike_ball_level]
 	shop_col3.text = "Shotgun: %d\nSniper: %d" % [GameState.run_shotgun_level, GameState.run_sniper_level]
 	
 	var grid = shop_grid
-	grid.get_node("BuyDamage").text = "Upgrade Damage (+5)\nCost: %d Gold" % dmg_cost
-	grid.get_node("BuyAtkSpd").text = "Upgrade Attack Speed (+10%%)\nCost: %d Gold" % spd_cost
-	grid.get_node("BuyRadius").text = "Upgrade Pickup Radius (+25px)\nCost: %d Gold" % rad_cost
+	var gun_btn = grid.get_node("BuyGun")
+	if GameState.run_gun_level >= GameConstants.GUN_MAX_LEVEL:
+		gun_btn.text = "Handgun\n(MAX LEVEL)"
+		gun_btn.disabled = true
+	else:
+		gun_btn.text = "Upgrade Gun (Dmg+Spd)\nCost: %d Gold" % gun_cost
+		gun_btn.disabled = false
+	
+	var magnet_btn = grid.get_node("BuyMagnet")
+	if GameState.run_magnet_level >= GameConstants.MAGNET_MAX_LEVEL:
+		magnet_btn.text = "Magnet\n(MAX LEVEL)"
+		magnet_btn.disabled = true
+	else:
+		magnet_btn.text = "Upgrade Magnet (Radius+)\nCost: %d Gold" % magnet_cost
+		magnet_btn.disabled = false
 	
 	var orb_btn = grid.get_node("BuyOrbs")
 	if GameState.run_orb_level >= GameConstants.ORB_MAX_LEVEL:
@@ -205,18 +215,11 @@ func _refresh_shop_text() -> void:
 		sniper_btn.text = "Upgrade Sniper (Fire Rate+)\nCost: %d Gold" % sniper_cost
 		sniper_btn.disabled = false
 
-func _shop_damage_cost() -> int:
-	# Scale with number of purchases
-	return 10 + int(GameState.run_damage_bonus / 5) * 8
+func _shop_gun_cost() -> int:
+	return GameConstants.GUN_BASE_COST + (GameState.run_gun_level - 1) * GameConstants.GUN_COST_INCREMENT
 
-func _shop_atkspd_cost() -> int:
-	# Scale with multiplier
-	var steps := int(round((GameState.run_atkspd_mult - 1.0) / 0.10))
-	return 12 + steps * 10
-
-func _shop_radius_cost() -> int:
-	var steps := int(round(GameState.run_pickup_radius_bonus / GameConstants.COLLECTION_RADIUS_UPGRADE_AMOUNT))
-	return 15 + steps * 10
+func _shop_magnet_cost() -> int:
+	return GameConstants.MAGNET_BASE_COST + GameState.run_magnet_level * GameConstants.MAGNET_COST_INCREMENT
 
 func _shop_orb_cost() -> int:
 	if GameState.run_orb_level == 0: 
@@ -248,28 +251,20 @@ func _get_orb_upgrade_desc(lvl: int) -> String:
 		6: return "Max Speed"
 	return "Level %d" % lvl
 
-func _buy_damage() -> void:
-	var cost := _shop_damage_cost()
-	if GameState.run_gold < cost:
+func _buy_gun() -> void:
+	var cost := _shop_gun_cost()
+	if GameState.run_gold < cost or GameState.run_gun_level >= GameConstants.GUN_MAX_LEVEL:
 		return
 	GameState.run_gold -= cost
-	GameState.run_damage_bonus += 5
+	GameState.run_gun_level += 1
 	_refresh_shop_text()
 
-func _buy_atkspd() -> void:
-	var cost := _shop_atkspd_cost()
-	if GameState.run_gold < cost:
+func _buy_magnet() -> void:
+	var cost := _shop_magnet_cost()
+	if GameState.run_gold < cost or GameState.run_magnet_level >= GameConstants.MAGNET_MAX_LEVEL:
 		return
 	GameState.run_gold -= cost
-	GameState.run_atkspd_mult *= 1.10
-	_refresh_shop_text()
-
-func _buy_radius() -> void:
-	var cost := _shop_radius_cost()
-	if GameState.run_gold < cost:
-		return
-	GameState.run_gold -= cost
-	GameState.run_pickup_radius_bonus += GameConstants.COLLECTION_RADIUS_UPGRADE_AMOUNT
+	GameState.run_magnet_level += 1
 	_refresh_shop_text()
 
 func _buy_orbs() -> void:

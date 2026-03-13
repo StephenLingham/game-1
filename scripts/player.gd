@@ -100,12 +100,12 @@ func _physics_process(delta: float) -> void:
 			sniper_timer = GameState.get_sniper_cooldown()
 
 func get_damage() -> int:
-	var dmg := float(base_damage + GameState.run_damage_bonus)
+	var dmg := float(base_damage + GameState.get_gun_damage_bonus())
 	dmg *= GameState.get_damage_multiplier()
 	return int(round(dmg))
 
 func _get_fire_interval() -> float:
-	var atk_mult := GameState.get_atkspd_multiplier() * GameState.run_atkspd_mult
+	var atk_mult := GameState.get_atkspd_multiplier() * GameState.get_gun_atk_speed_mult()
 	var interval: float = fire_rate / max(atk_mult, 0.05)
 	return max(interval, 0.02)
 
@@ -258,6 +258,6 @@ func _fire_spike_ball(target: Node2D) -> void:
 		dir = (target.global_position - global_position).normalized()
 	
 	ball.direction = dir
-	ball.damage = GameConstants.SPIKE_BALL_BASE_DAMAGE + GameState.run_damage_bonus
+	ball.damage = GameConstants.SPIKE_BALL_BASE_DAMAGE + GameState.get_gun_damage_bonus()
 	ball.max_distance = GameConstants.SPIKE_BALL_BASE_DISTANCE + (GameState.run_spike_ball_level - 1) * GameConstants.SPIKE_BALL_DISTANCE_PER_LEVEL
 	get_tree().current_scene.add_child(ball)

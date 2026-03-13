@@ -10,9 +10,8 @@ var perm_pickup_radius_level: int = 0
 
 # Run-time values (reset per run)
 var run_gold: int = 0
-var run_damage_bonus: int = 0          # flat bonus (shop)
-var run_atkspd_mult: float = 1.0       # multiplicative (shop)
-var run_pickup_radius_bonus: float = 0.0
+var run_gun_level: int = 1
+var run_magnet_level: int = 0
 var run_orb_level: int = 0
 var run_spike_ball_level: int = 0
 var run_shotgun_level: int = 0
@@ -23,9 +22,8 @@ func _ready() -> void:
 
 func reset_run() -> void:
 	run_gold = 0
-	run_damage_bonus = 0
-	run_atkspd_mult = 1.0
-	run_pickup_radius_bonus = 0.0
+	run_gun_level = 1
+	run_magnet_level = 0
 	run_orb_level = 0
 	run_spike_ball_level = 0
 	run_shotgun_level = 0
@@ -40,7 +38,14 @@ func get_atkspd_multiplier() -> float:
 func get_pickup_radius() -> float:
 	var base := GameConstants.BASE_COLLECTION_RADIUS
 	var perm := float(perm_pickup_radius_level) * GameConstants.PERM_COLLECTION_RADIUS_INCREMENT
-	return base + perm + run_pickup_radius_bonus
+	var run := float(run_magnet_level) * GameConstants.COLLECTION_RADIUS_UPGRADE_AMOUNT
+	return base + perm + run
+
+func get_gun_damage_bonus() -> int:
+	return (run_gun_level - 1) * GameConstants.GUN_DAMAGE_PER_UPGRADE
+
+func get_gun_atk_speed_mult() -> float:
+	return 1.0 + float(run_gun_level - 1) * GameConstants.GUN_ATK_SPD_PER_UPGRADE
 
 func get_orb_count() -> int:
 	if run_orb_level >= 5: return 3
