@@ -16,6 +16,7 @@ extends Node2D
 @onready var lbl_wave: Label = $UI/HUD/WaveLabel
 @onready var lbl_time: Label = $UI/HUD/TimeLabel
 @onready var lbl_gold: Label = $UI/HUD/GoldLabel
+@onready var lbl_gems: Label = $UI/HUD/GemsLabel
 @onready var lbl_hp: Label = $UI/HUD/HPLabel
 
 func _ready() -> void:
@@ -119,6 +120,7 @@ func _setup_arena() -> void:
 
 func _process(_delta: float) -> void:
 	lbl_gold.text = "Gold: %d" % GameState.run_gold
+	lbl_gems.text = "Gems: %d" % GameState.gems
 	if is_instance_valid(player) and "health" in player:
 		lbl_hp.text = "HP: %d" % player.health
 
@@ -128,10 +130,12 @@ func on_wave_started(w: int) -> void:
 func on_wave_time(t: float) -> void:
 	lbl_time.text = "Time: %.0fs" % t
 
-func open_shop(_wave: int) -> void:
+func open_shop(w: int) -> void:
 	get_tree().paused = true
 	shop_panel.visible = true
 	shop_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	$UI/ShopPanel/Margin/VBox/Title.text = "— ARMORY — WAVE %d COMPLETED" % w
 	
 	# Restore player health
 	if is_instance_valid(player) and "health" in player:

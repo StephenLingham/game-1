@@ -172,12 +172,22 @@ text = "Gold: 0"
 label_settings = SubResource("LabelSettings_shop_info")
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 
-[node name="HPLabel" type="Label" parent="UI/HUD"]
+[node name="GemsLabel" type="Label" parent="UI/HUD"]
 layout_mode = 0
 offset_left = 24.0
 offset_top = 144.0
 offset_right = 200.0
 offset_bottom = 176.0
+text = "Gems: 0"
+label_settings = SubResource("LabelSettings_shop_info")
+theme_override_colors/font_color = Color(0.8, 0.4, 1, 1)
+
+[node name="HPLabel" type="Label" parent="UI/HUD"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 184.0
+offset_right = 200.0
+offset_bottom = 216.0
 text = "HP: 5"
 label_settings = SubResource("LabelSettings_shop_info")
 theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
