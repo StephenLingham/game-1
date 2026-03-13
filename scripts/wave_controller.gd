@@ -61,7 +61,8 @@ func _end_wave() -> void:
 		if is_instance_valid(g):
 			g.queue_free()
 	
-	game.call_deferred("open_shop", wave)
+	if wave < GameConstants.TOTAL_WAVES:
+		game.call_deferred("open_shop", wave)
 
 func resume_after_shop() -> void:
 	# Optionally clear enemies between waves for clarity
