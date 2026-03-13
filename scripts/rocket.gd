@@ -55,7 +55,7 @@ func _on_body_entered(body: Node2D) -> void:
 		explode()
 
 func explode() -> void:
-	_create_explosion_effect()
+	spawn_explosion(get_tree().current_scene, global_position, blast_radius)
 	_do_aoe_damage()
 	queue_free()
 
@@ -66,23 +66,27 @@ func _do_aoe_damage() -> void:
 			var dist = global_position.distance_to(enemy.global_position)
 			if dist <= blast_radius:
 				if enemy.has_method("take_damage"):
+					var prev_health = enemy.health
 					enemy.take_damage(damage)
+					# If enemy died from this explosion, spawn another visual explosion there
+					if enemy.health <= 0 and prev_health > 0:
+						spawn_explosion(get_tree().current_scene, enemy.global_position, 0)
 
-func _create_explosion_effect() -> void:
-	# Create a cool particle effect
+static func spawn_explosion(parent: Node, pos: Vector2, radius: float = 0.0) -> void:
+	# 1. Main Explosion Particles
 	var particles = CPUParticles2D.new()
-	particles.global_position = global_position
+	particles.global_position = pos
 	particles.emitting = true
 	particles.one_shot = true
 	particles.explosiveness = 1.0
 	particles.amount = 60
-	particles.lifetime = 1.0
+	particles.lifetime = 0.8
 	particles.spread = 180.0
 	particles.gravity = Vector2.ZERO
-	particles.initial_velocity_min = 150.0
-	particles.initial_velocity_max = 400.0
-	particles.scale_amount_min = 5.0
-	particles.scale_amount_max = 12.0
+	particles.initial_velocity_min = 100.0
+	particles.initial_velocity_max = 300.0
+	particles.scale_amount_min = 4.0
+	particles.scale_amount_max = 10.0
 	
 	var color_ramp = Gradient.new()
 	var colors = PackedColorArray([
@@ -91,12 +95,31 @@ func _create_explosion_effect() -> void:
 		Color(0.8, 0.2, 0), # Red
 		Color(0.2, 0.2, 0.2, 0) # Fade
 	])
-	var offsets = PackedFloat32Array([0.0, 0.3, 0.6, 1.0])
+	var offsets = PackedFloat32Array([0.0, 0.2, 0.5, 1.0])
 	color_ramp.colors = colors
 	color_ramp.offsets = offsets
 	particles.color_ramp = color_ramp
 	
-	get_tree().current_scene.add_child(particles)
-	
-	# Auto free after emitting
-	get_tree().create_timer(1.1).timeout.connect(particles.queue_free)
+	parent.add_child(particles)
+	parent.get_tree().create_timer(1.0).timeout.connect(particles.queue_free)
+
+	# 2. Fiery Blast Circle (only if radius > 0)
+	if radius > 0:
+		var circle = Polygon2D.new()
+		circle.global_position = pos
+		var pts = []
+		var segments = 32
+		for i in range(segments):
+			var a = i * TAU / segments
+			pts.append(Vector2.RIGHT.rotated(a) * radius)
+		circle.polygon = PackedVector2Array(pts)
+		
+		# Give it a fiery orange-red color
+		circle.color = Color(1, 0.4, 0, 0.4)
+		parent.add_child(circle)
+		
+		var tween = parent.create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(circle, "scale", Vector2(1.1, 1.1), 0.25)
+		tween.tween_property(circle, "modulate:a", 0.0, 0.25)
+		tween.chain().tween_callback(circle.queue_free)
