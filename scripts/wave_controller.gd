@@ -63,6 +63,9 @@ func _end_wave() -> void:
 	
 	if wave < GameConstants.TOTAL_WAVES:
 		game.call_deferred("open_shop", wave)
+	else:
+		# Final wave completed! Trigger victory immediately.
+		game.call_deferred("end_run", true, wave)
 
 func resume_after_shop() -> void:
 	# Optionally clear enemies between waves for clarity
