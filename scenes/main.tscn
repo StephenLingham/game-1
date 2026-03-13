@@ -222,11 +222,30 @@ text = "— ARMORY —"
 label_settings = SubResource("LabelSettings_shop_title")
 horizontal_alignment = 1
 
-[node name="Info" type="Label" parent="UI/ShopPanel/Margin/VBox"]
+[node name="StatsGrid" type="GridContainer" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2
-text = "Gold: 0"
+theme_override_constants/h_separation = 60
+columns = 3
+
+[node name="Col1" type="Label" parent="UI/ShopPanel/Margin/VBox/StatsGrid"]
+layout_mode = 2
+text = "Gold: 0
+Dmg: +0
+Spd: x1.0"
 label_settings = SubResource("LabelSettings_shop_info")
-horizontal_alignment = 1
+
+[node name="Col2" type="Label" parent="UI/ShopPanel/Margin/VBox/StatsGrid"]
+layout_mode = 2
+text = "Radius: 50
+Orbs: 0
+Spike: 0"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="Col3" type="Label" parent="UI/ShopPanel/Margin/VBox/StatsGrid"]
+layout_mode = 2
+text = "Shotgun: 0
+Sniper: No"
+label_settings = SubResource("LabelSettings_shop_info")
 
 [node name="Scroll" type="ScrollContainer" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2

@@ -86,16 +86,18 @@ func _physics_process(delta: float) -> void:
 	# Shotgun logic
 	if GameState.run_shotgun_level > 0:
 		shotgun_timer -= delta
-		if shotgun_timer <= 0 and nearest_enemy:
-			_fire_shotgun(nearest_enemy)
-			shotgun_timer = GameConstants.SHOTGUN_BASE_COOLDOWN
+		if shotgun_timer <= 0:
+			var visible_enemies = _get_visible_enemies()
+			if not visible_enemies.is_empty():
+				_fire_shotgun(visible_enemies.pick_random())
+				shotgun_timer = GameConstants.SHOTGUN_BASE_COOLDOWN
 
 	# Sniper logic
 	if GameState.run_sniper_level > 0:
 		sniper_timer -= delta
 		if sniper_timer <= 0:
 			_fire_sniper()
-			sniper_timer = GameConstants.SNIPER_BASE_COOLDOWN
+			sniper_timer = GameState.get_sniper_cooldown()
 
 func get_damage() -> int:
 	var dmg := float(base_damage + GameState.run_damage_bonus)

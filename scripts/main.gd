@@ -8,7 +8,9 @@ extends Node2D
 @onready var pause_panel: Control = $UI/PausePanel
 
 @onready var shop_grid: GridContainer = $UI/ShopPanel/Margin/VBox/Scroll/Grid
-@onready var shop_info: Label = $UI/ShopPanel/Margin/VBox/Info
+@onready var shop_col1: Label = $UI/ShopPanel/Margin/VBox/StatsGrid/Col1
+@onready var shop_col2: Label = $UI/ShopPanel/Margin/VBox/StatsGrid/Col2
+@onready var shop_col3: Label = $UI/ShopPanel/Margin/VBox/StatsGrid/Col3
 @onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
 
 @onready var lbl_wave: Label = $UI/HUD/WaveLabel
@@ -151,9 +153,9 @@ func _refresh_shop_text() -> void:
 	var shotgun_cost := _shop_shotgun_cost()
 	var sniper_cost := _shop_sniper_cost()
 	
-	shop_info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f\nPickup Radius: %.0fpx\nOrb Level: %d\nSpike Ball Level: %d\nShotgun Level: %d\nSniper Active: %s" % [
-		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult, GameState.get_pickup_radius(), GameState.run_orb_level, GameState.run_spike_ball_level, GameState.run_shotgun_level, "Yes" if GameState.run_sniper_level > 0 else "No"
-	]
+	shop_col1.text = "Gold: %d\nDamage: +%d\nSpeed: x%.2f" % [GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult]
+	shop_col2.text = "Radius: %.0fpx\nOrbs: %d\nSpike: %d" % [GameState.get_pickup_radius(), GameState.run_orb_level, GameState.run_spike_ball_level]
+	shop_col3.text = "Shotgun: %d\nSniper: %d" % [GameState.run_shotgun_level, GameState.run_sniper_level]
 	
 	var grid = shop_grid
 	grid.get_node("BuyDamage").text = "Upgrade Damage (+5)\nCost: %d Gold" % dmg_cost
@@ -196,8 +198,11 @@ func _refresh_shop_text() -> void:
 	if GameState.run_sniper_level >= GameConstants.SNIPER_MAX_LEVEL:
 		sniper_btn.text = "Sniper Gun\n(MAX LEVEL)"
 		sniper_btn.disabled = true
-	else:
+	elif GameState.run_sniper_level == 0:
 		sniper_btn.text = "Unlock Sniper Gun\nCost: %d Gold" % sniper_cost
+		sniper_btn.disabled = false
+	else:
+		sniper_btn.text = "Upgrade Sniper (Fire Rate+)\nCost: %d Gold" % sniper_cost
 		sniper_btn.disabled = false
 
 func _shop_damage_cost() -> int:
@@ -229,7 +234,9 @@ func _shop_shotgun_cost() -> int:
 	return GameConstants.SHOTGUN_BASE_COST + GameState.run_shotgun_level * GameConstants.SHOTGUN_COST_INCREMENT_PER_LEVEL
 
 func _shop_sniper_cost() -> int:
-	return GameConstants.SNIPER_BASE_COST
+	if GameState.run_sniper_level == 0:
+		return GameConstants.SNIPER_BASE_COST
+	return GameConstants.SNIPER_BASE_COST + GameState.run_sniper_level * GameConstants.SNIPER_COST_INCREMENT_PER_LEVEL
 
 func _get_orb_upgrade_desc(lvl: int) -> String:
 	match lvl:

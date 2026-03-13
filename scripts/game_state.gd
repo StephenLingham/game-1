@@ -60,6 +60,10 @@ func get_shotgun_bullet_count() -> int:
 		4: return 9
 	return 0
 
+func get_sniper_cooldown() -> float:
+	var cooldown = GameConstants.SNIPER_BASE_COOLDOWN - (run_sniper_level - 1) * GameConstants.SNIPER_COOLDOWN_REDUCTION_PER_LEVEL
+	return max(0.5, cooldown)
+
 func award_gems(amount: int) -> void:
 	gems += max(amount, 0)
 	save()
