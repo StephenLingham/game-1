@@ -5,6 +5,7 @@ extends Node
 
 var enemy_fast_scene := preload("res://scenes/enemy_fast.tscn")
 var enemy_big_scene := preload("res://scenes/enemy_big.tscn")
+var powerup_scene := preload("res://scenes/PowerupPickup.tscn")
 
 var wave: int = 0
 var wave_time_left: float = 0.0
@@ -12,6 +13,8 @@ var spawning: bool = false
 
 @onready var spawn_timer: Timer = $SpawnTimer
 @onready var game: Node = get_tree().current_scene
+
+var powerup_spawn_timer: float = 0.0
 
 var arena_rect: Rect2
 
@@ -41,6 +44,8 @@ func _next_wave() -> void:
 	spawn_timer.wait_time = wait
 	spawn_timer.start()
 
+	powerup_spawn_timer = randf_range(5.0, 10.0)
+
 	game.call_deferred("on_wave_started", wave)
 
 func _process(delta: float) -> void:
@@ -51,6 +56,14 @@ func _process(delta: float) -> void:
 
 	if wave_time_left <= 0.0:
 		_end_wave()
+	
+	# Powerup spawning
+	if spawning:
+		powerup_spawn_timer -= delta
+		if powerup_spawn_timer <= 0:
+			_spawn_powerup()
+			# Spawn every 8-12 seconds
+			powerup_spawn_timer = randf_range(8.0, 12.0)
 
 func _end_wave() -> void:
 	spawning = false
@@ -60,6 +73,11 @@ func _end_wave() -> void:
 	for g in get_tree().get_nodes_in_group("gold_pickups"):
 		if is_instance_valid(g):
 			g.queue_free()
+	
+	# Clear uncollected powerups at the end of the wave
+	for p in get_tree().get_nodes_in_group("powerups"):
+		if is_instance_valid(p):
+			p.queue_free()
 	
 	if wave < GameConstants.TOTAL_WAVES:
 		game.call_deferred("open_shop", wave)
@@ -113,4 +131,20 @@ func _spawn_tick() -> void:
 
 		e.global_position = spawn_pos
 		game.get_node("EnemyContainer").add_child(e)
+
+func _spawn_powerup() -> void:
+	if powerup_scene == null: return
+	
+	var p = powerup_scene.instantiate()
+	p.type = randi() % 5 # Random type from 0 to 4
+	
+	# Spawn randomly within the arena bounds (with some margin)
+	var margin := 100.0
+	var spawn_pos := Vector2(
+		randf_range(arena_rect.position.x + margin, arena_rect.position.x + arena_rect.size.x - margin),
+		randf_range(arena_rect.position.y + margin, arena_rect.position.y + arena_rect.size.y - margin)
+	)
+	
+	p.global_position = spawn_pos
+	game.add_child(p)
 

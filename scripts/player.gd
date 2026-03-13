@@ -12,6 +12,9 @@ var health: int
 var can_fire: bool = true
 var fire_timer: float = 0.0
 
+var _base_speed: float = GameConstants.PLAYER_SPEED
+var _speed_boost_duration: float = 0.0
+
 # Click / tap-to-move support
 var _click_target: Vector2 = Vector2.ZERO
 var _has_click_target: bool = false
@@ -23,6 +26,7 @@ var _has_click_target: bool = false
 var bullet_scene: PackedScene = preload("res://scenes/bullet.tscn")
 var spike_ball_scene: PackedScene = preload("res://scenes/spike_ball.tscn")
 var rocket_scene: PackedScene = load("res://scenes/rocket.tscn")
+const RocketScript = preload("res://scripts/rocket.gd")
 
 var spike_ball_timer: float = 0.0
 var shotgun_timer: float = 0.0
@@ -42,6 +46,11 @@ func set_camera_limits(rect: Rect2) -> void:
 		cam.limit_bottom = int(rect.position.y + rect.size.y)
 
 func _physics_process(delta: float) -> void:
+	if _speed_boost_duration > 0:
+		_speed_boost_duration -= delta
+		if _speed_boost_duration <= 0:
+			speed = _base_speed
+
 	# Movement
 	var input_dir := Vector2.ZERO
 	input_dir.x = Input.get_axis("move_left", "move_right")
@@ -299,3 +308,39 @@ func _fire_rocket() -> void:
 		rocket.rotation = dir.angle()
 		
 		get_tree().current_scene.add_child(rocket)
+
+func heal_full() -> void:
+	health = max_health
+	# Flash green
+	sprite.modulate = Color(0.3, 1.0, 0.3)
+	var tween := create_tween()
+	tween.tween_property(sprite, "modulate", Color.WHITE, 0.3)
+
+func apply_speed_boost(multiplier: float, duration: float) -> void:
+	speed = _base_speed * multiplier
+	_speed_boost_duration = duration
+	# Some visual feedback could go here
+	var tween := create_tween()
+	sprite.modulate = Color(0.3, 0.3, 1.0)
+	tween.tween_property(sprite, "modulate", Color.WHITE, 0.5)
+
+func trigger_rocket_blast() -> void:
+	var blast_pos = global_position
+	# Max level rocket blast settings
+	var radius = GameConstants.ROCKET_BASE_BLAST_RADIUS + (GameConstants.ROCKET_MAX_LEVEL - 1) * GameConstants.ROCKET_BLAST_RADIUS_PER_LEVEL
+	var damage = GameConstants.ROCKET_DAMAGE
+	
+	# Use the static method from Rocket if possible, otherwise we might need to copy it or move it to a utility
+	# Rocket class is loaded at the top
+	RocketScript.spawn_explosion(get_tree().current_scene, blast_pos, radius)
+	
+	# Damage enemies
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = blast_pos.distance_to(enemy.global_position)
+			if dist <= radius:
+				if enemy.has_method("take_damage"):
+					enemy.take_damage(damage)
+					if enemy.health <= 0:
+						RocketScript.spawn_explosion(get_tree().current_scene, enemy.global_position, 0)
