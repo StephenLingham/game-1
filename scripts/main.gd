@@ -7,6 +7,10 @@ extends Node2D
 @onready var game_over_panel: Control = $UI/GameOverPanel
 @onready var pause_panel: Control = $UI/PausePanel
 
+@onready var shop_grid: GridContainer = $UI/ShopPanel/Margin/VBox/Scroll/Grid
+@onready var shop_info: Label = $UI/ShopPanel/Margin/VBox/Info
+@onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
+
 @onready var lbl_wave: Label = $UI/HUD/WaveLabel
 @onready var lbl_time: Label = $UI/HUD/TimeLabel
 @onready var lbl_gold: Label = $UI/HUD/GoldLabel
@@ -16,46 +20,15 @@ func _ready() -> void:
 	player.player_died.connect(_on_player_died)
 
 	# Wire shop buttons
-	$UI/ShopPanel/VBox/BuyDamage.pressed.connect(_buy_damage)
-	$UI/ShopPanel/VBox/BuyAtkSpd.pressed.connect(_buy_atkspd)
+	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyDamage.pressed.connect(_buy_damage)
+	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyAtkSpd.pressed.connect(_buy_atkspd)
+	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyRadius.pressed.connect(_buy_radius)
+	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyOrbs.pressed.connect(_buy_orbs)
+	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuySpike.pressed.connect(_buy_spike_ball)
+	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyShotgun.pressed.connect(_buy_shotgun)
+	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuySniper.pressed.connect(_buy_sniper)
 	
-	if not $UI/ShopPanel/VBox.has_node("BuyRadius"):
-		var btn := Button.new()
-		btn.name = "BuyRadius"
-		$UI/ShopPanel/VBox.add_child(btn)
-		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuyAtkSpd.get_index() + 1)
-	
-	if not $UI/ShopPanel/VBox.has_node("BuyOrbs"):
-		var btn := Button.new()
-		btn.name = "BuyOrbs"
-		$UI/ShopPanel/VBox.add_child(btn)
-		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuyRadius.get_index() + 1)
-
-	$UI/ShopPanel/VBox/BuyRadius.pressed.connect(_buy_radius)
-	$UI/ShopPanel/VBox/BuyOrbs.pressed.connect(_buy_orbs)
-	
-	if not $UI/ShopPanel/VBox.has_node("BuySpike"):
-		var btn := Button.new()
-		btn.name = "BuySpike"
-		$UI/ShopPanel/VBox.add_child(btn)
-		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuyOrbs.get_index() + 1)
-	$UI/ShopPanel/VBox/BuySpike.pressed.connect(_buy_spike_ball)
-
-	if not $UI/ShopPanel/VBox.has_node("BuyShotgun"):
-		var btn := Button.new()
-		btn.name = "BuyShotgun"
-		$UI/ShopPanel/VBox.add_child(btn)
-		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuySpike.get_index() + 1)
-	$UI/ShopPanel/VBox/BuyShotgun.pressed.connect(_buy_shotgun)
-
-	if not $UI/ShopPanel/VBox.has_node("BuySniper"):
-		var btn := Button.new()
-		btn.name = "BuySniper"
-		$UI/ShopPanel/VBox.add_child(btn)
-		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuyShotgun.get_index() + 1)
-	$UI/ShopPanel/VBox/BuySniper.pressed.connect(_buy_sniper)
-
-	$UI/ShopPanel/VBox/Continue.pressed.connect(_close_shop)
+	shop_continue.pressed.connect(_close_shop)
 
 	# Game over buttons
 	$UI/GameOverPanel/VBox/BackToLobby.pressed.connect(_back_to_lobby)
@@ -178,51 +151,53 @@ func _refresh_shop_text() -> void:
 	var shotgun_cost := _shop_shotgun_cost()
 	var sniper_cost := _shop_sniper_cost()
 	
-	$UI/ShopPanel/VBox/Info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f\nPickup Radius: %.0fpx\nOrb Level: %d\nSpike Ball Level: %d\nShotgun Level: %d\nSniper Active: %s" % [
+	shop_info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f\nPickup Radius: %.0fpx\nOrb Level: %d\nSpike Ball Level: %d\nShotgun Level: %d\nSniper Active: %s" % [
 		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult, GameState.get_pickup_radius(), GameState.run_orb_level, GameState.run_spike_ball_level, GameState.run_shotgun_level, "Yes" if GameState.run_sniper_level > 0 else "No"
 	]
-	$UI/ShopPanel/VBox/BuyDamage.text = "Upgrade Damage (+5) - %d gold" % dmg_cost
-	$UI/ShopPanel/VBox/BuyAtkSpd.text = "Upgrade Attack Speed (+10%%) - %d gold" % spd_cost
-	$UI/ShopPanel/VBox/BuyRadius.text = "Upgrade Pickup Radius (+25px) - %d gold" % rad_cost
 	
-	var orb_btn = $UI/ShopPanel/VBox/BuyOrbs
+	var grid = shop_grid
+	grid.get_node("BuyDamage").text = "Upgrade Damage (+5)\nCost: %d Gold" % dmg_cost
+	grid.get_node("BuyAtkSpd").text = "Upgrade Attack Speed (+10%%)\nCost: %d Gold" % spd_cost
+	grid.get_node("BuyRadius").text = "Upgrade Pickup Radius (+25px)\nCost: %d Gold" % rad_cost
+	
+	var orb_btn = grid.get_node("BuyOrbs")
 	if GameState.run_orb_level >= GameConstants.ORB_MAX_LEVEL:
-		orb_btn.text = "Orb Ability (MAX LEVEL)"
+		orb_btn.text = "Orb Ability\n(MAX LEVEL)"
 		orb_btn.disabled = true
 	else:
 		var next_text = _get_orb_upgrade_desc(GameState.run_orb_level + 1)
-		orb_btn.text = "Upgrade Orbs (%s) - %d gold" % [next_text, orb_cost]
+		orb_btn.text = "Upgrade Orbs (%s)\nCost: %d Gold" % [next_text, orb_cost]
 		orb_btn.disabled = false
 	
-	var spike_btn = $UI/ShopPanel/VBox/BuySpike
+	var spike_btn = grid.get_node("BuySpike")
 	if GameState.run_spike_ball_level >= GameConstants.SPIKE_BALL_MAX_LEVEL:
-		spike_btn.text = "Spike Ball (MAX LEVEL)"
+		spike_btn.text = "Spike Ball\n(MAX LEVEL)"
 		spike_btn.disabled = true
 	elif GameState.run_spike_ball_level == 0:
-		spike_btn.text = "Unlock Spike Ball - %d gold" % spike_cost
+		spike_btn.text = "Unlock Spike Ball\nCost: %d Gold" % spike_cost
 		spike_btn.disabled = false
 	else:
-		spike_btn.text = "Upgrade Spike Ball (Speed/Dist+) - %d gold" % spike_cost
+		spike_btn.text = "Upgrade Spike Ball\nCost: %d Gold" % spike_cost
 		spike_btn.disabled = false
 
-	var shotgun_btn = $UI/ShopPanel/VBox/BuyShotgun
+	var shotgun_btn = grid.get_node("BuyShotgun")
 	if GameState.run_shotgun_level >= GameConstants.SHOTGUN_MAX_LEVEL:
-		shotgun_btn.text = "Shotgun (MAX LEVEL)"
+		shotgun_btn.text = "Shotgun\n(MAX LEVEL)"
 		shotgun_btn.disabled = true
 	elif GameState.run_shotgun_level == 0:
-		shotgun_btn.text = "Unlock Shotgun - %d gold" % shotgun_cost
+		shotgun_btn.text = "Unlock Shotgun\nCost: %d Gold" % shotgun_cost
 		shotgun_btn.disabled = false
 	else:
 		var next_bullets = (GameState.run_shotgun_level + 1) * 2 + 1
-		shotgun_btn.text = "Upgrade Shotgun (%d bullets) - %d gold" % [next_bullets, shotgun_cost]
+		shotgun_btn.text = "Upgrade Shotgun (%d bullets)\nCost: %d Gold" % [next_bullets, shotgun_cost]
 		shotgun_btn.disabled = false
 
-	var sniper_btn = $UI/ShopPanel/VBox/BuySniper
+	var sniper_btn = grid.get_node("BuySniper")
 	if GameState.run_sniper_level >= GameConstants.SNIPER_MAX_LEVEL:
-		sniper_btn.text = "Sniper Gun (MAX LEVEL)"
+		sniper_btn.text = "Sniper Gun\n(MAX LEVEL)"
 		sniper_btn.disabled = true
 	else:
-		sniper_btn.text = "Unlock Sniper Gun - %d gold" % sniper_cost
+		sniper_btn.text = "Unlock Sniper Gun\nCost: %d Gold" % sniper_cost
 		sniper_btn.disabled = false
 
 func _shop_damage_cost() -> int:

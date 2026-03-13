@@ -182,69 +182,114 @@ text = "HP: 5"
 label_settings = SubResource("LabelSettings_shop_info")
 theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
 
-[node name="ShopPanel" type="Panel" parent="UI"]
+[node name="ShopPanel" type="Control" parent="UI"]
 visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -240.0
-offset_right = 260.0
-offset_bottom = 240.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("5")
 
-[node name="VBox" type="VBoxContainer" parent="UI/ShopPanel"]
+[node name="ColorRect" type="ColorRect" parent="UI/ShopPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 24.0
-offset_right = -24.0
-offset_bottom = -24.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+color = Color(0.0431373, 0.0470588, 0.0901961, 1)
 
-[node name="ShopTitle" type="Label" parent="UI/ShopPanel/VBox"]
+[node name="Margin" type="MarginContainer" parent="UI/ShopPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_top = 60
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 60
+
+[node name="VBox" type="VBoxContainer" parent="UI/ShopPanel/Margin"]
 layout_mode = 2
-text = "Shop"
+theme_override_constants/separation = 40
+
+[node name="Title" type="Label" parent="UI/ShopPanel/Margin/VBox"]
+layout_mode = 2
+text = "— ARMORY —"
 label_settings = SubResource("LabelSettings_shop_title")
 horizontal_alignment = 1
 
-[node name="Info" type="Label" parent="UI/ShopPanel/VBox"]
+[node name="Info" type="Label" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2
-text = ""
+text = "Gold: 0"
 label_settings = SubResource("LabelSettings_shop_info")
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="UI/ShopPanel/VBox"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
-
-[node name="BuyDamage" type="Button" parent="UI/ShopPanel/VBox"]
-layout_mode = 2
-text = "Upgrade Damage (+5) - 10 gold"
-
-[node name="BuyAtkSpd" type="Button" parent="UI/ShopPanel/VBox"]
-layout_mode = 2
-text = "Upgrade Attack Speed (+10%) - 12 gold"
-
-[node name="Spacer2" type="Control" parent="UI/ShopPanel/VBox"]
+[node name="Scroll" type="ScrollContainer" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Continue" type="Button" parent="UI/ShopPanel/VBox"]
-custom_minimum_size = Vector2(0, 60)
+[node name="Grid" type="GridContainer" parent="UI/ShopPanel/Margin/VBox/Scroll"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(0.6, 0.8, 1, 1)
-theme_override_font_sizes/font_size = 28
-text = "NEXT WAVE"
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 30
+columns = 2
+
+[node name="BuyDamage" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade Damage"
+
+[node name="BuyAtkSpd" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade Attack Speed"
+
+[node name="BuyRadius" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade Radius"
+
+[node name="BuyOrbs" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade Orbs"
+
+[node name="BuySpike" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade Spike"
+
+[node name="BuyShotgun" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade Shotgun"
+
+[node name="BuySniper" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade Sniper"
+
+[node name="Space" type="Control" parent="UI/ShopPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="Continue" type="Button" parent="UI/ShopPanel/Margin/VBox"]
+custom_minimum_size = Vector2(400, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 32
+text = "START NEXT WAVE"
 
 [node name="GameOverPanel" type="Panel" parent="UI"]
 visible = false
