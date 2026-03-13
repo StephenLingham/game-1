@@ -15,6 +15,8 @@ var run_atkspd_mult: float = 1.0       # multiplicative (shop)
 var run_pickup_radius_bonus: float = 0.0
 var run_orb_level: int = 0
 var run_spike_ball_level: int = 0
+var run_shotgun_level: int = 0
+var run_sniper_level: int = 0
 
 func _ready() -> void:
 	load_save()
@@ -26,6 +28,8 @@ func reset_run() -> void:
 	run_pickup_radius_bonus = 0.0
 	run_orb_level = 0
 	run_spike_ball_level = 0
+	run_shotgun_level = 0
+	run_sniper_level = 0
 
 func get_damage_multiplier() -> float:
 	return 1.0 + 0.10 * float(perm_damage_level)
@@ -47,6 +51,14 @@ func get_orb_count() -> int:
 func get_orb_speed() -> float:
 	if run_orb_level >= 2: return GameConstants.ORB_UPGRADE_ROTATE_SPEED
 	return GameConstants.ORB_BASE_ROTATE_SPEED
+
+func get_shotgun_bullet_count() -> int:
+	match run_shotgun_level:
+		1: return 3
+		2: return 5
+		3: return 7
+		4: return 9
+	return 0
 
 func award_gems(amount: int) -> void:
 	gems += max(amount, 0)

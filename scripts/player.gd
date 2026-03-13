@@ -23,6 +23,8 @@ var bullet_scene: PackedScene = preload("res://scenes/bullet.tscn")
 var spike_ball_scene: PackedScene = preload("res://scenes/spike_ball.tscn")
 
 var spike_ball_timer: float = 0.0
+var shotgun_timer: float = 0.0
+var sniper_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -80,6 +82,20 @@ func _physics_process(delta: float) -> void:
 		if spike_ball_timer <= 0:
 			_fire_spike_ball(nearest_enemy)
 			spike_ball_timer = _get_spike_ball_cooldown()
+
+	# Shotgun logic
+	if GameState.run_shotgun_level > 0:
+		shotgun_timer -= delta
+		if shotgun_timer <= 0 and nearest_enemy:
+			_fire_shotgun(nearest_enemy)
+			shotgun_timer = GameConstants.SHOTGUN_BASE_COOLDOWN
+
+	# Sniper logic
+	if GameState.run_sniper_level > 0:
+		sniper_timer -= delta
+		if sniper_timer <= 0:
+			_fire_sniper()
+			sniper_timer = GameConstants.SNIPER_BASE_COOLDOWN
 
 func get_damage() -> int:
 	var dmg := float(base_damage + GameState.run_damage_bonus)
@@ -139,6 +155,82 @@ func fire() -> void:
 	bullet.direction = Vector2.RIGHT.rotated(rotation)
 	bullet.damage = get_damage()
 	get_tree().current_scene.add_child(bullet)
+
+func _fire_shotgun(target: Node2D) -> void:
+	var count := GameState.get_shotgun_bullet_count()
+	if count <= 0: return
+	
+	var base_rot := rotation
+	if is_instance_valid(target):
+		base_rot = (target.global_position - global_position).angle()
+
+	var spread := deg_to_rad(GameConstants.SHOTGUN_SPREAD_ANGLE)
+	var start_angle := base_rot - spread / 2.0
+	var step := 0.0
+	if count > 1:
+		step = spread / (count - 1)
+	
+	for i in range(count):
+		var angle := start_angle + step * i
+		var bullet := bullet_scene.instantiate() as Area2D
+		bullet.global_position = muzzle.global_position
+		bullet.rotation = angle
+		bullet.direction = Vector2.RIGHT.rotated(angle)
+		bullet.damage = get_damage()
+		get_tree().current_scene.add_child(bullet)
+
+func _get_visible_enemies() -> Array:
+	var enemies := get_tree().get_nodes_in_group("enemies")
+	var visible_enemies: Array = []
+	
+	var cam := get_viewport().get_camera_2d()
+	var screen_rect := Rect2()
+	if cam:
+		var center := cam.get_screen_center_position()
+		var size := get_viewport_rect().size
+		screen_rect = Rect2(center - size / 2.0, size).grow(16.0)
+	
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			if cam and not screen_rect.has_point(enemy.global_position):
+				continue
+			visible_enemies.append(enemy)
+	return visible_enemies
+
+func _fire_sniper() -> void:
+	var visible_enemies = _get_visible_enemies()
+	if visible_enemies.is_empty():
+		return
+	
+	var target = visible_enemies.pick_random()
+	if is_instance_valid(target):
+		# Create blood effect at target position
+		_create_blood_effect(target.global_position)
+		# Instantly kill enemy
+		if target.has_method("take_damage"):
+			target.take_damage(999) # Overkill to ensure death
+
+func _create_blood_effect(pos: Vector2) -> void:
+	var particles = CPUParticles2D.new()
+	particles.global_position = pos
+	particles.emitting = true
+	particles.one_shot = true
+	particles.explosiveness = 1.0
+	particles.amount = 20
+	particles.lifetime = 0.5
+	particles.spread = 180.0
+	particles.gravity = Vector2.ZERO
+	particles.initial_velocity_min = 50.0
+	particles.initial_velocity_max = 150.0
+	particles.scale_amount_min = 2.0
+	particles.scale_amount_max = 5.0
+	particles.color = Color(0.8, 0.1, 0.1) # Blood red
+	
+	get_tree().current_scene.add_child(particles)
+	
+	# Auto free after emitting
+	var timer = get_tree().create_timer(1.0)
+	timer.timeout.connect(particles.queue_free)
 
 func take_damage(amount: int = 1) -> void:
 	health -= amount

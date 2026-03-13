@@ -41,6 +41,20 @@ func _ready() -> void:
 		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuyOrbs.get_index() + 1)
 	$UI/ShopPanel/VBox/BuySpike.pressed.connect(_buy_spike_ball)
 
+	if not $UI/ShopPanel/VBox.has_node("BuyShotgun"):
+		var btn := Button.new()
+		btn.name = "BuyShotgun"
+		$UI/ShopPanel/VBox.add_child(btn)
+		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuySpike.get_index() + 1)
+	$UI/ShopPanel/VBox/BuyShotgun.pressed.connect(_buy_shotgun)
+
+	if not $UI/ShopPanel/VBox.has_node("BuySniper"):
+		var btn := Button.new()
+		btn.name = "BuySniper"
+		$UI/ShopPanel/VBox.add_child(btn)
+		$UI/ShopPanel/VBox.move_child(btn, $UI/ShopPanel/VBox/BuyShotgun.get_index() + 1)
+	$UI/ShopPanel/VBox/BuySniper.pressed.connect(_buy_sniper)
+
 	$UI/ShopPanel/VBox/Continue.pressed.connect(_close_shop)
 
 	# Game over buttons
@@ -161,9 +175,11 @@ func _refresh_shop_text() -> void:
 	var rad_cost := _shop_radius_cost()
 	var orb_cost := _shop_orb_cost()
 	var spike_cost := _shop_spike_ball_cost()
+	var shotgun_cost := _shop_shotgun_cost()
+	var sniper_cost := _shop_sniper_cost()
 	
-	$UI/ShopPanel/VBox/Info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f\nPickup Radius: %.0fpx\nOrb Level: %d\nSpike Ball Level: %d" % [
-		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult, GameState.get_pickup_radius(), GameState.run_orb_level, GameState.run_spike_ball_level
+	$UI/ShopPanel/VBox/Info.text = "Gold: %d\nDamage bonus: +%d\nAttack speed mult: x%.2f\nPickup Radius: %.0fpx\nOrb Level: %d\nSpike Ball Level: %d\nShotgun Level: %d\nSniper Active: %s" % [
+		GameState.run_gold, GameState.run_damage_bonus, GameState.run_atkspd_mult, GameState.get_pickup_radius(), GameState.run_orb_level, GameState.run_spike_ball_level, GameState.run_shotgun_level, "Yes" if GameState.run_sniper_level > 0 else "No"
 	]
 	$UI/ShopPanel/VBox/BuyDamage.text = "Upgrade Damage (+5) - %d gold" % dmg_cost
 	$UI/ShopPanel/VBox/BuyAtkSpd.text = "Upgrade Attack Speed (+10%%) - %d gold" % spd_cost
@@ -189,6 +205,26 @@ func _refresh_shop_text() -> void:
 		spike_btn.text = "Upgrade Spike Ball (Speed/Dist+) - %d gold" % spike_cost
 		spike_btn.disabled = false
 
+	var shotgun_btn = $UI/ShopPanel/VBox/BuyShotgun
+	if GameState.run_shotgun_level >= GameConstants.SHOTGUN_MAX_LEVEL:
+		shotgun_btn.text = "Shotgun (MAX LEVEL)"
+		shotgun_btn.disabled = true
+	elif GameState.run_shotgun_level == 0:
+		shotgun_btn.text = "Unlock Shotgun - %d gold" % shotgun_cost
+		shotgun_btn.disabled = false
+	else:
+		var next_bullets = (GameState.run_shotgun_level + 1) * 2 + 1
+		shotgun_btn.text = "Upgrade Shotgun (%d bullets) - %d gold" % [next_bullets, shotgun_cost]
+		shotgun_btn.disabled = false
+
+	var sniper_btn = $UI/ShopPanel/VBox/BuySniper
+	if GameState.run_sniper_level >= GameConstants.SNIPER_MAX_LEVEL:
+		sniper_btn.text = "Sniper Gun (MAX LEVEL)"
+		sniper_btn.disabled = true
+	else:
+		sniper_btn.text = "Unlock Sniper Gun - %d gold" % sniper_cost
+		sniper_btn.disabled = false
+
 func _shop_damage_cost() -> int:
 	# Scale with number of purchases
 	return 10 + int(GameState.run_damage_bonus / 5) * 8
@@ -211,6 +247,14 @@ func _shop_spike_ball_cost() -> int:
 	if GameState.run_spike_ball_level == 0:
 		return GameConstants.SPIKE_BALL_BASE_COST
 	return GameConstants.SPIKE_BALL_BASE_COST + GameState.run_spike_ball_level * GameConstants.SPIKE_BALL_COST_INCREMENT_PER_LEVEL
+
+func _shop_shotgun_cost() -> int:
+	if GameState.run_shotgun_level == 0:
+		return GameConstants.SHOTGUN_BASE_COST
+	return GameConstants.SHOTGUN_BASE_COST + GameState.run_shotgun_level * GameConstants.SHOTGUN_COST_INCREMENT_PER_LEVEL
+
+func _shop_sniper_cost() -> int:
+	return GameConstants.SNIPER_BASE_COST
 
 func _get_orb_upgrade_desc(lvl: int) -> String:
 	match lvl:
@@ -260,6 +304,22 @@ func _buy_spike_ball() -> void:
 		return
 	GameState.run_gold -= cost
 	GameState.run_spike_ball_level += 1
+	_refresh_shop_text()
+
+func _buy_shotgun() -> void:
+	var cost := _shop_shotgun_cost()
+	if GameState.run_gold < cost or GameState.run_shotgun_level >= GameConstants.SHOTGUN_MAX_LEVEL:
+		return
+	GameState.run_gold -= cost
+	GameState.run_shotgun_level += 1
+	_refresh_shop_text()
+
+func _buy_sniper() -> void:
+	var cost := _shop_sniper_cost()
+	if GameState.run_gold < cost or GameState.run_sniper_level >= GameConstants.SNIPER_MAX_LEVEL:
+		return
+	GameState.run_gold -= cost
+	GameState.run_sniper_level += 1
 	_refresh_shop_text()
 
 func _on_player_died() -> void:
