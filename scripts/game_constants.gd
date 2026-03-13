@@ -36,7 +36,7 @@ const PROB_FAST_ENEMY: float = 0.20
 const PROB_BIG_ENEMY: float = 0.10
 
 # --- NORMAL ENEMY SETTINGS ---
-const ENEMY_NORMAL_SPEED: float = 120.0
+const ENEMY_NORMAL_SPEED: float = 100.0
 const ENEMY_NORMAL_HEALTH: int = 2
 const ENEMY_NORMAL_DAMAGE: int = 1
 const ENEMY_NORMAL_ATTACK_COOLDOWN: float = 0.5
@@ -44,7 +44,7 @@ const ENEMY_NORMAL_GOLD_MIN: int = 1
 const ENEMY_NORMAL_GOLD_MAX: int = 3
 
 # --- FAST ENEMY SETTINGS ---
-const ENEMY_FAST_SPEED: float = 220.0
+const ENEMY_FAST_SPEED: float = 200.0
 const ENEMY_FAST_HEALTH: int = 1
 const ENEMY_FAST_DAMAGE: int = 1
 const ENEMY_FAST_ATTACK_COOLDOWN: float = 0.5
@@ -52,7 +52,7 @@ const ENEMY_FAST_GOLD_MIN: int = 1
 const ENEMY_FAST_GOLD_MAX: int = 3
 
 # --- BIG ENEMY SETTINGS ---
-const ENEMY_BIG_SPEED: float = 120.0
+const ENEMY_BIG_SPEED: float = 100.0
 const ENEMY_BIG_HEALTH: int = 8
 const ENEMY_BIG_DAMAGE: int = 2
 const ENEMY_BIG_ATTACK_COOLDOWN: float = 0.5
