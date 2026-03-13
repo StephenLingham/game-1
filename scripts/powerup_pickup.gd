@@ -11,21 +11,33 @@ func _ready() -> void:
 	# Visual setup based on type
 	var sprite = $Sprite2D
 	if sprite:
-		# Try to load texture manually since automated import can fail in some environments
-		if FileAccess.file_exists("res://assets/powerups.png"):
-			var img = Image.load_from_file("res://assets/powerups.png")
+		var tex_path := ""
+		match type:
+			Type.MAGNET: tex_path = "res://assets/powerup_magnet_2.png"
+			Type.SPEED: tex_path = "res://assets/powerup_speed_2.png"
+			Type.HEAL: tex_path = "res://assets/powerup_heal_2.png"
+			Type.ROCKET: tex_path = "res://assets/powerup_explosion_2.png"
+			Type.GEM: tex_path = "res://assets/gem_icon.png"
+		
+		if FileAccess.file_exists(tex_path):
+			var img = Image.load_from_file(tex_path)
 			if img:
+				# Use user's pre-made transparent PNGs
 				var tex = ImageTexture.create_from_image(img)
 				sprite.texture = tex
 		
-		# Assuming icons are in a 1x5 row in the texture
-		sprite.hframes = 5
-		sprite.frame = type
+		# Reset spritesheet logic
+		sprite.hframes = 1
+		sprite.frame = 0
+		# Adjust scale for high-res icons
+		var s = GameConstants.POWERUP_ICON_SCALE
+		sprite.scale = Vector2(s, s)
 		
 	# Float animation
 	var tween = create_tween().set_loops()
 	tween.tween_property($Sprite2D, "position:y", -5.0, 1.0).set_trans(Tween.TRANS_SINE)
 	tween.tween_property($Sprite2D, "position:y", 5.0, 1.0).set_trans(Tween.TRANS_SINE)
+
 
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("player"):
@@ -36,13 +48,13 @@ func collect(player: Node) -> void:
 		Type.MAGNET:
 			_apply_magnet(player)
 		Type.SPEED:
-			player.apply_speed_boost(1.5, 10.0) # 50% boost for 10s
+			player.apply_speed_boost(GameConstants.POWERUP_SPEED_BOOST_MULTIPLIER, GameConstants.POWERUP_SPEED_BOOST_DURATION)
 		Type.HEAL:
 			player.heal_full()
 		Type.ROCKET:
 			player.trigger_rocket_blast()
 		Type.GEM:
-			GameState.award_gems(5) # Give 5 gems
+			GameState.award_gems(GameConstants.POWERUP_GEM_AWARD_AMOUNT)
 			
 	# Spawn some particles or effect
 	_spawn_collect_effect()

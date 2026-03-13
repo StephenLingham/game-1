@@ -113,3 +113,11 @@ const ROCKET_SPEED: float = 400.0
 const ROCKET_TURN_SPEED: float = 5.0 # Radians per second
 const ROCKET_DAMAGE: int = 10 # Fixed absolute damage
 const ROCKET_TARGET_RADIUS: float = 600.0 # About a third of the 1920 screen width
+
+# --- POWER-UP ITEM SETTINGS ---
+const POWERUP_SPAWN_INTERVAL_MIN: float = 4
+const POWERUP_SPAWN_INTERVAL_MAX: float = 8
+const POWERUP_SPEED_BOOST_MULTIPLIER: float = 1.6
+const POWERUP_SPEED_BOOST_DURATION: float = 7.0
+const POWERUP_GEM_AWARD_AMOUNT: int = 1
+const POWERUP_ICON_SCALE: float = 0.07
