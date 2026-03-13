@@ -111,4 +111,5 @@ const ROCKET_BASE_COST: int = 20
 const ROCKET_COST_INCREMENT_PER_LEVEL: int = 15
 const ROCKET_SPEED: float = 400.0
 const ROCKET_TURN_SPEED: float = 5.0 # Radians per second
-const ROCKET_DAMAGE_MULT: float = 2.0 # Rockets do double gun damage
+const ROCKET_DAMAGE: int = 10 # Fixed absolute damage
+const ROCKET_TARGET_RADIUS: float = 600.0 # About a third of the 1920 screen width

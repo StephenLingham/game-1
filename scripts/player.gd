@@ -273,16 +273,24 @@ func _fire_spike_ball(target: Node2D) -> void:
 	get_tree().current_scene.add_child(ball)
 
 func _fire_rocket() -> void:
-	var visible_enemies = _get_visible_enemies()
-	if visible_enemies.is_empty():
+	var all_enemies = get_tree().get_nodes_in_group("enemies")
+	var candidates: Array = []
+	
+	for enemy in all_enemies:
+		if is_instance_valid(enemy):
+			var dist = global_position.distance_to(enemy.global_position)
+			if dist <= GameConstants.ROCKET_TARGET_RADIUS:
+				candidates.append(enemy)
+				
+	if candidates.is_empty():
 		return
 	
-	var target = visible_enemies.pick_random()
+	var target = candidates.pick_random()
 	if is_instance_valid(target):
 		var rocket = rocket_scene.instantiate()
 		rocket.global_position = muzzle.global_position
 		rocket.target = target
-		rocket.damage = int(get_damage() * GameConstants.ROCKET_DAMAGE_MULT)
+		rocket.damage = GameConstants.ROCKET_DAMAGE
 		rocket.blast_radius = GameState.get_rocket_blast_radius()
 		
 		# Initial direction towards target
