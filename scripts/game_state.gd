@@ -16,6 +16,7 @@ var run_orb_level: int = 0
 var run_spike_ball_level: int = 0
 var run_shotgun_level: int = 0
 var run_sniper_level: int = 0
+var run_rocket_level: int = 0
 
 func _ready() -> void:
 	load_save()
@@ -28,6 +29,7 @@ func reset_run() -> void:
 	run_spike_ball_level = 0
 	run_shotgun_level = 0
 	run_sniper_level = 0
+	run_rocket_level = 0
 
 func get_damage_multiplier() -> float:
 	return 1.0 + 0.10 * float(perm_damage_level)
@@ -68,6 +70,13 @@ func get_shotgun_bullet_count() -> int:
 func get_sniper_cooldown() -> float:
 	var cooldown = GameConstants.SNIPER_BASE_COOLDOWN - (run_sniper_level - 1) * GameConstants.SNIPER_COOLDOWN_REDUCTION_PER_LEVEL
 	return max(0.5, cooldown)
+
+func get_rocket_cooldown() -> float:
+	var cooldown = GameConstants.ROCKET_BASE_COOLDOWN - (run_rocket_level - 1) * GameConstants.ROCKET_COOLDOWN_REDUCTION_PER_LEVEL
+	return max(0.5, cooldown)
+
+func get_rocket_blast_radius() -> float:
+	return GameConstants.ROCKET_BASE_BLAST_RADIUS + (run_rocket_level - 1) * GameConstants.ROCKET_BLAST_RADIUS_PER_LEVEL
 
 func award_gems(amount: int) -> void:
 	gems += max(amount, 0)

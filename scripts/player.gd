@@ -1,4 +1,5 @@
 extends CharacterBody2D
+class_name Player
 
 signal player_died
 
@@ -21,10 +22,12 @@ var _has_click_target: bool = false
 
 var bullet_scene: PackedScene = preload("res://scenes/bullet.tscn")
 var spike_ball_scene: PackedScene = preload("res://scenes/spike_ball.tscn")
+var rocket_scene: PackedScene = load("res://scenes/rocket.tscn")
 
 var spike_ball_timer: float = 0.0
 var shotgun_timer: float = 0.0
 var sniper_timer: float = 0.0
+var rocket_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -98,6 +101,13 @@ func _physics_process(delta: float) -> void:
 		if sniper_timer <= 0:
 			_fire_sniper()
 			sniper_timer = GameState.get_sniper_cooldown()
+
+	# Rocket logic
+	if GameState.run_rocket_level > 0:
+		rocket_timer -= delta
+		if rocket_timer <= 0:
+			_fire_rocket()
+			rocket_timer = GameState.get_rocket_cooldown()
 
 func get_damage() -> int:
 	var dmg := float(base_damage + GameState.get_gun_damage_bonus())
@@ -261,3 +271,23 @@ func _fire_spike_ball(target: Node2D) -> void:
 	ball.damage = GameConstants.SPIKE_BALL_BASE_DAMAGE + GameState.get_gun_damage_bonus()
 	ball.max_distance = GameConstants.SPIKE_BALL_BASE_DISTANCE + (GameState.run_spike_ball_level - 1) * GameConstants.SPIKE_BALL_DISTANCE_PER_LEVEL
 	get_tree().current_scene.add_child(ball)
+
+func _fire_rocket() -> void:
+	var visible_enemies = _get_visible_enemies()
+	if visible_enemies.is_empty():
+		return
+	
+	var target = visible_enemies.pick_random()
+	if is_instance_valid(target):
+		var rocket = rocket_scene.instantiate()
+		rocket.global_position = muzzle.global_position
+		rocket.target = target
+		rocket.damage = int(get_damage() * GameConstants.ROCKET_DAMAGE_MULT)
+		rocket.blast_radius = GameState.get_rocket_blast_radius()
+		
+		# Initial direction towards target
+		var dir = (target.global_position - muzzle.global_position).normalized()
+		rocket.direction = dir
+		rocket.rotation = dir.angle()
+		
+		get_tree().current_scene.add_child(rocket)

@@ -1,6 +1,6 @@
 extends Node2D
 
-@onready var player: CharacterBody2D = $Player
+@onready var player: Node2D = $Player
 @onready var wave_controller: Node = $WaveController
 @onready var hud: CanvasLayer = $UI
 @onready var shop_panel: Control = $UI/ShopPanel
@@ -28,6 +28,7 @@ func _ready() -> void:
 	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuySpike.pressed.connect(_buy_spike_ball)
 	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyShotgun.pressed.connect(_buy_shotgun)
 	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuySniper.pressed.connect(_buy_sniper)
+	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyRocket.pressed.connect(_buy_rocket)
 	
 	shop_continue.pressed.connect(_close_shop)
 
@@ -118,7 +119,7 @@ func _setup_arena() -> void:
 
 func _process(_delta: float) -> void:
 	lbl_gold.text = "Gold: %d" % GameState.run_gold
-	if is_instance_valid(player):
+	if is_instance_valid(player) and "health" in player:
 		lbl_hp.text = "HP: %d" % player.health
 
 func on_wave_started(w: int) -> void:
@@ -133,7 +134,7 @@ func open_shop(_wave: int) -> void:
 	shop_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	# Restore player health
-	if is_instance_valid(player):
+	if is_instance_valid(player) and "health" in player:
 		player.health = player.max_health
 	
 	_refresh_shop_text()
@@ -150,10 +151,11 @@ func _refresh_shop_text() -> void:
 	var spike_cost := _shop_spike_ball_cost()
 	var shotgun_cost := _shop_shotgun_cost()
 	var sniper_cost := _shop_sniper_cost()
+	var rocket_cost := _shop_rocket_cost()
 	
 	shop_col1.text = "Gold: %d\nGun Lvl: %d\nMagnet Lvl: %d" % [GameState.run_gold, GameState.run_gun_level, GameState.run_magnet_level]
 	shop_col2.text = "Radius: %.0fpx\nOrbs: %d\nSpike: %d" % [GameState.get_pickup_radius(), GameState.run_orb_level, GameState.run_spike_ball_level]
-	shop_col3.text = "Shotgun: %d\nSniper: %d" % [GameState.run_shotgun_level, GameState.run_sniper_level]
+	shop_col3.text = "Shotgun: %d\nSniper: %d\nRocket: %d" % [GameState.run_shotgun_level, GameState.run_sniper_level, GameState.run_rocket_level]
 	
 	var grid = shop_grid
 	var gun_btn = grid.get_node("BuyGun")
@@ -215,6 +217,17 @@ func _refresh_shop_text() -> void:
 		sniper_btn.text = "Upgrade Sniper (Fire Rate+)\nCost: %d Gold" % sniper_cost
 		sniper_btn.disabled = false
 
+	var rocket_btn = grid.get_node("BuyRocket")
+	if GameState.run_rocket_level >= GameConstants.ROCKET_MAX_LEVEL:
+		rocket_btn.text = "Rocket Launcher\n(MAX LEVEL)"
+		rocket_btn.disabled = true
+	elif GameState.run_rocket_level == 0:
+		rocket_btn.text = "Unlock Rocket Launcher\nCost: %d Gold" % rocket_cost
+		rocket_btn.disabled = false
+	else:
+		rocket_btn.text = "Upgrade Rocket (Blast+Rate)\nCost: %d Gold" % rocket_cost
+		rocket_btn.disabled = false
+
 func _shop_gun_cost() -> int:
 	return GameConstants.GUN_BASE_COST + (GameState.run_gun_level - 1) * GameConstants.GUN_COST_INCREMENT
 
@@ -240,6 +253,11 @@ func _shop_sniper_cost() -> int:
 	if GameState.run_sniper_level == 0:
 		return GameConstants.SNIPER_BASE_COST
 	return GameConstants.SNIPER_BASE_COST + GameState.run_sniper_level * GameConstants.SNIPER_COST_INCREMENT_PER_LEVEL
+
+func _shop_rocket_cost() -> int:
+	if GameState.run_rocket_level == 0:
+		return GameConstants.ROCKET_BASE_COST
+	return GameConstants.ROCKET_BASE_COST + GameState.run_rocket_level * GameConstants.ROCKET_COST_INCREMENT_PER_LEVEL
 
 func _get_orb_upgrade_desc(lvl: int) -> String:
 	match lvl:
@@ -297,6 +315,14 @@ func _buy_sniper() -> void:
 		return
 	GameState.run_gold -= cost
 	GameState.run_sniper_level += 1
+	_refresh_shop_text()
+
+func _buy_rocket() -> void:
+	var cost := _shop_rocket_cost()
+	if GameState.run_gold < cost or GameState.run_rocket_level >= GameConstants.ROCKET_MAX_LEVEL:
+		return
+	GameState.run_gold -= cost
+	GameState.run_rocket_level += 1
 	_refresh_shop_text()
 
 func _on_player_died() -> void:

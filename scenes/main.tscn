@@ -294,6 +294,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Upgrade Sniper"
 
+[node name="BuyRocket" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Upgrade Rocket"
+
 [node name="Space" type="Control" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2
 

@@ -100,3 +100,15 @@ const SNIPER_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.6
 const SNIPER_MAX_LEVEL: int = 4
 const SNIPER_BASE_COST: int = 10
 const SNIPER_COST_INCREMENT_PER_LEVEL: int = 10
+
+# --- ROCKET LAUNCHER ABILITY SETTINGS ---
+const ROCKET_BASE_COOLDOWN: float = 4.0
+const ROCKET_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.5
+const ROCKET_BASE_BLAST_RADIUS: float = 100.0
+const ROCKET_BLAST_RADIUS_PER_LEVEL: float = 40.0
+const ROCKET_MAX_LEVEL: int = 5
+const ROCKET_BASE_COST: int = 20
+const ROCKET_COST_INCREMENT_PER_LEVEL: int = 15
+const ROCKET_SPEED: float = 400.0
+const ROCKET_TURN_SPEED: float = 5.0 # Radians per second
+const ROCKET_DAMAGE_MULT: float = 2.0 # Rockets do double gun damage
