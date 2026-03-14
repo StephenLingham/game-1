@@ -59,7 +59,8 @@ func _physics_process(delta: float) -> void:
 	
 	move_and_slide()
 
-func take_damage(amount: int = 1) -> void:
+func take_damage(amount: int = 1) -> int:
+	var actual_damage = max(0, min(amount, health))
 	health -= amount
 	
 	# Flash white
@@ -72,6 +73,8 @@ func take_damage(amount: int = 1) -> void:
 		enemy_killed.emit()
 		_drop_gold()
 		queue_free()
+	
+	return actual_damage
 
 func _drop_gold() -> void:
 	call_deferred("_spawn_gold_pickup")

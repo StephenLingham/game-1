@@ -230,8 +230,7 @@ func _fire_sniper() -> void:
 		_create_blood_effect(target.global_position)
 		# Instantly kill enemy
 		if target.has_method("take_damage"):
-			GameState.run_damage_sniper += target.health  # Track actual HP drained
-			target.take_damage(999) # Overkill to ensure death
+			GameState.run_damage_sniper += target.take_damage(999)
 
 func _create_blood_effect(pos: Vector2) -> void:
 	var particles = CPUParticles2D.new()
@@ -343,7 +342,6 @@ func trigger_rocket_blast() -> void:
 			var dist = blast_pos.distance_to(enemy.global_position)
 			if dist <= radius:
 				if enemy.has_method("take_damage"):
-					GameState.run_damage_rocket += min(damage, enemy.health)
-					enemy.take_damage(damage)
+					GameState.run_damage_rocket += enemy.take_damage(damage)
 					if enemy.health <= 0:
 						RocketScript.spawn_explosion(get_tree().current_scene, enemy.global_position, 0)

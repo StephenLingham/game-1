@@ -66,11 +66,10 @@ func _do_aoe_damage() -> void:
 			var dist = global_position.distance_to(enemy.global_position)
 			if dist <= blast_radius:
 				if enemy.has_method("take_damage"):
-					var prev_health = enemy.health
-					GameState.run_damage_rocket += min(damage, prev_health)
-					enemy.take_damage(damage)
+					var actual_dmg = enemy.take_damage(damage)
+					GameState.run_damage_rocket += actual_dmg
 					# If enemy died from this explosion, spawn another visual explosion there
-					if enemy.health <= 0 and prev_health > 0:
+					if enemy.health <= 0:
 						spawn_explosion(get_tree().current_scene, enemy.global_position, 0)
 
 static func spawn_explosion(parent: Node, pos: Vector2, radius: float = 0.0) -> void:

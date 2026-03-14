@@ -16,13 +16,13 @@ func _physics_process(delta: float) -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies"):
+		var actual_dmg = body.take_damage(damage)
 		# Track damage dealt
 		match weapon_source:
 			"handgun":
-				GameState.run_damage_handgun += damage
+				GameState.run_damage_handgun += actual_dmg
 			"shotgun":
-				GameState.run_damage_shotgun += damage
-		body.take_damage(damage)
+				GameState.run_damage_shotgun += actual_dmg
 		queue_free()
 	elif body.is_in_group("walls"):
 		queue_free()
