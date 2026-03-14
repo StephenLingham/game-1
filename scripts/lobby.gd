@@ -15,9 +15,10 @@ func _ready() -> void:
 	if not has_node("VBox/PermRadius"):
 		btn_perm_radius = Button.new()
 		btn_perm_radius.name = "PermRadius"
+		btn_perm_radius.custom_minimum_size = Vector2(0, 50)
 		$VBox.add_child(btn_perm_radius)
-		# Move it before the Start button
-		$VBox.move_child(btn_perm_radius, $VBox/Start.get_index())
+		# Move it after the other upgrades
+		$VBox.move_child(btn_perm_radius, btn_perm_spd.get_index() + 1)
 	else:
 		btn_perm_radius = $VBox/PermRadius
 		
@@ -25,10 +26,11 @@ func _ready() -> void:
 	_refresh()
 
 func _refresh() -> void:
-	lbl_gems.text = "Gems: %d" % GameState.gems
-	btn_perm_dmg.text = "Permanent Damage (+10%%) - %d gems (lvl %d)" % [GameState.perm_damage_cost(), GameState.perm_damage_level]
-	btn_perm_spd.text = "Permanent Attack Speed (+10%%) - %d gems (lvl %d)" % [GameState.perm_atkspd_cost(), GameState.perm_atkspd_level]
-	btn_perm_radius.text = "Permanent Pickup Radius (+%dpx) - %d gems (lvl %d)" % [GameConstants.PERM_COLLECTION_RADIUS_INCREMENT, GameState.perm_pickup_radius_cost(), GameState.perm_pickup_radius_level]
+	lbl_gems.text = "Gems Available: %d" % GameState.gems
+	
+	btn_perm_dmg.text = "Damage Upgrade (Lv. %d)\nCost: %d Gems (+10%%)" % [GameState.perm_damage_level, GameState.perm_damage_cost()]
+	btn_perm_spd.text = "Attack Speed (Lv. %d)\nCost: %d Gems (+10%%)" % [GameState.perm_atkspd_level, GameState.perm_atkspd_cost()]
+	btn_perm_radius.text = "Pickup Radius (Lv. %d)\nCost: %d Gems (+%dpx)" % [GameState.perm_pickup_radius_level, GameState.perm_pickup_radius_cost(), GameConstants.PERM_COLLECTION_RADIUS_INCREMENT]
 
 func _buy_perm_damage() -> void:
 	if GameState.buy_perm_damage():

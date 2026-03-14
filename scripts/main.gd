@@ -8,9 +8,8 @@ extends Node2D
 @onready var pause_panel: Control = $UI/PausePanel
 
 @onready var shop_grid: GridContainer = $UI/ShopPanel/Margin/VBox/Scroll/Grid
-@onready var shop_col1: Label = $UI/ShopPanel/Margin/VBox/StatsGrid/Col1
-@onready var shop_col2: Label = $UI/ShopPanel/Margin/VBox/StatsGrid/Col2
-@onready var shop_col3: Label = $UI/ShopPanel/Margin/VBox/StatsGrid/Col3
+@onready var shop_gold_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/GoldLabel
+@onready var shop_gems_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/GemsLabel
 @onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
 
 @onready var lbl_wave: Label = $UI/HUD/HUDMargin/HUDVBox/WaveLabel
@@ -139,7 +138,7 @@ func open_shop(w: int) -> void:
 	shop_panel.visible = true
 	shop_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	$UI/ShopPanel/Margin/VBox/Title.text = "— ARMORY — WAVE %d COMPLETED" % w
+	$UI/ShopPanel/Margin/VBox/Title.text = "ARMORY — WAVE %d COMPLETED" % w
 	
 	_refresh_shop_text()
 
@@ -157,79 +156,77 @@ func _refresh_shop_text() -> void:
 	var sniper_cost := _shop_sniper_cost()
 	var rocket_cost := _shop_rocket_cost()
 	
-	shop_col1.text = "Gold: %d\nGun Lvl: %d\nMagnet Lvl: %d" % [GameState.run_gold, GameState.run_gun_level, GameState.run_magnet_level]
-	shop_col2.text = "Radius: %.0fpx\nOrbs: %d\nSpike: %d" % [GameState.get_pickup_radius(), GameState.run_orb_level, GameState.run_spike_ball_level]
-	shop_col3.text = "Shotgun: %d\nSniper: %d\nRocket: %d" % [GameState.run_shotgun_level, GameState.run_sniper_level, GameState.run_rocket_level]
+	shop_gold_label.text = "Gold: %d" % GameState.run_gold
+	shop_gems_label.text = "Gems: %d" % GameState.gems
 	
 	var grid = shop_grid
 	var gun_btn = grid.get_node("BuyGun")
 	if GameState.run_gun_level >= GameConstants.GUN_MAX_LEVEL:
-		gun_btn.text = "Handgun\n(MAX LEVEL)"
+		gun_btn.text = "Handgun (Lv. %d)\nMAX LEVEL" % GameState.run_gun_level
 		gun_btn.disabled = true
 	else:
-		gun_btn.text = "Upgrade Gun (Dmg+Spd)\nCost: %d Gold" % gun_cost
+		gun_btn.text = "Handgun (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_gun_level, GameState.run_gun_level + 1, gun_cost]
 		gun_btn.disabled = false
 	
 	var magnet_btn = grid.get_node("BuyMagnet")
 	if GameState.run_magnet_level >= GameConstants.MAGNET_MAX_LEVEL:
-		magnet_btn.text = "Magnet\n(MAX LEVEL)"
+		magnet_btn.text = "Magnet (Lv. %d)\nMAX LEVEL" % GameState.run_magnet_level
 		magnet_btn.disabled = true
 	else:
-		magnet_btn.text = "Upgrade Magnet (Radius+)\nCost: %d Gold" % magnet_cost
+		magnet_btn.text = "Magnet (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_magnet_level, GameState.run_magnet_level + 1, magnet_cost]
 		magnet_btn.disabled = false
 	
 	var orb_btn = grid.get_node("BuyOrbs")
 	if GameState.run_orb_level >= GameConstants.ORB_MAX_LEVEL:
-		orb_btn.text = "Orb Ability\n(MAX LEVEL)"
+		orb_btn.text = "Orbs (Lv. %d)\nMAX LEVEL" % GameState.run_orb_level
 		orb_btn.disabled = true
 	else:
 		var next_text = _get_orb_upgrade_desc(GameState.run_orb_level + 1)
-		orb_btn.text = "Upgrade Orbs (%s)\nCost: %d Gold" % [next_text, orb_cost]
+		orb_btn.text = "Orbs (Lv. %d → %d: %s)\nCost: %d Gold" % [GameState.run_orb_level, GameState.run_orb_level + 1, next_text, orb_cost]
 		orb_btn.disabled = false
 	
 	var spike_btn = grid.get_node("BuySpike")
 	if GameState.run_spike_ball_level >= GameConstants.SPIKE_BALL_MAX_LEVEL:
-		spike_btn.text = "Spike Ball\n(MAX LEVEL)"
+		spike_btn.text = "Spike Ball (Lv. %d)\nMAX LEVEL" % GameState.run_spike_ball_level
 		spike_btn.disabled = true
 	elif GameState.run_spike_ball_level == 0:
 		spike_btn.text = "Unlock Spike Ball\nCost: %d Gold" % spike_cost
 		spike_btn.disabled = false
 	else:
-		spike_btn.text = "Upgrade Spike Ball\nCost: %d Gold" % spike_cost
+		spike_btn.text = "Spike Ball (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_spike_ball_level, GameState.run_spike_ball_level + 1, spike_cost]
 		spike_btn.disabled = false
 
 	var shotgun_btn = grid.get_node("BuyShotgun")
 	if GameState.run_shotgun_level >= GameConstants.SHOTGUN_MAX_LEVEL:
-		shotgun_btn.text = "Shotgun\n(MAX LEVEL)"
+		shotgun_btn.text = "Shotgun (Lv. %d)\nMAX LEVEL" % GameState.run_shotgun_level
 		shotgun_btn.disabled = true
 	elif GameState.run_shotgun_level == 0:
 		shotgun_btn.text = "Unlock Shotgun\nCost: %d Gold" % shotgun_cost
 		shotgun_btn.disabled = false
 	else:
-		var next_bullets = (GameState.run_shotgun_level + 1) * 2 + 1
-		shotgun_btn.text = "Upgrade Shotgun (%d bullets)\nCost: %d Gold" % [next_bullets, shotgun_cost]
+		shotgun_btn.text = "Shotgun (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_shotgun_level, GameState.run_shotgun_level + 1, shotgun_cost]
 		shotgun_btn.disabled = false
 
 	var sniper_btn = grid.get_node("BuySniper")
 	if GameState.run_sniper_level >= GameConstants.SNIPER_MAX_LEVEL:
-		sniper_btn.text = "Sniper Gun\n(MAX LEVEL)"
+		sniper_btn.text = "Sniper (Lv. %d)\nMAX LEVEL" % GameState.run_sniper_level
 		sniper_btn.disabled = true
 	elif GameState.run_sniper_level == 0:
 		sniper_btn.text = "Unlock Sniper Gun\nCost: %d Gold" % sniper_cost
 		sniper_btn.disabled = false
 	else:
-		sniper_btn.text = "Upgrade Sniper (Fire Rate+)\nCost: %d Gold" % sniper_cost
+		sniper_btn.text = "Sniper (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_sniper_level, GameState.run_sniper_level + 1, sniper_cost]
 		sniper_btn.disabled = false
 
 	var rocket_btn = grid.get_node("BuyRocket")
 	if GameState.run_rocket_level >= GameConstants.ROCKET_MAX_LEVEL:
-		rocket_btn.text = "Rocket Launcher\n(MAX LEVEL)"
+		rocket_btn.text = "Rocket (Lv. %d)\nMAX LEVEL" % GameState.run_rocket_level
 		rocket_btn.disabled = true
 	elif GameState.run_rocket_level == 0:
 		rocket_btn.text = "Unlock Rocket Launcher\nCost: %d Gold" % rocket_cost
 		rocket_btn.disabled = false
 	else:
-		rocket_btn.text = "Upgrade Rocket (Blast+Rate)\nCost: %d Gold" % rocket_cost
+		rocket_btn.text = "Rocket (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_rocket_level, GameState.run_rocket_level + 1, rocket_cost]
 		rocket_btn.disabled = false
 
 func _shop_gun_cost() -> int:

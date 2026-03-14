@@ -210,14 +210,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 100
-theme_override_constants/margin_top = 60
-theme_override_constants/margin_right = 100
-theme_override_constants/margin_bottom = 60
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 24
 
 [node name="VBox" type="VBoxContainer" parent="UI/ShopPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 40
+theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2
@@ -225,30 +225,22 @@ text = "— ARMORY —"
 label_settings = SubResource("LabelSettings_shop_title")
 horizontal_alignment = 1
 
-[node name="StatsGrid" type="GridContainer" parent="UI/ShopPanel/Margin/VBox"]
+[node name="InfoRow" type="HBoxContainer" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/h_separation = 60
-columns = 3
+size_flags_horizontal = 4
+theme_override_constants/separation = 60
 
-[node name="Col1" type="Label" parent="UI/ShopPanel/Margin/VBox/StatsGrid"]
+[node name="GoldLabel" type="Label" parent="UI/ShopPanel/Margin/VBox/InfoRow"]
 layout_mode = 2
-text = "Gold: 0
-Dmg: +0
-Spd: x1.0"
+text = "Gold: 0"
 label_settings = SubResource("LabelSettings_shop_info")
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 
-[node name="Col2" type="Label" parent="UI/ShopPanel/Margin/VBox/StatsGrid"]
+[node name="GemsLabel" type="Label" parent="UI/ShopPanel/Margin/VBox/InfoRow"]
 layout_mode = 2
-text = "Radius: 50
-Orbs: 0
-Spike: 0"
+text = "Gems: 0"
 label_settings = SubResource("LabelSettings_shop_info")
-
-[node name="Col3" type="Label" parent="UI/ShopPanel/Margin/VBox/StatsGrid"]
-layout_mode = 2
-text = "Shotgun: 0
-Sniper: No"
-label_settings = SubResource("LabelSettings_shop_info")
+theme_override_colors/font_color = Color(0.8, 0.4, 1, 1)
 
 [node name="Scroll" type="ScrollContainer" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2
@@ -257,48 +249,48 @@ size_flags_vertical = 3
 [node name="Grid" type="GridContainer" parent="UI/ShopPanel/Margin/VBox/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 30
-theme_override_constants/v_separation = 30
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 12
 columns = 2
 
 [node name="BuyGun" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Upgrade Gun"
 
 [node name="BuyMagnet" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Upgrade Magnet"
 
 [node name="BuyOrbs" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Upgrade Orbs"
 
 [node name="BuySpike" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Upgrade Spike"
 
 [node name="BuyShotgun" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Upgrade Shotgun"
 
 [node name="BuySniper" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Upgrade Sniper"
 
 [node name="BuyRocket" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Upgrade Rocket"
@@ -307,10 +299,10 @@ text = "Upgrade Rocket"
 layout_mode = 2
 
 [node name="Continue" type="Button" parent="UI/ShopPanel/Margin/VBox"]
-custom_minimum_size = Vector2(400, 80)
+custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 28
 text = "START NEXT WAVE"
 
 [node name="GameOverPanel" type="Control" parent="UI"]
