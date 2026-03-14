@@ -68,6 +68,7 @@ func take_damage(amount: int = 1) -> void:
 	tween.tween_property(sprite, "modulate", Color.WHITE, 0.15)
 	
 	if health <= 0:
+		GameState.run_enemies_killed += 1
 		enemy_killed.emit()
 		_drop_gold()
 		queue_free()

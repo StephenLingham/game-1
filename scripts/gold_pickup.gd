@@ -38,6 +38,7 @@ func _on_body_entered(body: Node) -> void:
 		collect(body)
 
 func collect(_player: Node) -> void:
+	GameState.run_gold_collected += value
 	GameState.run_gold += value
 	queue_free()
 

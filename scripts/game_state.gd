@@ -18,6 +18,17 @@ var run_shotgun_level: int = 0
 var run_sniper_level: int = 0
 var run_rocket_level: int = 0
 
+# Run statistics (reset per run)
+var run_enemies_killed: int = 0
+var run_gold_collected: int = 0
+var run_gold_spent: int = 0
+var run_damage_handgun: int = 0
+var run_damage_shotgun: int = 0
+var run_damage_sniper: int = 0
+var run_damage_rocket: int = 0
+var run_damage_spike_ball: int = 0
+var run_damage_orbs: int = 0
+
 func _ready() -> void:
 	load_save()
 
@@ -30,6 +41,16 @@ func reset_run() -> void:
 	run_shotgun_level = 0
 	run_sniper_level = 0
 	run_rocket_level = 0
+	# Reset stats
+	run_enemies_killed = 0
+	run_gold_collected = 0
+	run_gold_spent = 0
+	run_damage_handgun = 0
+	run_damage_shotgun = 0
+	run_damage_sniper = 0
+	run_damage_rocket = 0
+	run_damage_spike_ball = 0
+	run_damage_orbs = 0
 
 func get_damage_multiplier() -> float:
 	return 1.0 + 0.10 * float(perm_damage_level)

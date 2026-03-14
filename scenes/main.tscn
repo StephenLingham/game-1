@@ -144,51 +144,44 @@ grow_vertical = 2
 mouse_filter = 2
 theme = ExtResource("5")
 
-[node name="WaveLabel" type="Label" parent="UI/HUD"]
-layout_mode = 0
-offset_left = 24.0
-offset_top = 24.0
-offset_right = 200.0
-offset_bottom = 56.0
+[node name="HUDMargin" type="MarginContainer" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 0
+anchor_right = 0.2
+anchor_bottom = 0.35
+offset_left = 16.0
+offset_top = 16.0
+mouse_filter = 2
+
+[node name="HUDVBox" type="VBoxContainer" parent="UI/HUD/HUDMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="WaveLabel" type="Label" parent="UI/HUD/HUDMargin/HUDVBox"]
+layout_mode = 2
 text = "Wave: 1 / 10"
 label_settings = SubResource("LabelSettings_shop_info")
 
-[node name="TimeLabel" type="Label" parent="UI/HUD"]
-layout_mode = 0
-offset_left = 24.0
-offset_top = 64.0
-offset_right = 200.0
-offset_bottom = 96.0
+[node name="TimeLabel" type="Label" parent="UI/HUD/HUDMargin/HUDVBox"]
+layout_mode = 2
 text = "Time: 30s"
 label_settings = SubResource("LabelSettings_shop_info")
 
-[node name="GoldLabel" type="Label" parent="UI/HUD"]
-layout_mode = 0
-offset_left = 24.0
-offset_top = 104.0
-offset_right = 200.0
-offset_bottom = 136.0
+[node name="GoldLabel" type="Label" parent="UI/HUD/HUDMargin/HUDVBox"]
+layout_mode = 2
 text = "Gold: 0"
 label_settings = SubResource("LabelSettings_shop_info")
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 
-[node name="GemsLabel" type="Label" parent="UI/HUD"]
-layout_mode = 0
-offset_left = 24.0
-offset_top = 144.0
-offset_right = 200.0
-offset_bottom = 176.0
+[node name="GemsLabel" type="Label" parent="UI/HUD/HUDMargin/HUDVBox"]
+layout_mode = 2
 text = "Gems: 0"
 label_settings = SubResource("LabelSettings_shop_info")
 theme_override_colors/font_color = Color(0.8, 0.4, 1, 1)
 
-[node name="HPLabel" type="Label" parent="UI/HUD"]
-layout_mode = 0
-offset_left = 24.0
-offset_top = 184.0
-offset_right = 200.0
-offset_bottom = 216.0
-text = "HP: 5"
+[node name="HPLabel" type="Label" parent="UI/HUD/HUDMargin/HUDVBox"]
+layout_mode = 2
+text = "HP: 100"
 label_settings = SubResource("LabelSettings_shop_info")
 theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
 
@@ -320,51 +313,204 @@ size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 32
 text = "START NEXT WAVE"
 
-[node name="GameOverPanel" type="Panel" parent="UI"]
+[node name="GameOverPanel" type="Control" parent="UI"]
 visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -240.0
-offset_top = -200.0
-offset_right = 240.0
-offset_bottom = 200.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("5")
-
-[node name="VBox" type="VBoxContainer" parent="UI/GameOverPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 24.0
-offset_right = -24.0
-offset_bottom = -24.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+theme = ExtResource("5")
 
-[node name="Result" type="Label" parent="UI/GameOverPanel/VBox"]
+[node name="Background" type="ColorRect" parent="UI/GameOverPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.09, 1)
+
+[node name="Margin" type="MarginContainer" parent="UI/GameOverPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 80
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 80
+theme_override_constants/margin_bottom = 40
+
+[node name="VBox" type="VBoxContainer" parent="UI/GameOverPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Result" type="Label" parent="UI/GameOverPanel/Margin/VBox"]
 layout_mode = 2
 text = "Result"
-label_settings = SubResource("LabelSettings_shop_info")
+label_settings = SubResource("LabelSettings_shop_title")
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="UI/GameOverPanel/VBox"]
+[node name="Sep1" type="HSeparator" parent="UI/GameOverPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="StatsScroll" type="ScrollContainer" parent="UI/GameOverPanel/Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Retry" type="Button" parent="UI/GameOverPanel/VBox"]
-custom_minimum_size = Vector2(0, 50)
+[node name="StatsVBox" type="VBoxContainer" parent="UI/GameOverPanel/Margin/VBox/StatsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="KillsLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
+layout_mode = 2
+text = "Enemies Killed: 0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 1
+
+[node name="Sep2" type="HSeparator" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
+layout_mode = 2
+
+[node name="DmgTitle" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
+layout_mode = 2
+text = "— DAMAGE BREAKDOWN —"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 1
+
+[node name="DmgGrid" type="GridContainer" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 40
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="DmgHandgunLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "Handgun:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="DmgHandgunValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
+[node name="DmgShotgunLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "Shotgun:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="DmgShotgunValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
+[node name="DmgSniperLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "Sniper:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="DmgSniperValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
+[node name="DmgRocketLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "Rocket:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="DmgRocketValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
+[node name="DmgSpikeLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "Spike Ball:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="DmgSpikeValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
+[node name="DmgOrbsLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "Orbs:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="DmgOrbsValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
+[node name="Sep3" type="HSeparator" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
+layout_mode = 2
+
+[node name="GoldGrid" type="GridContainer" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 40
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="GoldCollectedLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/GoldGrid"]
+layout_mode = 2
+text = "Gold Collected:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="GoldCollectedValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/GoldGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
+[node name="GoldSpentLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/GoldGrid"]
+layout_mode = 2
+text = "Gold Spent:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="GoldSpentValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/GoldGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
+[node name="Sep4" type="HSeparator" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
+layout_mode = 2
+
+[node name="GemsLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
+layout_mode = 2
+text = "Gems earned: 0 | Total gems: 0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="UI/GameOverPanel/Margin/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+
+[node name="ButtonBox" type="HBoxContainer" parent="UI/GameOverPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 40
+
+[node name="Retry" type="Button" parent="UI/GameOverPanel/Margin/VBox/ButtonBox"]
+custom_minimum_size = Vector2(200, 60)
 layout_mode = 2
 text = "Retry"
 
-[node name="BackToLobby" type="Button" parent="UI/GameOverPanel/VBox"]
-custom_minimum_size = Vector2(0, 50)
+[node name="BackToLobby" type="Button" parent="UI/GameOverPanel/Margin/VBox/ButtonBox"]
+custom_minimum_size = Vector2(200, 60)
 layout_mode = 2
 text = "Back to Lobby"
 

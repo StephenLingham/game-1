@@ -13,11 +13,11 @@ extends Node2D
 @onready var shop_col3: Label = $UI/ShopPanel/Margin/VBox/StatsGrid/Col3
 @onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
 
-@onready var lbl_wave: Label = $UI/HUD/WaveLabel
-@onready var lbl_time: Label = $UI/HUD/TimeLabel
-@onready var lbl_gold: Label = $UI/HUD/GoldLabel
-@onready var lbl_gems: Label = $UI/HUD/GemsLabel
-@onready var lbl_hp: Label = $UI/HUD/HPLabel
+@onready var lbl_wave: Label = $UI/HUD/HUDMargin/HUDVBox/WaveLabel
+@onready var lbl_time: Label = $UI/HUD/HUDMargin/HUDVBox/TimeLabel
+@onready var lbl_gold: Label = $UI/HUD/HUDMargin/HUDVBox/GoldLabel
+@onready var lbl_gems: Label = $UI/HUD/HUDMargin/HUDVBox/GemsLabel
+@onready var lbl_hp: Label = $UI/HUD/HUDMargin/HUDVBox/HPLabel
 
 func _ready() -> void:
 	player.player_died.connect(_on_player_died)
@@ -34,8 +34,8 @@ func _ready() -> void:
 	shop_continue.pressed.connect(_close_shop)
 
 	# Game over buttons
-	$UI/GameOverPanel/VBox/BackToLobby.pressed.connect(_back_to_lobby)
-	$UI/GameOverPanel/VBox/Retry.pressed.connect(_retry)
+	$UI/GameOverPanel/Margin/VBox/ButtonBox/BackToLobby.pressed.connect(_back_to_lobby)
+	$UI/GameOverPanel/Margin/VBox/ButtonBox/Retry.pressed.connect(_retry)
 	
 	# Pause buttons
 	$UI/PausePanel/VBox/Resume.pressed.connect(_resume)
@@ -50,10 +50,14 @@ func _ready() -> void:
 
 	_setup_arena()
 
+	# Position player at center of viewport dynamically
+	var screen_center := get_viewport().get_visible_rect().size / 2.0
+	player.position = screen_center
+
 	wave_controller.start_run()
 
 func _setup_arena() -> void:
-	var screen_size := Vector2(1920, 1080)
+	var screen_size := get_viewport().get_visible_rect().size
 	var arena_size := Vector2(screen_size.x * GameConstants.ARENA_WIDTH_MULTIPLIER, screen_size.y * GameConstants.ARENA_HEIGHT_MULTIPLIER)
 	var center := screen_size / 2.0
 	
@@ -136,10 +140,6 @@ func open_shop(w: int) -> void:
 	shop_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	$UI/ShopPanel/Margin/VBox/Title.text = "— ARMORY — WAVE %d COMPLETED" % w
-	
-	# Restore player health
-	if is_instance_valid(player) and "health" in player:
-		player.health = player.max_health
 	
 	_refresh_shop_text()
 
@@ -278,6 +278,7 @@ func _buy_gun() -> void:
 	if GameState.run_gold < cost or GameState.run_gun_level >= GameConstants.GUN_MAX_LEVEL:
 		return
 	GameState.run_gold -= cost
+	GameState.run_gold_spent += cost
 	GameState.run_gun_level += 1
 	_refresh_shop_text()
 
@@ -286,6 +287,7 @@ func _buy_magnet() -> void:
 	if GameState.run_gold < cost or GameState.run_magnet_level >= GameConstants.MAGNET_MAX_LEVEL:
 		return
 	GameState.run_gold -= cost
+	GameState.run_gold_spent += cost
 	GameState.run_magnet_level += 1
 	_refresh_shop_text()
 
@@ -294,6 +296,7 @@ func _buy_orbs() -> void:
 	if GameState.run_gold < cost or GameState.run_orb_level >= GameConstants.ORB_MAX_LEVEL:
 		return
 	GameState.run_gold -= cost
+	GameState.run_gold_spent += cost
 	GameState.run_orb_level += 1
 	_refresh_shop_text()
 
@@ -302,6 +305,7 @@ func _buy_spike_ball() -> void:
 	if GameState.run_gold < cost or GameState.run_spike_ball_level >= GameConstants.SPIKE_BALL_MAX_LEVEL:
 		return
 	GameState.run_gold -= cost
+	GameState.run_gold_spent += cost
 	GameState.run_spike_ball_level += 1
 	_refresh_shop_text()
 
@@ -310,6 +314,7 @@ func _buy_shotgun() -> void:
 	if GameState.run_gold < cost or GameState.run_shotgun_level >= GameConstants.SHOTGUN_MAX_LEVEL:
 		return
 	GameState.run_gold -= cost
+	GameState.run_gold_spent += cost
 	GameState.run_shotgun_level += 1
 	_refresh_shop_text()
 
@@ -318,6 +323,7 @@ func _buy_sniper() -> void:
 	if GameState.run_gold < cost or GameState.run_sniper_level >= GameConstants.SNIPER_MAX_LEVEL:
 		return
 	GameState.run_gold -= cost
+	GameState.run_gold_spent += cost
 	GameState.run_sniper_level += 1
 	_refresh_shop_text()
 
@@ -326,6 +332,7 @@ func _buy_rocket() -> void:
 	if GameState.run_gold < cost or GameState.run_rocket_level >= GameConstants.ROCKET_MAX_LEVEL:
 		return
 	GameState.run_gold -= cost
+	GameState.run_gold_spent += cost
 	GameState.run_rocket_level += 1
 	_refresh_shop_text()
 
@@ -347,9 +354,28 @@ func end_run(won: bool, waves_completed: int) -> void:
 	game_over_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	game_over_panel.visible = true
 	var result_text := "Victory!" if won else "Defeated!"
-	$UI/GameOverPanel/VBox/Result.text = result_text + "\nWaves completed: %d\nGems earned: %d\nTotal gems: %d" % [
-		waves_completed, gems, GameState.gems
-	]
+	$UI/GameOverPanel/Margin/VBox/Result.text = result_text + "  —  Waves completed: %d" % waves_completed
+
+	# Populate stats
+	var stats_vbox = $UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox
+	stats_vbox.get_node("KillsLabel").text = "Enemies Killed: %d" % GameState.run_enemies_killed
+
+	# Damage breakdown
+	var dmg_grid = stats_vbox.get_node("DmgGrid")
+	dmg_grid.get_node("DmgHandgunValue").text = "%d" % GameState.run_damage_handgun
+	dmg_grid.get_node("DmgShotgunValue").text = "%d" % GameState.run_damage_shotgun
+	dmg_grid.get_node("DmgSniperValue").text = "%d" % GameState.run_damage_sniper
+	dmg_grid.get_node("DmgRocketValue").text = "%d" % GameState.run_damage_rocket
+	dmg_grid.get_node("DmgSpikeValue").text = "%d" % GameState.run_damage_spike_ball
+	dmg_grid.get_node("DmgOrbsValue").text = "%d" % GameState.run_damage_orbs
+
+	# Gold stats
+	var gold_grid = stats_vbox.get_node("GoldGrid")
+	gold_grid.get_node("GoldCollectedValue").text = "%d" % GameState.run_gold_collected
+	gold_grid.get_node("GoldSpentValue").text = "%d" % GameState.run_gold_spent
+
+	# Gems
+	stats_vbox.get_node("GemsLabel").text = "Gems earned: %d  |  Total gems: %d" % [gems, GameState.gems]
 
 func _back_to_lobby() -> void:
 	get_tree().paused = false

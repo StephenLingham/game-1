@@ -198,6 +198,7 @@ func _fire_shotgun(target: Node2D) -> void:
 		bullet.rotation = angle
 		bullet.direction = Vector2.RIGHT.rotated(angle)
 		bullet.damage = get_damage()
+		bullet.weapon_source = "shotgun"
 		get_tree().current_scene.add_child(bullet)
 
 func _get_visible_enemies() -> Array:
@@ -229,6 +230,7 @@ func _fire_sniper() -> void:
 		_create_blood_effect(target.global_position)
 		# Instantly kill enemy
 		if target.has_method("take_damage"):
+			GameState.run_damage_sniper += target.health  # Track actual HP drained
 			target.take_damage(999) # Overkill to ensure death
 
 func _create_blood_effect(pos: Vector2) -> void:
@@ -341,6 +343,7 @@ func trigger_rocket_blast() -> void:
 			var dist = blast_pos.distance_to(enemy.global_position)
 			if dist <= radius:
 				if enemy.has_method("take_damage"):
+					GameState.run_damage_rocket += min(damage, enemy.health)
 					enemy.take_damage(damage)
 					if enemy.health <= 0:
 						RocketScript.spawn_explosion(get_tree().current_scene, enemy.global_position, 0)

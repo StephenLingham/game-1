@@ -19,11 +19,9 @@ func _ready() -> void:
 			Type.ROCKET: tex_path = "res://assets/powerup_explosion_2.png"
 			Type.GEM: tex_path = "res://assets/gem_icon.png"
 		
-		if FileAccess.file_exists(tex_path):
-			var img = Image.load_from_file(tex_path)
-			if img:
-				# Use user's pre-made transparent PNGs
-				var tex = ImageTexture.create_from_image(img)
+		if ResourceLoader.exists(tex_path):
+			var tex = load(tex_path)
+			if tex:
 				sprite.texture = tex
 		
 		# Reset spritesheet logic

@@ -35,5 +35,6 @@ func _damage_enemy(enemy: Node) -> void:
 		return
 	
 	if enemy.has_method("take_damage"):
+		GameState.run_damage_spike_ball += damage
 		enemy.take_damage(damage)
 		_hit_enemies.append(enemy)
