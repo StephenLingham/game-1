@@ -44,6 +44,9 @@ func set_camera_limits(rect: Rect2) -> void:
 		cam.limit_top = int(rect.position.y)
 		cam.limit_right = int(rect.position.x + rect.size.x)
 		cam.limit_bottom = int(rect.position.y + rect.size.y)
+		# Snap camera instantly
+		cam.reset_smoothing()
+		cam.force_update_scroll()
 
 func _physics_process(delta: float) -> void:
 	if _speed_boost_duration > 0:

@@ -47,11 +47,11 @@ func _ready() -> void:
 	game_over_panel.visible = false
 	pause_panel.visible = false
 
-	_setup_arena()
-
-	# Position player at center of viewport dynamically
+	# Position player at center of viewport dynamically first
 	var screen_center := get_viewport().get_visible_rect().size / 2.0
 	player.position = screen_center
+
+	_setup_arena()
 
 	wave_controller.start_run()
 
