@@ -138,7 +138,7 @@ func open_shop(w: int) -> void:
 	shop_panel.visible = true
 	shop_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	$UI/ShopPanel/Margin/VBox/Title.text = "ARMORY — WAVE %d COMPLETED" % w
+	$UI/ShopPanel/Margin/VBox/Title.text = "Armory — Wave %d Completed" % w
 	
 	_refresh_shop_text()
 
