@@ -11,12 +11,16 @@ const PLAYER_FIRE_RATE: float = 0.50
 const PLAYER_MAX_HEALTH: int = 100
 const PLAYER_BASE_DAMAGE: int = 1
 
-# --- GUN ABILITY SETTINGS (Combined Damage + Fire Rate) ---
-const GUN_MAX_LEVEL: int = 4 # Starts at 1, max 3 upgrades
+# --- PERMANENT UPGRADES ---
+const PERM_LEVEL_COST: int = 10
+const PERM_COST_INCREMENT: int = 10
+
+# --- GUN ABILITY SETTINGS ---
+const GUN_MAX_LEVEL: int = 4
 const GUN_BASE_COST: int = 15
 const GUN_COST_INCREMENT: int = 10
 const GUN_DAMAGE_PER_UPGRADE: int = 1
-const GUN_ATK_SPD_PER_UPGRADE: float = 0.15 # 15% increase per level
+const GUN_ATK_SPD_PER_UPGRADE: float = 0.15
 
 # --- WAVES & SPAWN SETTINGS ---
 const TOTAL_WAVES: int = 10
@@ -30,34 +34,32 @@ const WAVE_BASE_SPAWN_WAIT: float = 0.75
 const WAVE_MIN_SPAWN_WAIT: float = 0.25
 const WAVE_SPAWN_WAIT_DECREMENT: float = 0.05
 
-# Enemy Probabilities (Should sum to 1.0)
+# Enemy Probabilities
 const PROB_NORMAL_ENEMY: float = 0.70
 const PROB_FAST_ENEMY: float = 0.20
 const PROB_BIG_ENEMY: float = 0.10
 
-# --- NORMAL ENEMY SETTINGS ---
+# --- ENEMY SETTINGS ---
 const ENEMY_NORMAL_SPEED: float = 100.0
 const ENEMY_NORMAL_HEALTH: int = 2
 const ENEMY_NORMAL_DAMAGE: int = 20
-const ENEMY_NORMAL_ATTACK_COOLDOWN: float = 0.5
+const ENEMY_NORMAL_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_NORMAL_GOLD_MIN: int = 1
 const ENEMY_NORMAL_GOLD_MAX: int = 3
 
-# --- FAST ENEMY SETTINGS ---
 const ENEMY_FAST_SPEED: float = 200.0
 const ENEMY_FAST_HEALTH: int = 1
 const ENEMY_FAST_DAMAGE: int = 20
-const ENEMY_FAST_ATTACK_COOLDOWN: float = 0.5
+const ENEMY_FAST_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_FAST_GOLD_MIN: int = 1
-const ENEMY_FAST_GOLD_MAX: int = 3
+const ENEMY_FAST_GOLD_MAX: int = 2
 
-# --- BIG ENEMY SETTINGS ---
 const ENEMY_BIG_SPEED: float = 100.0
 const ENEMY_BIG_HEALTH: int = 8
 const ENEMY_BIG_DAMAGE: int = 40
-const ENEMY_BIG_ATTACK_COOLDOWN: float = 0.5
-const ENEMY_BIG_GOLD_MIN: int = 3
-const ENEMY_BIG_GOLD_MAX: int = 6
+const ENEMY_BIG_ATTACK_COOLDOWN: float = 1.5
+const ENEMY_BIG_GOLD_MIN: int = 4
+const ENEMY_BIG_GOLD_MAX: int = 8
 
 # --- COLLECTION SETTINGS ---
 const BASE_COLLECTION_RADIUS: float = 50.0
@@ -89,7 +91,7 @@ const SPIKE_BALL_COST_INCREMENT_PER_LEVEL: int = 15
 
 # --- SHOTGUN ABILITY SETTINGS ---
 const SHOTGUN_BASE_COOLDOWN: float = 1.0
-const SHOTGUN_SPREAD_ANGLE: float = 45.0 # Degrees
+const SHOTGUN_SPREAD_ANGLE: float = 45.0
 const SHOTGUN_MAX_LEVEL: int = 4
 const SHOTGUN_BASE_COST: int = 10
 const SHOTGUN_COST_INCREMENT_PER_LEVEL: int = 10
@@ -110,14 +112,68 @@ const ROCKET_MAX_LEVEL: int = 5
 const ROCKET_BASE_COST: int = 20
 const ROCKET_COST_INCREMENT_PER_LEVEL: int = 15
 const ROCKET_SPEED: float = 400.0
-const ROCKET_TURN_SPEED: float = 5.0 # Radians per second
-const ROCKET_DAMAGE: int = 10 # Fixed absolute damage
-const ROCKET_TARGET_RADIUS: float = 600.0 # About a third of the 1920 screen width
+const ROCKET_TURN_SPEED: float = 5.0
+const ROCKET_DAMAGE: int = 10
+const ROCKET_TARGET_RADIUS: float = 600.0
+
+# --- NEW ABILITIES ---
+
+# Bouncing Disk
+const DISK_BASE_COOLDOWN: float = 3.0
+const DISK_BASE_DAMAGE: int = 12
+const DISK_MAX_LEVEL: int = 5
+const DISK_BASE_COST: int = 20
+const DISK_COST_INCREMENT: int = 15
+const DISK_SPEED: float = 500.0
+
+# Floor Spikes
+const SPIKES_BASE_COOLDOWN: float = 2.0
+const SPIKES_BASE_DAMAGE: int = 10
+const SPIKES_MAX_LEVEL: int = 5
+const SPIKES_BASE_COST: int = 15
+const SPIKES_COST_INCREMENT: int = 10
+
+# Turret
+const TURRET_BASE_COOLDOWN: float = 5.0
+const TURRET_COOLDOWN_REDUCTION: float = 0.5
+const TURRET_MAX_LEVEL: int = 5
+const TURRET_BASE_COST: int = 25
+const TURRET_COST_INCREMENT: int = 20
+const TURRET_DAMAGE: int = 5
+const TURRET_FIRE_RATE: float = 0.5
+
+# Machine Gun
+const MG_BASE_COOLDOWN: float = 0.15
+const MG_DAMAGE: int = 1
+const MG_MAX_LEVEL: int = 5
+const MG_BASE_COST: int = 20
+const MG_COST_INCREMENT: int = 15
+
+# Ice Wave
+const ICE_BASE_COOLDOWN: float = 6.0
+const ICE_BASE_RADIUS: float = 200.0
+const ICE_RADIUS_INCREMENT: float = 100.0
+const ICE_MAX_LEVEL: int = 5
+const ICE_BASE_COST: int = 15
+const ICE_COST_INCREMENT: int = 10
+const ICE_FREEZE_DURATION: float = 2.0
+
+# --- SHOP SETTINGS ---
+const SHOP_OPTIONS_COUNT: int = 3
+const SHOP_MAX_ABILITIES: int = 6
+const SHOP_REROLL_BASE_COST: int = 2
+const SHOP_REROLL_INCREMENT: int = 2
+const SHOP_BANISH_COUNT: int = 2
 
 # --- POWER-UP ITEM SETTINGS ---
 const POWERUP_SPAWN_INTERVAL_MIN: float = 4
 const POWERUP_SPAWN_INTERVAL_MAX: float = 8
 const POWERUP_SPEED_BOOST_MULTIPLIER: float = 1.6
 const POWERUP_SPEED_BOOST_DURATION: float = 7.0
+const POWERUP_ATK_SPEED_BOOST_MULTIPLIER: float = 5.0
+const POWERUP_ATK_SPEED_BOOST_DURATION: float = 3.0
 const POWERUP_GEM_AWARD_AMOUNT: int = 1
 const POWERUP_ICON_SCALE: float = 0.07
+
+# --- UNLOCKS ---
+const UNLOCK_KILLS_NEEDED: int = 100 # Example kill threshold for guns

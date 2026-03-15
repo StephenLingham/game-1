@@ -136,7 +136,16 @@ func _spawn_powerup() -> void:
 	if powerup_scene == null: return
 	
 	var p = powerup_scene.instantiate()
-	p.type = randi() % 5 # Random type from 0 to 4
+	
+	var rand_v = randf()
+	var gem_chance = 0.15 + GameState.get_gem_drop_chance_bonus()
+	
+	if rand_v < gem_chance:
+		p.type = 4 # GEM
+	else:
+		# Randomly pick from others: MAGNET, SPEED, HEAL, ROCKET, ATK_SPEED
+		var types = [0, 1, 2, 3, 5]
+		p.type = types.pick_random()
 	
 	# Spawn randomly within the arena bounds (with some margin)
 	var margin := 100.0
@@ -146,5 +155,5 @@ func _spawn_powerup() -> void:
 	)
 	
 	p.global_position = spawn_pos
-	game.add_child(p)
+	game.get_node("PickupContainer").add_child(p)
 

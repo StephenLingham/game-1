@@ -12,6 +12,25 @@ extends Node2D
 @onready var shop_gems_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/GemsLabel
 @onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
 
+var reroll_btn: Button
+var banish_active: bool = false
+var current_shop_options: Array = []
+
+const ALL_ABILITIES = [
+	{"id": "handgun", "name": "Handgun", "weapon": true},
+	{"id": "shotgun", "name": "Shotgun", "weapon": true},
+	{"id": "sniper", "name": "Sniper Gun", "weapon": true},
+	{"id": "rocket", "name": "Rocket Launcher", "weapon": true},
+	{"id": "machine_gun", "name": "Machine Gun", "weapon": true},
+	{"id": "magnet", "name": "Magnet", "weapon": false},
+	{"id": "orbs", "name": "Energy Orbs", "weapon": false},
+	{"id": "spike_ball", "name": "Spike Ball", "weapon": false},
+	{"id": "bouncing_disk", "name": "Bouncing Disk", "weapon": false},
+	{"id": "floor_spikes", "name": "Floor Spikes", "weapon": false},
+	{"id": "turret", "name": "Turret", "weapon": false},
+	{"id": "ice_wave", "name": "Ice Wave", "weapon": false}
+]
+
 @onready var lbl_wave: Label = $UI/HUD/HUDMargin/HUDVBox/WaveLabel
 @onready var lbl_time: Label = $UI/HUD/HUDMargin/HUDVBox/TimeLabel
 @onready var lbl_gold: Label = $UI/HUD/HUDMargin/HUDVBox/GoldLabel
@@ -21,16 +40,16 @@ extends Node2D
 func _ready() -> void:
 	player.player_died.connect(_on_player_died)
 
-	# Wire shop buttons
-	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyGun.pressed.connect(_buy_gun)
-	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyMagnet.pressed.connect(_buy_magnet)
-	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyOrbs.pressed.connect(_buy_orbs)
-	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuySpike.pressed.connect(_buy_spike_ball)
-	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyShotgun.pressed.connect(_buy_shotgun)
-	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuySniper.pressed.connect(_buy_sniper)
-	$UI/ShopPanel/Margin/VBox/Scroll/Grid/BuyRocket.pressed.connect(_buy_rocket)
+	# Shop is now dynamic, no need to wire hardcoded buttons
 	
 	shop_continue.pressed.connect(_close_shop)
+	
+	# Setup Reroll button
+	reroll_btn = Button.new()
+	reroll_btn.custom_minimum_size = Vector2(200, 50)
+	$UI/ShopPanel/Margin/VBox.add_child(reroll_btn)
+	$UI/ShopPanel/Margin/VBox.move_child(reroll_btn, $UI/ShopPanel/Margin/VBox/Continue.get_index())
+	reroll_btn.pressed.connect(_reroll_shop)
 
 	# Game over buttons
 	$UI/GameOverPanel/Margin/VBox/ButtonBox/BackToLobby.pressed.connect(_back_to_lobby)
@@ -140,204 +159,133 @@ func open_shop(w: int) -> void:
 	
 	$UI/ShopPanel/Margin/VBox/Title.text = "Armory — Wave %d Completed" % w
 	
-	_refresh_shop_text()
+	GameState.run_reroll_cost = GameConstants.SHOP_REROLL_BASE_COST
+	_generate_shop_options()
+	_refresh_shop_ui()
 
 func _close_shop() -> void:
 	shop_panel.visible = false
 	get_tree().paused = false
 	wave_controller.resume_after_shop()
-
-func _refresh_shop_text() -> void:
-	var gun_cost := _shop_gun_cost()
-	var magnet_cost := _shop_magnet_cost()
-	var orb_cost := _shop_orb_cost()
-	var spike_cost := _shop_spike_ball_cost()
-	var shotgun_cost := _shop_shotgun_cost()
-	var sniper_cost := _shop_sniper_cost()
-	var rocket_cost := _shop_rocket_cost()
+func _generate_shop_options() -> void:
+	current_shop_options.clear()
+	var pool = []
 	
+	for abi in ALL_ABILITIES:
+		if not GameState.unlocked_items.has(abi.id): continue
+		if GameState.run_banished_abilities.has(abi.id): continue
+		
+		var level = GameState.run_abilities.get(abi.id, 0)
+		var max_level = _get_max_level(abi.id)
+		
+		# Skip if maxed
+		if level >= max_level: continue
+		
+		# 6 ability limit
+		if level == 0 and GameState.run_abilities.size() >= GameConstants.SHOP_MAX_ABILITIES:
+			continue
+			
+		pool.append(abi)
+	
+	pool.shuffle()
+	for i in range(min(GameConstants.SHOP_OPTIONS_COUNT, pool.size())):
+		current_shop_options.append(pool[i])
+
+func _refresh_shop_ui() -> void:
 	shop_gold_label.text = "Gold: %d" % GameState.run_gold
 	shop_gems_label.text = "Gems: %d" % GameState.gems
 	
-	var grid = shop_grid
-	var gun_btn = grid.get_node("BuyGun")
-	if GameState.run_gun_level >= GameConstants.GUN_MAX_LEVEL:
-		gun_btn.text = "Handgun (Lv. %d)\nMAX LEVEL" % GameState.run_gun_level
-		gun_btn.disabled = true
-	else:
-		gun_btn.text = "Handgun (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_gun_level, GameState.run_gun_level + 1, gun_cost]
-		gun_btn.disabled = false
+	reroll_btn.text = "Reroll (%d Gold)" % GameState.run_reroll_cost
+	reroll_btn.disabled = GameState.run_gold < GameState.run_reroll_cost
 	
-	var magnet_btn = grid.get_node("BuyMagnet")
-	if GameState.run_magnet_level >= GameConstants.MAGNET_MAX_LEVEL:
-		magnet_btn.text = "Magnet (Lv. %d)\nMAX LEVEL" % GameState.run_magnet_level
-		magnet_btn.disabled = true
-	elif GameState.run_magnet_level == 0:
-		magnet_btn.text = "Buy Magnet\nCost: %d Gold" % magnet_cost
-		magnet_btn.disabled = false
-	else:
-		magnet_btn.text = "Magnet (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_magnet_level, GameState.run_magnet_level + 1, magnet_cost]
-		magnet_btn.disabled = false
+	# Clear grid
+	for child in shop_grid.get_children():
+		child.queue_free()
 	
-	var orb_btn = grid.get_node("BuyOrbs")
-	if GameState.run_orb_level >= GameConstants.ORB_MAX_LEVEL:
-		orb_btn.text = "Orbs (Lv. %d)\nMAX LEVEL" % GameState.run_orb_level
-		orb_btn.disabled = true
-	elif GameState.run_orb_level == 0:
-		orb_btn.text = "Buy Orbs\nCost: %d Gold" % orb_cost
-		orb_btn.disabled = false
-	else:
-		var next_text = _get_orb_upgrade_desc(GameState.run_orb_level + 1)
-		orb_btn.text = "Orbs (Lv. %d → %d: %s)\nCost: %d Gold" % [GameState.run_orb_level, GameState.run_orb_level + 1, next_text, orb_cost]
-		orb_btn.disabled = false
+	for abi in current_shop_options:
+		var level = GameState.run_abilities.get(abi.id, 0)
+		var cost = _get_ability_cost(abi.id, level)
+		
+		var panel = PanelContainer.new()
+		var vbox = VBoxContainer.new()
+		panel.add_child(vbox)
+		
+		var lbl = Label.new()
+		lbl.text = abi.name + " (Lv. %d)" % level
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		vbox.add_child(lbl)
+		
+		var buy_btn = Button.new()
+		buy_btn.text = "Buy: %d Gold" % cost
+		buy_btn.disabled = GameState.run_gold < cost
+		buy_btn.pressed.connect(_buy_ability.bind(abi.id))
+		vbox.add_child(buy_btn)
+		
+		if GameState.run_banish_count > 0:
+			var ban_btn = Button.new()
+			ban_btn.text = "Banish (Uses left: %d)" % GameState.run_banish_count
+			ban_btn.pressed.connect(_banish_ability.bind(abi.id))
+			vbox.add_child(ban_btn)
+		
+		shop_grid.add_child(panel)
+
+func _get_max_level(id: String) -> int:
+	match id:
+		"handgun": return GameConstants.GUN_MAX_LEVEL
+		"magnet": return GameConstants.MAGNET_MAX_LEVEL
+		"orbs": return GameConstants.ORB_MAX_LEVEL
+		"spike_ball": return GameConstants.SPIKE_BALL_MAX_LEVEL
+		"shotgun": return GameConstants.SHOTGUN_MAX_LEVEL
+		"sniper": return GameConstants.SNIPER_MAX_LEVEL
+		"rocket": return GameConstants.ROCKET_MAX_LEVEL
+		"bouncing_disk": return GameConstants.DISK_MAX_LEVEL
+		"floor_spikes": return GameConstants.SPIKES_MAX_LEVEL
+		"turret": return GameConstants.TURRET_MAX_LEVEL
+		"machine_gun": return GameConstants.MG_MAX_LEVEL
+		"ice_wave": return GameConstants.ICE_MAX_LEVEL
+	return 5
+
+func _get_ability_cost(id: String, level: int) -> int:
+	var base = 15
+	var inc = 10
+	match id:
+		"handgun": base = GameConstants.GUN_BASE_COST; inc = GameConstants.GUN_COST_INCREMENT
+		"magnet": base = GameConstants.MAGNET_BASE_COST; inc = GameConstants.MAGNET_COST_INCREMENT
+		"orbs": base = GameConstants.ORB_BASE_COST; inc = GameConstants.ORB_COST_INCREMENT_PER_LEVEL
+		"spike_ball": base = GameConstants.SPIKE_BALL_BASE_COST; inc = GameConstants.SPIKE_BALL_COST_INCREMENT_PER_LEVEL
+		"shotgun": base = GameConstants.SHOTGUN_BASE_COST; inc = GameConstants.SHOTGUN_COST_INCREMENT_PER_LEVEL
+		"sniper": base = GameConstants.SNIPER_BASE_COST; inc = GameConstants.SNIPER_COST_INCREMENT_PER_LEVEL
+		"rocket": base = GameConstants.ROCKET_BASE_COST; inc = GameConstants.ROCKET_COST_INCREMENT_PER_LEVEL
+		# New ones use defaults if not specific
 	
-	var spike_btn = grid.get_node("BuySpike")
-	if GameState.run_spike_ball_level >= GameConstants.SPIKE_BALL_MAX_LEVEL:
-		spike_btn.text = "Spike Ball (Lv. %d)\nMAX LEVEL" % GameState.run_spike_ball_level
-		spike_btn.disabled = true
-	elif GameState.run_spike_ball_level == 0:
-		spike_btn.text = "Buy Spike Ball\nCost: %d Gold" % spike_cost
-		spike_btn.disabled = false
-	else:
-		spike_btn.text = "Spike Ball (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_spike_ball_level, GameState.run_spike_ball_level + 1, spike_cost]
-		spike_btn.disabled = false
+	if level == 0: return base
+	return base + level * inc
 
-	var shotgun_btn = grid.get_node("BuyShotgun")
-	if GameState.run_shotgun_level >= GameConstants.SHOTGUN_MAX_LEVEL:
-		shotgun_btn.text = "Shotgun (Lv. %d)\nMAX LEVEL" % GameState.run_shotgun_level
-		shotgun_btn.disabled = true
-	elif GameState.run_shotgun_level == 0:
-		shotgun_btn.text = "Buy Shotgun\nCost: %d Gold" % shotgun_cost
-		shotgun_btn.disabled = false
-	else:
-		shotgun_btn.text = "Shotgun (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_shotgun_level, GameState.run_shotgun_level + 1, shotgun_cost]
-		shotgun_btn.disabled = false
+func _buy_ability(id: String) -> void:
+	var level = GameState.run_abilities.get(id, 0)
+	var cost = _get_ability_cost(id, level)
+	
+	if GameState.run_gold >= cost:
+		GameState.run_gold -= cost
+		GameState.run_gold_spent += cost
+		GameState.run_abilities[id] = level + 1
+		GameState.record_ability_upgrade(id, level + 1)
+		_generate_shop_options()
+		_refresh_shop_ui()
 
-	var sniper_btn = grid.get_node("BuySniper")
-	if GameState.run_sniper_level >= GameConstants.SNIPER_MAX_LEVEL:
-		sniper_btn.text = "Sniper (Lv. %d)\nMAX LEVEL" % GameState.run_sniper_level
-		sniper_btn.disabled = true
-	elif GameState.run_sniper_level == 0:
-		sniper_btn.text = "Buy Sniper Gun\nCost: %d Gold" % sniper_cost
-		sniper_btn.disabled = false
-	else:
-		sniper_btn.text = "Sniper (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_sniper_level, GameState.run_sniper_level + 1, sniper_cost]
-		sniper_btn.disabled = false
+func _reroll_shop() -> void:
+	if GameState.run_gold >= GameState.run_reroll_cost:
+		GameState.run_gold -= GameState.run_reroll_cost
+		GameState.run_reroll_cost += GameConstants.SHOP_REROLL_INCREMENT
+		_generate_shop_options()
+		_refresh_shop_ui()
 
-	var rocket_btn = grid.get_node("BuyRocket")
-	if GameState.run_rocket_level >= GameConstants.ROCKET_MAX_LEVEL:
-		rocket_btn.text = "Rocket (Lv. %d)\nMAX LEVEL" % GameState.run_rocket_level
-		rocket_btn.disabled = true
-	elif GameState.run_rocket_level == 0:
-		rocket_btn.text = "Buy Rocket Launcher\nCost: %d Gold" % rocket_cost
-		rocket_btn.disabled = false
-	else:
-		rocket_btn.text = "Rocket (Lv. %d → %d)\nCost: %d Gold" % [GameState.run_rocket_level, GameState.run_rocket_level + 1, rocket_cost]
-		rocket_btn.disabled = false
-
-func _shop_gun_cost() -> int:
-	return GameConstants.GUN_BASE_COST + (GameState.run_gun_level - 1) * GameConstants.GUN_COST_INCREMENT
-
-func _shop_magnet_cost() -> int:
-	return GameConstants.MAGNET_BASE_COST + GameState.run_magnet_level * GameConstants.MAGNET_COST_INCREMENT
-
-func _shop_orb_cost() -> int:
-	if GameState.run_orb_level == 0: 
-		return GameConstants.ORB_BASE_COST
-	return GameConstants.ORB_BASE_COST + GameState.run_orb_level * GameConstants.ORB_COST_INCREMENT_PER_LEVEL
-
-func _shop_spike_ball_cost() -> int:
-	if GameState.run_spike_ball_level == 0:
-		return GameConstants.SPIKE_BALL_BASE_COST
-	return GameConstants.SPIKE_BALL_BASE_COST + GameState.run_spike_ball_level * GameConstants.SPIKE_BALL_COST_INCREMENT_PER_LEVEL
-
-func _shop_shotgun_cost() -> int:
-	if GameState.run_shotgun_level == 0:
-		return GameConstants.SHOTGUN_BASE_COST
-	return GameConstants.SHOTGUN_BASE_COST + GameState.run_shotgun_level * GameConstants.SHOTGUN_COST_INCREMENT_PER_LEVEL
-
-func _shop_sniper_cost() -> int:
-	if GameState.run_sniper_level == 0:
-		return GameConstants.SNIPER_BASE_COST
-	return GameConstants.SNIPER_BASE_COST + GameState.run_sniper_level * GameConstants.SNIPER_COST_INCREMENT_PER_LEVEL
-
-func _shop_rocket_cost() -> int:
-	if GameState.run_rocket_level == 0:
-		return GameConstants.ROCKET_BASE_COST
-	return GameConstants.ROCKET_BASE_COST + GameState.run_rocket_level * GameConstants.ROCKET_COST_INCREMENT_PER_LEVEL
-
-func _get_orb_upgrade_desc(lvl: int) -> String:
-	match lvl:
-		1: return "1 Orb"
-		2: return "Speed+"
-		3: return "2 Orbs"
-		4: return "Speed++"
-		5: return "3 Orbs"
-		6: return "Max Speed"
-	return "Level %d" % lvl
-
-func _buy_gun() -> void:
-	var cost := _shop_gun_cost()
-	if GameState.run_gold < cost or GameState.run_gun_level >= GameConstants.GUN_MAX_LEVEL:
-		return
-	GameState.run_gold -= cost
-	GameState.run_gold_spent += cost
-	GameState.run_gun_level += 1
-	_refresh_shop_text()
-
-func _buy_magnet() -> void:
-	var cost := _shop_magnet_cost()
-	if GameState.run_gold < cost or GameState.run_magnet_level >= GameConstants.MAGNET_MAX_LEVEL:
-		return
-	GameState.run_gold -= cost
-	GameState.run_gold_spent += cost
-	GameState.run_magnet_level += 1
-	_refresh_shop_text()
-
-func _buy_orbs() -> void:
-	var cost := _shop_orb_cost()
-	if GameState.run_gold < cost or GameState.run_orb_level >= GameConstants.ORB_MAX_LEVEL:
-		return
-	GameState.run_gold -= cost
-	GameState.run_gold_spent += cost
-	GameState.run_orb_level += 1
-	_refresh_shop_text()
-
-func _buy_spike_ball() -> void:
-	var cost := _shop_spike_ball_cost()
-	if GameState.run_gold < cost or GameState.run_spike_ball_level >= GameConstants.SPIKE_BALL_MAX_LEVEL:
-		return
-	GameState.run_gold -= cost
-	GameState.run_gold_spent += cost
-	GameState.run_spike_ball_level += 1
-	_refresh_shop_text()
-
-func _buy_shotgun() -> void:
-	var cost := _shop_shotgun_cost()
-	if GameState.run_gold < cost or GameState.run_shotgun_level >= GameConstants.SHOTGUN_MAX_LEVEL:
-		return
-	GameState.run_gold -= cost
-	GameState.run_gold_spent += cost
-	GameState.run_shotgun_level += 1
-	_refresh_shop_text()
-
-func _buy_sniper() -> void:
-	var cost := _shop_sniper_cost()
-	if GameState.run_gold < cost or GameState.run_sniper_level >= GameConstants.SNIPER_MAX_LEVEL:
-		return
-	GameState.run_gold -= cost
-	GameState.run_gold_spent += cost
-	GameState.run_sniper_level += 1
-	_refresh_shop_text()
-
-func _buy_rocket() -> void:
-	var cost := _shop_rocket_cost()
-	if GameState.run_gold < cost or GameState.run_rocket_level >= GameConstants.ROCKET_MAX_LEVEL:
-		return
-	GameState.run_gold -= cost
-	GameState.run_gold_spent += cost
-	GameState.run_rocket_level += 1
-	_refresh_shop_text()
+func _banish_ability(id: String) -> void:
+	if GameState.run_banish_count > 0:
+		GameState.run_banish_count -= 1
+		GameState.run_banished_abilities.append(id)
+		_generate_shop_options()
+		_refresh_shop_ui()
 
 func _on_player_died() -> void:
 	end_run(false, wave_controller.wave)

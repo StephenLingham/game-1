@@ -14,6 +14,7 @@ var gold_drop_max: int
 var target: Node2D = null
 var can_attack: bool = true
 var attack_timer: float = 0.0
+var _freeze_timer: float = 0.0
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -50,7 +51,10 @@ func _physics_process(delta: float) -> void:
 		if attack_timer <= 0.0:
 			can_attack = true
 	
-	if target and is_instance_valid(target):
+	if _freeze_timer > 0:
+		_freeze_timer -= delta
+		velocity = Vector2.ZERO
+	elif target and is_instance_valid(target):
 		var dir := (target.global_position - global_position).normalized()
 		velocity = dir * speed
 		look_at(target.global_position)
@@ -76,13 +80,20 @@ func take_damage(amount: int = 1) -> int:
 	
 	return actual_damage
 
+func freeze(duration: float) -> void:
+	_freeze_timer = duration
+	sprite.modulate = Color(0.5, 0.8, 1.0)
+	var tween = create_tween()
+	tween.tween_property(sprite, "modulate", Color.WHITE, duration)
+
 func _drop_gold() -> void:
 	call_deferred("_spawn_gold_pickup")
 
 func _spawn_gold_pickup() -> void:
 	var pickup: Area2D = preload("res://scenes/GoldPickup.tscn").instantiate()
 	pickup.global_position = global_position
-	pickup.value = randi_range(gold_drop_min, gold_drop_max)
+	var base_gold = randi_range(gold_drop_min, gold_drop_max)
+	pickup.value = int(base_gold * GameState.get_gold_drop_multiplier())
 	get_tree().current_scene.get_node("PickupContainer").add_child(pickup)
 
 func _on_hitbox_body_entered(body: Node2D) -> void:

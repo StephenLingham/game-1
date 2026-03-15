@@ -1,6 +1,6 @@
 extends Area2D
 
-enum Type { MAGNET, SPEED, HEAL, ROCKET, GEM }
+enum Type { MAGNET, SPEED, HEAL, ROCKET, GEM, ATK_SPEED }
 
 @export var type: Type = Type.MAGNET
 
@@ -18,6 +18,7 @@ func _ready() -> void:
 			Type.HEAL: tex_path = "res://assets/powerup_heal_2.png"
 			Type.ROCKET: tex_path = "res://assets/powerup_explosion_2.png"
 			Type.GEM: tex_path = "res://assets/gem_icon.png"
+			Type.ATK_SPEED: tex_path = "res://assets/powerup_atkspeed.png"
 		
 		if ResourceLoader.exists(tex_path):
 			var tex = load(tex_path)
@@ -53,6 +54,9 @@ func collect(player: Node) -> void:
 			player.trigger_rocket_blast()
 		Type.GEM:
 			GameState.award_gems(GameConstants.POWERUP_GEM_AWARD_AMOUNT)
+		Type.ATK_SPEED:
+			if player.has_method("apply_atk_speed_boost"):
+				player.apply_atk_speed_boost(GameConstants.POWERUP_ATK_SPEED_BOOST_MULTIPLIER, GameConstants.POWERUP_ATK_SPEED_BOOST_DURATION)
 			
 	# Spawn some particles or effect
 	_spawn_collect_effect()
@@ -88,6 +92,7 @@ func _spawn_collect_effect() -> void:
 		Type.HEAL: particles.color = Color(0, 1, 0)
 		Type.ROCKET: particles.color = Color(1, 0.2, 0)
 		Type.GEM: particles.color = Color(0.8, 0, 1)
+		Type.ATK_SPEED: particles.color = Color(1, 0, 0)
 		
 	get_tree().current_scene.add_child(particles)
 	get_tree().create_timer(1.0).timeout.connect(particles.queue_free)

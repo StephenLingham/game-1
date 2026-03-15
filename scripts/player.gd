@@ -14,6 +14,9 @@ var fire_timer: float = 0.0
 
 var _base_speed: float = GameConstants.PLAYER_SPEED
 var _speed_boost_duration: float = 0.0
+var _atk_speed_boost_multiplier: float = 1.0
+var _atk_speed_boost_duration: float = 0.0
+var _regen_timer: float = 0.0
 
 # Click / tap-to-move support
 var _click_target: Vector2 = Vector2.ZERO
@@ -32,10 +35,22 @@ var spike_ball_timer: float = 0.0
 var shotgun_timer: float = 0.0
 var sniper_timer: float = 0.0
 var rocket_timer: float = 0.0
+var disk_timer: float = 0.0
+var spikes_timer: float = 0.0
+var turret_timer: float = 0.0
+var ice_timer: float = 0.0
+var mg_timer: float = 0.0
+
+var disk_scene: PackedScene = preload("res://scenes/bouncing_disk.tscn")
+var spikes_scene: PackedScene = preload("res://scenes/floor_spikes.tscn")
+var turret_scene: PackedScene = preload("res://scenes/turret.tscn")
 
 func _ready() -> void:
 	add_to_group("player")
+	max_health = GameState.get_max_health()
 	health = max_health
+	_base_speed = GameConstants.PLAYER_SPEED * GameState.get_speed_multiplier()
+	speed = _base_speed
 
 func set_camera_limits(rect: Rect2) -> void:
 	var cam = $Camera2D as Camera2D
@@ -53,6 +68,19 @@ func _physics_process(delta: float) -> void:
 		_speed_boost_duration -= delta
 		if _speed_boost_duration <= 0:
 			speed = _base_speed
+			
+	if _atk_speed_boost_duration > 0:
+		_atk_speed_boost_duration -= delta
+		if _atk_speed_boost_duration <= 0:
+			_atk_speed_boost_multiplier = 1.0
+
+	# Regen
+	var regen = GameState.get_health_regen()
+	if regen > 0 and health < max_health:
+		_regen_timer += delta
+		if _regen_timer >= 1.0:
+			_regen_timer = 0.0
+			health = min(health + int(regen), max_health)
 
 	# Movement
 	var input_dir := Vector2.ZERO
@@ -92,14 +120,14 @@ func _physics_process(delta: float) -> void:
 		fire()
 
 	# Spike ball logic
-	if GameState.run_spike_ball_level > 0:
+	if GameState.run_abilities.get("spike_ball", 0) > 0:
 		spike_ball_timer -= delta
 		if spike_ball_timer <= 0:
 			_fire_spike_ball(nearest_enemy)
 			spike_ball_timer = _get_spike_ball_cooldown()
 
 	# Shotgun logic
-	if GameState.run_shotgun_level > 0:
+	if GameState.run_abilities.get("shotgun", 0) > 0:
 		shotgun_timer -= delta
 		if shotgun_timer <= 0:
 			var visible_enemies = _get_visible_enemies()
@@ -108,18 +136,50 @@ func _physics_process(delta: float) -> void:
 				shotgun_timer = GameConstants.SHOTGUN_BASE_COOLDOWN
 
 	# Sniper logic
-	if GameState.run_sniper_level > 0:
+	if GameState.run_abilities.get("sniper", 0) > 0:
 		sniper_timer -= delta
 		if sniper_timer <= 0:
 			_fire_sniper()
 			sniper_timer = GameState.get_sniper_cooldown()
 
 	# Rocket logic
-	if GameState.run_rocket_level > 0:
+	if GameState.run_abilities.get("rocket", 0) > 0:
 		rocket_timer -= delta
 		if rocket_timer <= 0:
 			_fire_rocket()
-			rocket_timer = GameState.get_rocket_cooldown()
+			rocket_timer = GameState.get_rocket_cooldown() / _atk_speed_boost_multiplier
+
+	# New Abilities
+	if GameState.run_abilities.get("bouncing_disk", 0) > 0:
+		disk_timer -= delta
+		if disk_timer <= 0:
+			_fire_disk()
+			disk_timer = GameConstants.DISK_BASE_COOLDOWN / _atk_speed_boost_multiplier
+			
+	if GameState.run_abilities.get("floor_spikes", 0) > 0:
+		spikes_timer -= delta
+		if spikes_timer <= 0:
+			_drop_spikes()
+			spikes_timer = GameConstants.SPIKES_BASE_COOLDOWN / _atk_speed_boost_multiplier
+
+	if GameState.run_abilities.get("turret", 0) > 0:
+		turret_timer -= delta
+		if turret_timer <= 0:
+			_place_turret()
+			var lvl = GameState.run_abilities.get("turret", 1)
+			turret_timer = (GameConstants.TURRET_BASE_COOLDOWN - lvl * GameConstants.TURRET_COOLDOWN_REDUCTION) / _atk_speed_boost_multiplier
+
+	if GameState.run_abilities.get("ice_wave", 0) > 0:
+		ice_timer -= delta
+		if ice_timer <= 0:
+			_trigger_ice_wave()
+			ice_timer = GameConstants.ICE_BASE_COOLDOWN / _atk_speed_boost_multiplier
+
+	if GameState.run_abilities.get("machine_gun", 0) > 0:
+		mg_timer -= delta
+		if mg_timer <= 0:
+			_fire_machine_gun(nearest_enemy)
+			mg_timer = GameConstants.MG_BASE_COOLDOWN / _atk_speed_boost_multiplier
 
 func get_damage() -> int:
 	var dmg := float(base_damage + GameState.get_gun_damage_bonus())
@@ -127,7 +187,8 @@ func get_damage() -> int:
 	return int(round(dmg))
 
 func _get_fire_interval() -> float:
-	var atk_mult := GameState.get_atkspd_multiplier() * GameState.get_gun_atk_speed_mult()
+	var atk_mult := GameState.get_atkspd_multiplier() * GameState.get_gun_atk_speed_mult() * _atk_speed_boost_multiplier
+	# Apply same logic to other timers
 	var interval: float = fire_rate / max(atk_mult, 0.05)
 	return max(interval, 0.02)
 
@@ -177,7 +238,9 @@ func fire() -> void:
 	bullet.global_position = muzzle.global_position
 	bullet.rotation = rotation
 	bullet.direction = Vector2.RIGHT.rotated(rotation)
-	bullet.damage = get_damage()
+	var is_crit = randf() < GameState.get_crit_chance()
+	bullet.damage = get_damage() * (2 if is_crit else 1)
+	if is_crit: bullet.modulate = Color(2, 2, 0) # Glow yellow
 	get_tree().current_scene.add_child(bullet)
 
 func _fire_shotgun(target: Node2D) -> void:
@@ -258,7 +321,8 @@ func _create_blood_effect(pos: Vector2) -> void:
 	timer.timeout.connect(particles.queue_free)
 
 func take_damage(amount: int = 1) -> void:
-	health -= amount
+	var reduced = max(1, amount - GameState.get_armor())
+	health -= reduced
 	
 	# Flash red
 	sprite.modulate = Color(1, 0.3, 0.3)
@@ -269,7 +333,8 @@ func take_damage(amount: int = 1) -> void:
 		player_died.emit()
 
 func _get_spike_ball_cooldown() -> float:
-	var cooldown = GameConstants.SPIKE_BALL_BASE_COOLDOWN - (GameState.run_spike_ball_level - 1) * GameConstants.SPIKE_BALL_COOLDOWN_REDUCTION_PER_LEVEL
+	var lvl = GameState.run_abilities.get("spike_ball", 0)
+	var cooldown = GameConstants.SPIKE_BALL_BASE_COOLDOWN - (lvl - 1) * GameConstants.SPIKE_BALL_COOLDOWN_REDUCTION_PER_LEVEL
 	return max(0.5, cooldown)
 
 func _fire_spike_ball(target: Node2D) -> void:
@@ -282,7 +347,8 @@ func _fire_spike_ball(target: Node2D) -> void:
 	
 	ball.direction = dir
 	ball.damage = GameConstants.SPIKE_BALL_BASE_DAMAGE + GameState.get_gun_damage_bonus()
-	ball.max_distance = GameConstants.SPIKE_BALL_BASE_DISTANCE + (GameState.run_spike_ball_level - 1) * GameConstants.SPIKE_BALL_DISTANCE_PER_LEVEL
+	var lvl = GameState.run_abilities.get("spike_ball", 0)
+	ball.max_distance = GameConstants.SPIKE_BALL_BASE_DISTANCE + (lvl - 1) * GameConstants.SPIKE_BALL_DISTANCE_PER_LEVEL
 	get_tree().current_scene.add_child(ball)
 
 func _fire_rocket() -> void:
@@ -323,28 +389,74 @@ func heal_full() -> void:
 func apply_speed_boost(multiplier: float, duration: float) -> void:
 	speed = _base_speed * multiplier
 	_speed_boost_duration = duration
-	# Some visual feedback could go here
 	var tween := create_tween()
 	sprite.modulate = Color(0.3, 0.3, 1.0)
 	tween.tween_property(sprite, "modulate", Color.WHITE, 0.5)
 
+func apply_atk_speed_boost(multiplier: float, duration: float) -> void:
+	_atk_speed_boost_multiplier = multiplier
+	_atk_speed_boost_duration = duration
+	var tween := create_tween()
+	sprite.modulate = Color(1.0, 0.3, 0.3)
+	tween.tween_property(sprite, "modulate", Color.WHITE, 0.5)
+
+func _fire_disk() -> void:
+	var disk = disk_scene.instantiate()
+	disk.global_position = global_position
+	var lvl = GameState.run_abilities.get("bouncing_disk", 1)
+	disk.bounces_left = lvl # Increase with each upgrade
+	disk.damage = GameConstants.DISK_BASE_DAMAGE + GameState.get_gun_damage_bonus()
+	get_tree().current_scene.add_child(disk)
+
+func _drop_spikes() -> void:
+	var spikes = spikes_scene.instantiate()
+	spikes.global_position = global_position + Vector2(randf_range(-50, 50), randf_range(-50, 50))
+	spikes.damage = GameConstants.SPIKES_BASE_DAMAGE + GameState.get_gun_damage_bonus()
+	get_tree().current_scene.add_child(spikes)
+
+func _place_turret() -> void:
+	var lvl = GameState.run_abilities.get("turret", 1)
+	var count = 1 + (lvl / 3)
+	for i in range(count):
+		var t = turret_scene.instantiate()
+		t.global_position = global_position + Vector2.RIGHT.rotated(randf() * TAU) * 100.0
+		get_tree().current_scene.add_child(t)
+
+func _trigger_ice_wave() -> void:
+	var lvl = GameState.run_abilities.get("ice_wave", 1)
+	var radius = GameConstants.ICE_BASE_RADIUS + lvl * GameConstants.ICE_RADIUS_INCREMENT
+	
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for e in enemies:
+		if is_instance_valid(e) and global_position.distance_to(e.global_position) <= radius:
+			if e.has_method("freeze"):
+				e.freeze(GameConstants.ICE_FREEZE_DURATION)
+
+func _fire_machine_gun(target: Node2D) -> void:
+	if not target: return
+	var b = bullet_scene.instantiate()
+	b.global_position = muzzle.global_position
+	var dir = (target.global_position - global_position).normalized()
+	b.direction = dir
+	b.rotation = dir.angle()
+	b.damage = GameConstants.MG_DAMAGE + GameState.get_gun_damage_bonus()
+	b.weapon_source = "machine_gun"
+	get_tree().current_scene.add_child(b)
+
 func trigger_rocket_blast() -> void:
 	var blast_pos = global_position
-	# Max level rocket blast settings
 	var radius = GameConstants.ROCKET_BASE_BLAST_RADIUS + (GameConstants.ROCKET_MAX_LEVEL - 1) * GameConstants.ROCKET_BLAST_RADIUS_PER_LEVEL
 	var damage = GameConstants.ROCKET_DAMAGE
 	
-	# Use the static method from Rocket if possible, otherwise we might need to copy it or move it to a utility
-	# Rocket class is loaded at the top
-	RocketScript.spawn_explosion(get_tree().current_scene, blast_pos, radius)
+	if ResourceLoader.exists("res://scripts/rocket.gd"):
+		var script = load("res://scripts/rocket.gd")
+		if script.has_method("spawn_explosion"):
+			script.spawn_explosion(get_tree().current_scene, blast_pos, radius)
 	
-	# Damage enemies
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	for enemy in enemies:
 		if is_instance_valid(enemy):
 			var dist = blast_pos.distance_to(enemy.global_position)
 			if dist <= radius:
 				if enemy.has_method("take_damage"):
-					GameState.run_damage_rocket += enemy.take_damage(damage)
-					if enemy.health <= 0:
-						RocketScript.spawn_explosion(get_tree().current_scene, enemy.global_position, 0)
+					GameState.run_damage_stats["rocket"] = GameState.run_damage_stats.get("rocket", 0) + enemy.take_damage(damage)
