@@ -148,6 +148,10 @@ func _process(_delta: float) -> void:
 
 func on_wave_started(w: int) -> void:
 	lbl_wave.text = "Wave: %d / 10" % w
+	
+	# Reset player to center and clear movement
+	var screen_center := get_viewport().get_visible_rect().size / 2.0
+	player.reset_state(screen_center)
 
 func on_wave_time(t: float) -> void:
 	lbl_time.text = "Time: %.0fs" % t

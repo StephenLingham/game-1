@@ -52,6 +52,16 @@ func _ready() -> void:
 	_base_speed = GameConstants.PLAYER_SPEED * GameState.get_speed_multiplier()
 	speed = _base_speed
 
+func reset_state(pos: Vector2) -> void:
+	global_position = pos
+	_has_click_target = false
+	velocity = Vector2.ZERO
+	
+	var cam = $Camera2D as Camera2D
+	if cam:
+		cam.reset_smoothing()
+		cam.force_update_scroll()
+
 func set_camera_limits(rect: Rect2) -> void:
 	var cam = $Camera2D as Camera2D
 	if cam:
