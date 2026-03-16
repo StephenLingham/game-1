@@ -27,7 +27,7 @@ func _refresh_ui() -> void:
 	
 	for id in ITEMS:
 		var item = ITEMS[id]
-		var is_unlocked = GameState.unlocked_items.has(id)
+		var is_unlocked = GameState.is_item_unlocked(id)
 		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()

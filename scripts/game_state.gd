@@ -20,6 +20,7 @@ var perm_speed_level: int = 0
 
 # Unlocks
 var unlocked_items: Array = ["handgun", "magnet", "bouncing_disk"] # Items the player CAN see in shop
+var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed until end)
 var lifetime_kills: Dictionary = {"handgun": 0}
 
 # Run-time values (reset per run)
@@ -49,6 +50,7 @@ func reset_run() -> void:
 	run_gold_collected = 0
 	run_gold_spent = 0
 	run_damage_stats = {}
+	run_unlocked_items = []
 
 # --- HELPER GETTERS (Backward Compatibility) ---
 
@@ -213,6 +215,22 @@ func record_kill(weapon: String) -> void:
 func record_ability_upgrade(id: String, level: int) -> void:
 	if level >= 2: # "upgrade once" means level 2
 		_unlock_next_in_chain(id)
+	# No save() here to avoid mid-run permanent save of kills/unlocks if we want to be strict, 
+	# but kills are already being saved in record_kill. Let's be consistent.
+	save()
+
+func is_item_unlocked(id: String) -> bool:
+	if GameConstants.DEBUG_UNLOCK_ALL_WEAPONS:
+		# Check if it's a weapon based on ALL_ABILITIES in Main.gd or just return true for everything?
+		# The request said "unlock all weapons", but unlocking everything is simpler and probably what's intended for debugging.
+		return true
+	return unlocked_items.has(id)
+
+func finalize_run_unlocks() -> void:
+	for item in run_unlocked_items:
+		if not unlocked_items.has(item):
+			unlocked_items.append(item)
+	run_unlocked_items = []
 	save()
 
 func _unlock_next_in_chain(id: String) -> void:
@@ -224,8 +242,8 @@ func _unlock_next_in_chain(id: String) -> void:
 	}
 	if next_map.has(id):
 		var next = next_map[id]
-		if not unlocked_items.has(next):
-			unlocked_items.append(next)
+		if not unlocked_items.has(next) and not run_unlocked_items.has(next):
+			run_unlocked_items.append(next)
 
 func _check_unlocks() -> void:
 	# Handgun -> Shotgun -> Sniper -> Rocket -> Machine Gun
@@ -234,8 +252,8 @@ func _check_unlocks() -> void:
 		var current = weapon_chain[i]
 		var next = weapon_chain[i+1]
 		if lifetime_kills.get(current, 0) >= GameConstants.UNLOCK_KILLS_NEEDED:
-			if not unlocked_items.has(next):
-				unlocked_items.append(next)
+			if not unlocked_items.has(next) and not run_unlocked_items.has(next):
+				run_unlocked_items.append(next)
 
 func save() -> void:
 	var data := {

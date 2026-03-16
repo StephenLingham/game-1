@@ -176,7 +176,7 @@ func _generate_shop_options() -> void:
 	var pool = []
 	
 	for abi in ALL_ABILITIES:
-		if not GameState.unlocked_items.has(abi.id): continue
+		if not GameState.is_item_unlocked(abi.id): continue
 		if GameState.run_banished_abilities.has(abi.id): continue
 		
 		var level = GameState.run_abilities.get(abi.id, 0)
@@ -220,9 +220,14 @@ func _refresh_shop_ui() -> void:
 		vbox.add_child(lbl)
 		
 		var buy_btn = Button.new()
-		buy_btn.text = "Buy: %d Gold" % cost
-		buy_btn.disabled = GameState.run_gold < cost
-		buy_btn.pressed.connect(_buy_ability.bind(abi.id))
+		var max_lvl = _get_max_level(abi.id)
+		if level >= max_lvl:
+			buy_btn.text = "MAXED"
+			buy_btn.disabled = true
+		else:
+			buy_btn.text = "Buy: %d Gold" % cost
+			buy_btn.disabled = GameState.run_gold < cost
+			buy_btn.pressed.connect(_buy_ability.bind(abi.id))
 		vbox.add_child(buy_btn)
 		
 		if GameState.run_banish_count > 0:
@@ -269,12 +274,12 @@ func _buy_ability(id: String) -> void:
 	var level = GameState.run_abilities.get(id, 0)
 	var cost = _get_ability_cost(id, level)
 	
-	if GameState.run_gold >= cost:
+	if GameState.run_gold >= cost and level < _get_max_level(id):
 		GameState.run_gold -= cost
 		GameState.run_gold_spent += cost
 		GameState.run_abilities[id] = level + 1
 		GameState.record_ability_upgrade(id, level + 1)
-		_generate_shop_options()
+		# _generate_shop_options()  <-- Removed to stop auto-reroll
 		_refresh_shop_ui()
 
 func _reroll_shop() -> void:
@@ -304,6 +309,13 @@ func end_run(won: bool, waves_completed: int) -> void:
 	var gems := waves_completed * 2
 	if won:
 		gems += 10
+	
+	# Handle delayed unlocks
+	var newly_unlocked = []
+	for id in GameState.run_unlocked_items:
+		newly_unlocked.append(id)
+	GameState.finalize_run_unlocks()
+	
 	GameState.award_gems(gems)
 
 	game_over_panel.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -331,6 +343,26 @@ func end_run(won: bool, waves_completed: int) -> void:
 
 	# Gems
 	stats_vbox.get_node("GemsLabel").text = "Gems earned: %d  |  Total gems: %d" % [gems, GameState.gems]
+
+	# Unlocks
+	if newly_unlocked.size() > 0:
+		var unlock_lbl = Label.new()
+		unlock_lbl.text = "\n[ NEW UNLOCKS! ]"
+		unlock_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		unlock_lbl.modulate = Color.GOLD
+		stats_vbox.add_child(unlock_lbl)
+		
+		for id in newly_unlocked:
+			var item_name = id
+			for abi in ALL_ABILITIES:
+				if abi.id == id:
+					item_name = abi.name
+					break
+			
+			var l = Label.new()
+			l.text = "★ %s" % item_name
+			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			stats_vbox.add_child(l)
 
 func _back_to_lobby() -> void:
 	get_tree().paused = false
