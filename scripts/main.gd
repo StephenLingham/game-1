@@ -194,10 +194,6 @@ func _generate_shop_options() -> void:
 		# Skip if maxed
 		if level >= max_level: continue
 		
-		# 6 ability limit
-		if level == 0 and GameState.run_abilities.size() >= GameConstants.SHOP_MAX_ABILITIES:
-			continue
-			
 		pool.append(abi)
 	
 	pool.shuffle()
@@ -240,17 +236,23 @@ func _refresh_shop_ui() -> void:
 		
 		var buy_btn = Button.new()
 		var max_lvl = _get_max_level(abi.id)
+		var is_limit_reached = level == 0 and GameState.run_abilities.size() >= GameConstants.SHOP_MAX_ABILITIES
+		
 		if level >= max_lvl:
 			buy_btn.text = "MAXED"
 			buy_btn.disabled = true
+		elif is_limit_reached:
+			buy_btn.text = "Limit Reached"
+			buy_btn.disabled = true
 		else:
-			buy_btn.text = "Buy: %d Gold" % cost
+			var prefix = "Buy" if level == 0 else "Upgrade"
+			buy_btn.text = "%s: %d Gold" % [prefix, cost]
 			buy_btn.disabled = GameState.run_gold < cost
 			buy_btn.pressed.connect(_buy_ability.bind(abi.id))
 		vbox.add_child(buy_btn)
 		
 		# Sell logic
-		if level > 0 and abi.id != "handgun": # Can't sell starter weapon for now to avoid game break
+		if level > 0:
 			var sell_btn = Button.new()
 			var sell_val = int(cost * 0.5)
 			sell_btn.text = "Sell for %d Gold" % sell_val

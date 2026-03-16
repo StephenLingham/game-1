@@ -126,7 +126,7 @@ func _physics_process(delta: float) -> void:
 		if fire_timer <= 0.0:
 			can_fire = true
 	
-	if can_fire and nearest_enemy:
+	if can_fire and nearest_enemy and GameState.run_abilities.get("handgun", 0) > 0:
 		fire()
 
 	# Spike ball logic
