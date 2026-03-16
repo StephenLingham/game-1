@@ -143,14 +143,16 @@ func _physics_process(delta: float) -> void:
 			var visible_enemies = _get_visible_enemies()
 			if not visible_enemies.is_empty():
 				_fire_shotgun(visible_enemies.pick_random())
-				shotgun_timer = GameConstants.SHOTGUN_BASE_COOLDOWN
+				shotgun_timer = GameConstants.SHOTGUN_BASE_COOLDOWN / _atk_speed_boost_multiplier
 
 	# Sniper logic
 	if GameState.run_abilities.get("sniper", 0) > 0:
 		sniper_timer -= delta
 		if sniper_timer <= 0:
 			_fire_sniper()
-			sniper_timer = GameState.get_sniper_cooldown()
+			# For sniper, we "greatly" increase it even more by squaring the multiplier effect
+			var hyper_mult = _atk_speed_boost_multiplier * _atk_speed_boost_multiplier
+			sniper_timer = GameState.get_sniper_cooldown() / hyper_mult
 
 	# Rocket logic
 	if GameState.run_abilities.get("rocket", 0) > 0:
