@@ -31,24 +31,28 @@ func _refresh_ui() -> void:
 		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 10)
+		vbox.custom_minimum_size = Vector2(280, 0)
 		panel.add_child(vbox)
 		
 		var title = Label.new()
 		title.text = item.name if is_unlocked else "???"
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		title.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(title)
 		
 		var status = Label.new()
-		status.text = "UNLOCKED" if is_unlocked else "LOCKED"
+		status.text = "Unlocked" if is_unlocked else "Locked"
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		status.modulate = Color.GREEN if is_unlocked else Color.RED
+		status.modulate = Color.SPRING_GREEN if is_unlocked else Color.TOMATO
+		status.add_theme_font_size_override("font_size", 18)
 		vbox.add_child(status)
 		
 		var desc = Label.new()
 		desc.text = item.unlock
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		desc.modulate = Color(0.7, 0.7, 0.7)
+		desc.modulate = Color(0.8, 0.8, 0.9)
 		vbox.add_child(desc)
 		
 		grid.add_child(panel)

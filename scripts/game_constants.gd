@@ -177,4 +177,4 @@ const POWERUP_ICON_SCALE: float = 0.07
 
 # --- UNLOCKS ---
 const UNLOCK_KILLS_NEEDED: int = 100 # Example kill threshold for guns
-const DEBUG_UNLOCK_ALL_WEAPONS: bool = false
+const DEBUG_UNLOCK_ALL_WEAPONS: bool = true

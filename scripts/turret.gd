@@ -6,6 +6,12 @@ var timer := 0.0
 var bullet_scene = preload("res://scenes/bullet.tscn")
 
 func _ready() -> void:
+	add_to_group("projectiles")
+	z_index = -1
+	# Completely disable collision
+	collision_layer = 0
+	collision_mask = 0
+	
 	# Disappear after 10 seconds
 	get_tree().create_timer(10.0).timeout.connect(queue_free)
 

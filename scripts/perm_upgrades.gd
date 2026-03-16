@@ -36,18 +36,21 @@ func _refresh_ui() -> void:
 		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 12)
+		vbox.custom_minimum_size = Vector2(280, 0)
 		panel.add_child(vbox)
 		
 		var title = Label.new()
 		title.text = upg.name + " (Lv. %d)" % level
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		title.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(title)
 		
 		var desc = Label.new()
 		desc.text = upg.desc
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		desc.modulate = Color(0.7, 0.7, 0.7)
+		desc.modulate = Color(0.8, 0.8, 0.9)
 		vbox.add_child(desc)
 		
 		var btn = Button.new()

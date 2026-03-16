@@ -20,6 +20,11 @@ func _ready() -> void:
 			Type.GEM: tex_path = "res://assets/gem_icon.png"
 			Type.ATK_SPEED: tex_path = "res://assets/powerup_atkspeed.png"
 		
+		# Fallback if specific file doesn't exist (e.g. for attack speed)
+		if not ResourceLoader.exists(tex_path) and type == Type.ATK_SPEED:
+			tex_path = "res://assets/powerup_speed_2.png"
+			sprite.modulate = Color(1.0, 0.2, 0.2) # Red for attack speed
+		
 		if ResourceLoader.exists(tex_path):
 			var tex = load(tex_path)
 			if tex:
@@ -58,8 +63,6 @@ func collect(player: Node) -> void:
 			if player.has_method("apply_atk_speed_boost"):
 				player.apply_atk_speed_boost(GameConstants.POWERUP_ATK_SPEED_BOOST_MULTIPLIER, GameConstants.POWERUP_ATK_SPEED_BOOST_DURATION)
 			
-	# Spawn some particles or effect
-	_spawn_collect_effect()
 	queue_free()
 
 func _apply_magnet(player: Node) -> void:

@@ -11,6 +11,7 @@ extends Node2D
 @onready var shop_gold_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/GoldLabel
 @onready var shop_gems_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/GemsLabel
 @onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
+@onready var shop_capacity_label: Label = Label.new() # Will add to UI
 
 var reroll_btn: Button
 var banish_active: bool = false
@@ -50,6 +51,12 @@ func _ready() -> void:
 	$UI/ShopPanel/Margin/VBox.add_child(reroll_btn)
 	$UI/ShopPanel/Margin/VBox.move_child(reroll_btn, $UI/ShopPanel/Margin/VBox/Continue.get_index())
 	reroll_btn.pressed.connect(_reroll_shop)
+	
+	# Capacity Label
+	shop_capacity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	shop_capacity_label.add_theme_font_size_override("font_size", 22)
+	$UI/ShopPanel/Margin/VBox.add_child(shop_capacity_label)
+	$UI/ShopPanel/Margin/VBox.move_child(shop_capacity_label, $UI/ShopPanel/Margin/VBox/Scroll.get_index())
 
 	# Game over buttons
 	$UI/GameOverPanel/Margin/VBox/ButtonBox/BackToLobby.pressed.connect(_back_to_lobby)
@@ -83,10 +90,12 @@ func _setup_arena() -> void:
 	floor_rect.size = arena_size
 	floor_rect.position = center - (arena_size / 2.0)
 	floor_rect.color = Color(0.15, 0.45, 0.2) # Green floor (Grass)
+	floor_rect.z_index = -100 # Ensure it's behind everything
 	
 	$Background.color = Color(0.05, 0.2, 0.1) # Dark green background
 	$Background.position = floor_rect.position - Vector2(2000, 2000)
 	$Background.size = arena_size + Vector2(4000, 4000)
+	$Background.z_index = -101
 	
 	var grass = preload("res://scripts/grass_drawer.gd").new()
 	grass.arena_size = arena_size
@@ -202,6 +211,13 @@ func _refresh_shop_ui() -> void:
 	reroll_btn.text = "Reroll (%d Gold)" % GameState.run_reroll_cost
 	reroll_btn.disabled = GameState.run_gold < GameState.run_reroll_cost
 	
+	var abi_count = GameState.run_abilities.size()
+	shop_capacity_label.text = "Abilities: %d / %d" % [abi_count, GameConstants.SHOP_MAX_ABILITIES]
+	if abi_count >= GameConstants.SHOP_MAX_ABILITIES:
+		shop_capacity_label.modulate = Color.VIOLET
+	else:
+		shop_capacity_label.modulate = Color.WHITE
+	
 	# Clear grid
 	for child in shop_grid.get_children():
 		child.queue_free()
@@ -212,11 +228,14 @@ func _refresh_shop_ui() -> void:
 		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 10)
+		vbox.custom_minimum_size = Vector2(240, 0)
 		panel.add_child(vbox)
 		
 		var lbl = Label.new()
 		lbl.text = abi.name + " (Lv. %d)" % level
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(lbl)
 		
 		var buy_btn = Button.new()
@@ -230,9 +249,17 @@ func _refresh_shop_ui() -> void:
 			buy_btn.pressed.connect(_buy_ability.bind(abi.id))
 		vbox.add_child(buy_btn)
 		
+		# Sell logic
+		if level > 0 and abi.id != "handgun": # Can't sell starter weapon for now to avoid game break
+			var sell_btn = Button.new()
+			var sell_val = int(cost * 0.5)
+			sell_btn.text = "Sell for %d Gold" % sell_val
+			sell_btn.pressed.connect(_sell_ability.bind(abi.id, sell_val))
+			vbox.add_child(sell_btn)
+		
 		if GameState.run_banish_count > 0:
 			var ban_btn = Button.new()
-			ban_btn.text = "Banish (Uses left: %d)" % GameState.run_banish_count
+			ban_btn.text = "Banish (%d left)" % GameState.run_banish_count
 			ban_btn.pressed.connect(_banish_ability.bind(abi.id))
 			vbox.add_child(ban_btn)
 		
@@ -280,6 +307,13 @@ func _buy_ability(id: String) -> void:
 		GameState.run_abilities[id] = level + 1
 		GameState.record_ability_upgrade(id, level + 1)
 		# _generate_shop_options()  <-- Removed to stop auto-reroll
+		_refresh_shop_ui()
+
+func _sell_ability(id: String, value: int) -> void:
+	if GameState.run_abilities.has(id):
+		GameState.run_abilities.erase(id)
+		GameState.run_gold += value
+		_generate_shop_options() # Regenerate pool since we now have slot
 		_refresh_shop_ui()
 
 func _reroll_shop() -> void:
@@ -347,7 +381,7 @@ func end_run(won: bool, waves_completed: int) -> void:
 	# Unlocks
 	if newly_unlocked.size() > 0:
 		var unlock_lbl = Label.new()
-		unlock_lbl.text = "\n[ NEW UNLOCKS! ]"
+		unlock_lbl.text = "\n[ New Unlocks! ]"
 		unlock_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		unlock_lbl.modulate = Color.GOLD
 		stats_vbox.add_child(unlock_lbl)

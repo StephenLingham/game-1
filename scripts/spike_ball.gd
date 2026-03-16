@@ -9,6 +9,7 @@ var travel_distance: float = 0.0
 var _hit_enemies: Array = []
 
 func _ready() -> void:
+	add_to_group("projectiles")
 	area_entered.connect(_on_area_entered)
 	body_entered.connect(_on_body_entered)
 

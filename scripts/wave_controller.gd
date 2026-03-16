@@ -79,6 +79,11 @@ func _end_wave() -> void:
 		if is_instance_valid(p):
 			p.queue_free()
 	
+	# Clear projectiles
+	for proj in get_tree().get_nodes_in_group("projectiles"):
+		if is_instance_valid(proj):
+			proj.queue_free()
+	
 	if wave < GameConstants.TOTAL_WAVES:
 		game.call_deferred("open_shop", wave)
 	else:

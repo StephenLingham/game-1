@@ -221,7 +221,7 @@ theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2
-text = "— ARMORY —"
+text = "— Armory —"
 label_settings = SubResource("LabelSettings_shop_title")
 horizontal_alignment = 1
 
@@ -248,10 +248,10 @@ size_flags_vertical = 3
 
 [node name="Grid" type="GridContainer" parent="UI/ShopPanel/Margin/VBox/Scroll"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 12
-columns = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 32
+theme_override_constants/v_separation = 20
+columns = 3
 
 [node name="BuyGun" type="Button" parent="UI/ShopPanel/Margin/VBox/Scroll/Grid"]
 custom_minimum_size = Vector2(0, 60)
@@ -303,7 +303,7 @@ custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 28
-text = "START NEXT WAVE"
+text = "Start Next Wave"
 
 [node name="GameOverPanel" type="Control" parent="UI"]
 visible = false
@@ -369,7 +369,7 @@ layout_mode = 2
 
 [node name="DmgTitle" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
 layout_mode = 2
-text = "— DAMAGE BREAKDOWN —"
+text = "— Damage Breakdown —"
 label_settings = SubResource("LabelSettings_shop_info")
 horizontal_alignment = 1
 

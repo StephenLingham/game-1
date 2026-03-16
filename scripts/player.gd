@@ -300,7 +300,12 @@ func _fire_sniper() -> void:
 	if visible_enemies.is_empty():
 		return
 	
-	var target = visible_enemies.pick_random()
+	# Target the enemy with the highest health
+	var target = visible_enemies[0]
+	for e in visible_enemies:
+		if e.health > target.health:
+			target = e
+	
 	if is_instance_valid(target):
 		# Create blood effect at target position
 		_create_blood_effect(target.global_position)
@@ -435,6 +440,22 @@ func _place_turret() -> void:
 func _trigger_ice_wave() -> void:
 	var lvl = GameState.run_abilities.get("ice_wave", 1)
 	var radius = GameConstants.ICE_BASE_RADIUS + lvl * GameConstants.ICE_RADIUS_INCREMENT
+	
+	# Visual effect
+	var circle = Polygon2D.new()
+	var pts = []
+	var segments = 64
+	for i in range(segments):
+		var a = i * TAU / segments
+		pts.append(Vector2.RIGHT.rotated(a) * radius)
+	circle.polygon = PackedVector2Array(pts)
+	circle.color = Color(0.4, 0.7, 1.0, 0.3)
+	circle.global_position = global_position
+	get_tree().current_scene.add_child(circle)
+	
+	var tween = create_tween()
+	tween.tween_property(circle, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(circle.queue_free)
 	
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	for e in enemies:

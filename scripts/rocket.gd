@@ -14,6 +14,7 @@ var time_alive: float = 0.0
 @onready var trail: CPUParticles2D = CPUParticles2D.new()
 
 func _ready() -> void:
+	add_to_group("projectiles")
 	# Connect signal manually since Tscn might have issues
 	body_entered.connect(_on_body_entered)
 	
