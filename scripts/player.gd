@@ -309,11 +309,18 @@ func _fire_sniper() -> void:
 			target = e
 	
 	if is_instance_valid(target):
-		# Create blood effect at target position
+		# Create visuals at target position
 		_create_blood_effect(target.global_position)
+		_create_crosshair_effect(target.global_position)
 		# Instantly kill enemy
 		if target.has_method("take_damage"):
 			GameState.run_damage_sniper += target.take_damage(999)
+
+func _create_crosshair_effect(pos: Vector2) -> void:
+	var ch = Node2D.new()
+	ch.set_script(load("res://scripts/crosshair_effect.gd"))
+	ch.global_position = pos
+	get_tree().current_scene.add_child(ch)
 
 func _create_blood_effect(pos: Vector2) -> void:
 	var particles = CPUParticles2D.new()

@@ -308,7 +308,13 @@ func _buy_ability(id: String) -> void:
 		GameState.run_gold_spent += cost
 		GameState.run_abilities[id] = level + 1
 		GameState.record_ability_upgrade(id, level + 1)
-		# _generate_shop_options()  <-- Removed to stop auto-reroll
+		
+		# Remove from current options until next reroll
+		for i in range(current_shop_options.size()):
+			if current_shop_options[i].id == id:
+				current_shop_options.remove_at(i)
+				break
+		
 		_refresh_shop_ui()
 
 func _sell_ability(id: String, value: int) -> void:
