@@ -1,7 +1,7 @@
 extends Node2D
 
 func _ready():
-	modulate = Color(1.0, 0.2, 0.2, 1.0) # Bright red
+	modulate = Color.BLACK
 	scale = Vector2(0.5, 0.5)
 	
 	var tween = create_tween()
@@ -16,12 +16,12 @@ func _draw():
 	var gap = 8.0
 	
 	# Draw crosshair lines with gaps for a "sniper" feel
-	draw_line(Vector2(-size, 0), Vector2(-gap, 0), Color.RED, thickness)
-	draw_line(Vector2(size, 0), Vector2(gap, 0), Color.RED, thickness)
-	draw_line(Vector2(0, -size), Vector2(0, -gap), Color.RED, thickness)
-	draw_line(Vector2(0, size), Vector2(0, gap), Color.RED, thickness)
+	draw_line(Vector2(-size, 0), Vector2(-gap, 0), Color.BLACK, thickness)
+	draw_line(Vector2(size, 0), Vector2(gap, 0), Color.BLACK, thickness)
+	draw_line(Vector2(0, -size), Vector2(0, -gap), Color.BLACK, thickness)
+	draw_line(Vector2(0, size), Vector2(0, gap), Color.BLACK, thickness)
 	
 	# Small outer circle
-	draw_arc(Vector2.ZERO, size * 0.8, 0, TAU, 32, Color.RED, 1.5)
+	draw_arc(Vector2.ZERO, size * 0.8, 0, TAU, 32, Color.BLACK, 1.5)
 	# Center dot
-	draw_circle(Vector2.ZERO, 2.0, Color.RED)
+	draw_circle(Vector2.ZERO, 2.0, Color.BLACK)
