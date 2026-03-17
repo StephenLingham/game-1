@@ -9,7 +9,7 @@ class_name GameConstants extends RefCounted
 const PLAYER_SPEED: float = 300.0
 const PLAYER_FIRE_RATE: float = 0.50
 const PLAYER_MAX_HEALTH: int = 100
-const PLAYER_BASE_DAMAGE: int = 1
+const PLAYER_BASE_DAMAGE: int = 50
 
 # --- PERMANENT UPGRADES ---
 const PERM_LEVEL_COST: int = 10
@@ -19,7 +19,7 @@ const PERM_COST_INCREMENT: int = 10
 const GUN_MAX_LEVEL: int = 4
 const GUN_BASE_COST: int = 15
 const GUN_COST_INCREMENT: int = 10
-const GUN_DAMAGE_PER_UPGRADE: int = 1
+const GUN_DAMAGE_PER_UPGRADE: int = 50
 const GUN_ATK_SPD_PER_UPGRADE: float = 0.15
 
 # --- WAVES & SPAWN SETTINGS ---
@@ -41,21 +41,21 @@ const PROB_BIG_ENEMY: float = 0.10
 
 # --- ENEMY SETTINGS ---
 const ENEMY_NORMAL_SPEED: float = 100.0
-const ENEMY_NORMAL_HEALTH: int = 2
+const ENEMY_NORMAL_HEALTH: int = 100
 const ENEMY_NORMAL_DAMAGE: int = 20
 const ENEMY_NORMAL_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_NORMAL_GOLD_MIN: int = 1
 const ENEMY_NORMAL_GOLD_MAX: int = 3
 
 const ENEMY_FAST_SPEED: float = 200.0
-const ENEMY_FAST_HEALTH: int = 1
+const ENEMY_FAST_HEALTH: int = 50
 const ENEMY_FAST_DAMAGE: int = 20
 const ENEMY_FAST_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_FAST_GOLD_MIN: int = 1
 const ENEMY_FAST_GOLD_MAX: int = 2
 
 const ENEMY_BIG_SPEED: float = 100.0
-const ENEMY_BIG_HEALTH: int = 8
+const ENEMY_BIG_HEALTH: int = 400
 const ENEMY_BIG_DAMAGE: int = 40
 const ENEMY_BIG_ATTACK_COOLDOWN: float = 1.5
 const ENEMY_BIG_GOLD_MIN: int = 4
@@ -74,13 +74,13 @@ const MAGNET_SPEED: float = 600.0
 const ORB_BASE_ROTATE_SPEED: float = 2.5
 const ORB_UPGRADE_ROTATE_SPEED: float = 4.5
 const ORB_RADIUS: float = 100.0
-const ORB_DAMAGE: int = 2
+const ORB_DAMAGE: int = 100
 const ORB_MAX_LEVEL: int = 6
 const ORB_BASE_COST: int = 10
 const ORB_COST_INCREMENT_PER_LEVEL: int = 5
 
 # --- SPIKE BALL ABILITY SETTINGS ---
-const SPIKE_BALL_BASE_DAMAGE: int = 15
+const SPIKE_BALL_BASE_DAMAGE: int = 750
 const SPIKE_BALL_BASE_DISTANCE: float = 500.0
 const SPIKE_BALL_DISTANCE_PER_LEVEL: float = 200.0
 const SPIKE_BALL_BASE_COOLDOWN: float = 2.5
@@ -113,12 +113,12 @@ const ROCKET_BASE_COST: int = 20
 const ROCKET_COST_INCREMENT_PER_LEVEL: int = 15
 const ROCKET_SPEED: float = 400.0
 const ROCKET_TURN_SPEED: float = 5.0
-const ROCKET_DAMAGE: int = 10
+const ROCKET_DAMAGE: int = 500
 const ROCKET_TARGET_RADIUS: float = 600.0
 
 # Bouncing Disk
 const DISK_BASE_COOLDOWN: float = 3.0
-const DISK_BASE_DAMAGE: int = 12
+const DISK_BASE_DAMAGE: int = 600
 const DISK_MAX_LEVEL: int = 5
 const DISK_BASE_COST: int = 20
 const DISK_COST_INCREMENT: int = 15
@@ -126,7 +126,7 @@ const DISK_SPEED: float = 500.0
 
 # Floor Spikes
 const SPIKES_BASE_COOLDOWN: float = 2.0
-const SPIKES_BASE_DAMAGE: int = 10
+const SPIKES_BASE_DAMAGE: int = 500
 const SPIKES_MAX_LEVEL: int = 5
 const SPIKES_BASE_COST: int = 15
 const SPIKES_COST_INCREMENT: int = 10
@@ -137,12 +137,12 @@ const TURRET_COOLDOWN_REDUCTION: float = 0.5
 const TURRET_MAX_LEVEL: int = 5
 const TURRET_BASE_COST: int = 25
 const TURRET_COST_INCREMENT: int = 20
-const TURRET_DAMAGE: int = 5
+const TURRET_DAMAGE: int = 250
 const TURRET_FIRE_RATE: float = 0.5
 
 # Machine Gun
 const MG_BASE_COOLDOWN: float = 0.15
-const MG_DAMAGE: int = 1
+const MG_DAMAGE: int = 50
 const MG_MAX_LEVEL: int = 5
 const MG_BASE_COST: int = 20
 const MG_COST_INCREMENT: int = 15
@@ -161,7 +161,7 @@ const SHOP_OPTIONS_COUNT: int = 3
 const SHOP_MAX_ABILITIES: int = 6
 const SHOP_REROLL_BASE_COST: int = 2
 const SHOP_REROLL_INCREMENT: int = 2
-const SHOP_BANISH_COUNT: int = 2
+const SHOP_BANISH_COUNT: int = 10
 
 # --- POWER-UP ITEM SETTINGS ---
 const POWERUP_SPAWN_INTERVAL_MIN: float = 4

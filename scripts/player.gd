@@ -177,7 +177,7 @@ func _physics_process(delta: float) -> void:
 		if turret_timer <= 0:
 			_place_turret()
 			var lvl = GameState.run_abilities.get("turret", 1)
-			turret_timer = (GameConstants.TURRET_BASE_COOLDOWN - lvl * GameConstants.TURRET_COOLDOWN_REDUCTION) / _atk_speed_boost_multiplier
+			turret_timer = (GameConstants.TURRET_BASE_COOLDOWN - lvl * GameConstants.TURRET_COOLDOWN_REDUCTION)
 
 	if GameState.run_abilities.get("ice_wave", 0) > 0:
 		ice_timer -= delta
@@ -312,7 +312,7 @@ func _fire_sniper() -> void:
 		_create_crosshair_effect(target.global_position)
 		# Instantly kill enemy
 		if target.has_method("take_damage"):
-			GameState.run_damage_sniper += target.take_damage(999)
+			GameState.run_damage_sniper += target.take_damage(99999)
 
 func _create_crosshair_effect(pos: Vector2) -> void:
 	var ch = Node2D.new()
@@ -437,12 +437,10 @@ func _drop_spikes() -> void:
 	get_tree().current_scene.add_child(spikes)
 
 func _place_turret() -> void:
-	var lvl = GameState.run_abilities.get("turret", 1)
-	var count = 1 + (lvl / 3)
-	for i in range(count):
-		var t = turret_scene.instantiate()
-		t.global_position = global_position + Vector2.RIGHT.rotated(randf() * TAU) * 100.0
-		get_tree().current_scene.add_child(t)
+	var t = turret_scene.instantiate()
+	t.global_position = global_position + Vector2.RIGHT.rotated(randf() * TAU) * 100.0
+	t.damage = GameConstants.TURRET_DAMAGE + GameState.get_gun_damage_bonus()
+	get_tree().current_scene.add_child(t)
 
 func _trigger_ice_wave() -> void:
 	var lvl = GameState.run_abilities.get("ice_wave", 1)

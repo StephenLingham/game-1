@@ -335,7 +335,13 @@ func _banish_ability(id: String) -> void:
 	if GameState.run_banish_count > 0:
 		GameState.run_banish_count -= 1
 		GameState.run_banished_abilities.append(id)
-		_generate_shop_options()
+		
+		# Remove from current options until next reroll
+		for i in range(current_shop_options.size()):
+			if current_shop_options[i].id == id:
+				current_shop_options.remove_at(i)
+				break
+				
 		_refresh_shop_ui()
 
 func _on_player_died() -> void:
