@@ -97,9 +97,9 @@ const SHOTGUN_BASE_COST: int = 10
 const SHOTGUN_COST_INCREMENT_PER_LEVEL: int = 10
 
 # --- SNIPER ABILITY SETTINGS ---
-const SNIPER_BASE_COOLDOWN: float = 3.0
-const SNIPER_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.6
-const SNIPER_MAX_LEVEL: int = 4
+const SNIPER_BASE_COOLDOWN: float = 2.0
+const SNIPER_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.4
+const SNIPER_MAX_LEVEL: int = 5
 const SNIPER_BASE_COST: int = 10
 const SNIPER_COST_INCREMENT_PER_LEVEL: int = 10
 
@@ -115,8 +115,6 @@ const ROCKET_SPEED: float = 400.0
 const ROCKET_TURN_SPEED: float = 5.0
 const ROCKET_DAMAGE: int = 10
 const ROCKET_TARGET_RADIUS: float = 600.0
-
-# --- NEW ABILITIES ---
 
 # Bouncing Disk
 const DISK_BASE_COOLDOWN: float = 3.0
@@ -170,11 +168,11 @@ const POWERUP_SPAWN_INTERVAL_MIN: float = 4
 const POWERUP_SPAWN_INTERVAL_MAX: float = 8
 const POWERUP_SPEED_BOOST_MULTIPLIER: float = 1.6
 const POWERUP_SPEED_BOOST_DURATION: float = 7.0
-const POWERUP_ATK_SPEED_BOOST_MULTIPLIER: float = 5.0
+const POWERUP_ATK_SPEED_BOOST_MULTIPLIER: float = 10.0
 const POWERUP_ATK_SPEED_BOOST_DURATION: float = 3.0
 const POWERUP_GEM_AWARD_AMOUNT: int = 1
 const POWERUP_ICON_SCALE: float = 0.07
 
 # --- UNLOCKS ---
-const UNLOCK_KILLS_NEEDED: int = 100 # Example kill threshold for guns
+const UNLOCK_KILLS_NEEDED: int = 50
 const DEBUG_UNLOCK_ALL_WEAPONS: bool = true

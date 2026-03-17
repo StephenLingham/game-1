@@ -150,9 +150,7 @@ func _physics_process(delta: float) -> void:
 		sniper_timer -= delta
 		if sniper_timer <= 0:
 			_fire_sniper()
-			# For sniper, we "greatly" increase it even more by squaring the multiplier effect
-			var hyper_mult = _atk_speed_boost_multiplier * _atk_speed_boost_multiplier
-			sniper_timer = GameState.get_sniper_cooldown() / hyper_mult
+			sniper_timer = GameState.get_sniper_cooldown() / _atk_speed_boost_multiplier
 
 	# Rocket logic
 	if GameState.run_abilities.get("rocket", 0) > 0:
