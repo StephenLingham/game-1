@@ -383,6 +383,9 @@ func end_run(won: bool, waves_completed: int) -> void:
 	dmg_grid.get_node("DmgRocketValue").text = "%d" % GameState.run_damage_rocket
 	dmg_grid.get_node("DmgSpikeValue").text = "%d" % GameState.run_damage_spike_ball
 	dmg_grid.get_node("DmgOrbsValue").text = "%d" % GameState.run_damage_orbs
+	dmg_grid.get_node("DmgTurretValue").text = "%d" % GameState.run_damage_turret
+	dmg_grid.get_node("DmgDiskValue").text = "%d" % GameState.run_damage_bouncing_disk
+	dmg_grid.get_node("DmgFloorSpikesValue").text = "%d" % GameState.run_damage_floor_spikes
 
 	# Gold stats
 	var gold_grid = stats_vbox.get_node("GoldGrid")

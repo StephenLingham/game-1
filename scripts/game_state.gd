@@ -116,6 +116,15 @@ var run_damage_spike_ball: int:
 var run_damage_orbs: int:
 	get: return run_damage_stats.get("orbs", 0)
 	set(v): run_damage_stats["orbs"] = v
+var run_damage_turret: int:
+	get: return run_damage_stats.get("turret", 0)
+	set(v): run_damage_stats["turret"] = v
+var run_damage_floor_spikes: int:
+	get: return run_damage_stats.get("floor_spikes", 0)
+	set(v): run_damage_stats["floor_spikes"] = v
+var run_damage_bouncing_disk: int:
+	get: return run_damage_stats.get("bouncing_disk", 0)
+	set(v): run_damage_stats["bouncing_disk"] = v
 
 func get_damage_multiplier() -> float:
 	return 1.0 + 0.10 * float(perm_damage_level)

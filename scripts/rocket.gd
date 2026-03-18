@@ -101,6 +101,7 @@ static func spawn_explosion(parent: Node, pos: Vector2, radius: float = 0.0) -> 
 	color_ramp.offsets = offsets
 	particles.color_ramp = color_ramp
 	
+	particles.add_to_group("projectiles")
 	parent.add_child(particles)
 	parent.get_tree().create_timer(1.0).timeout.connect(particles.queue_free)
 

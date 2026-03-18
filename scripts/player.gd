@@ -62,6 +62,13 @@ func reset_state(pos: Vector2) -> void:
 		cam.reset_smoothing()
 		cam.force_update_scroll()
 
+func reset_powerups() -> void:
+	_speed_boost_duration = 0.0
+	_atk_speed_boost_duration = 0.0
+	_atk_speed_boost_multiplier = 1.0
+	speed = _base_speed
+	sprite.modulate = Color.WHITE
+
 func set_camera_limits(rect: Rect2) -> void:
 	var cam = $Camera2D as Camera2D
 	if cam:
@@ -318,6 +325,7 @@ func _create_crosshair_effect(pos: Vector2) -> void:
 	var ch = Node2D.new()
 	ch.set_script(load("res://scripts/crosshair_effect.gd"))
 	ch.global_position = pos
+	ch.add_to_group("projectiles")
 	get_tree().current_scene.add_child(ch)
 
 func _create_blood_effect(pos: Vector2) -> void:
@@ -336,6 +344,7 @@ func _create_blood_effect(pos: Vector2) -> void:
 	particles.scale_amount_max = 5.0
 	particles.color = Color(0.8, 0.1, 0.1) # Blood red
 	
+	particles.add_to_group("projectiles")
 	get_tree().current_scene.add_child(particles)
 	
 	# Auto free after emitting
@@ -456,6 +465,7 @@ func _trigger_ice_wave() -> void:
 	circle.polygon = PackedVector2Array(pts)
 	circle.color = Color(0.4, 0.7, 1.0, 0.3)
 	circle.global_position = global_position
+	circle.add_to_group("projectiles")
 	get_tree().current_scene.add_child(circle)
 	
 	var tween = create_tween()

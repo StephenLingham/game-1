@@ -446,6 +446,39 @@ text = "0"
 label_settings = SubResource("LabelSettings_shop_info")
 horizontal_alignment = 2
 
+[node name="DmgTurretLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "Turret:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="DmgTurretValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
+[node name="DmgDiskLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "Bouncing Disk:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="DmgDiskValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
+[node name="DmgFloorSpikesLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "Floor Spikes:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="DmgFloorSpikesValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
 [node name="Sep3" type="HSeparator" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
 layout_mode = 2
 
