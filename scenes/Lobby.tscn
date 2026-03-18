@@ -77,4 +77,4 @@ text = "Unlocks"
 [node name="Exit" type="Button" parent="VBox"]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
-text = "Exit to Desktop"
+text = "Exit"

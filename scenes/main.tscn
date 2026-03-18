@@ -479,6 +479,17 @@ text = "0"
 label_settings = SubResource("LabelSettings_shop_info")
 horizontal_alignment = 2
 
+[node name="DmgExplosionLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "Explosion Pickup:"
+label_settings = SubResource("LabelSettings_shop_info")
+
+[node name="DmgExplosionValue" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox/DmgGrid"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_shop_info")
+horizontal_alignment = 2
+
 [node name="Sep3" type="HSeparator" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
 layout_mode = 2
 

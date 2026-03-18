@@ -132,8 +132,8 @@ const SPIKES_BASE_COST: int = 15
 const SPIKES_COST_INCREMENT: int = 10
 
 # Turret
-const TURRET_BASE_COOLDOWN: float = 5.0
-const TURRET_COOLDOWN_REDUCTION: float = 0.5
+const TURRET_BASE_COOLDOWN: float = 8.0
+const TURRET_COOLDOWN_REDUCTION: float = 1.0
 const TURRET_MAX_LEVEL: int = 5
 const TURRET_BASE_COST: int = 25
 const TURRET_COST_INCREMENT: int = 20
@@ -176,3 +176,4 @@ const POWERUP_ICON_SCALE: float = 0.07
 # --- UNLOCKS ---
 const UNLOCK_KILLS_NEEDED: int = 50
 const DEBUG_UNLOCK_ALL_WEAPONS: bool = true
+const DEBUG_MAX_PERM_UPGRADES: bool = false

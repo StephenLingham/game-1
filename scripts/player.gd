@@ -59,8 +59,12 @@ func reset_state(pos: Vector2) -> void:
 	
 	var cam = $Camera2D as Camera2D
 	if cam:
-		cam.reset_smoothing()
 		cam.force_update_scroll()
+	
+	if GameState.run_abilities.get("turret", 0) > 0:
+		# Give a small initial delay at start of wave
+		var lvl = GameState.run_abilities.get("turret", 1)
+		turret_timer = (GameConstants.TURRET_BASE_COOLDOWN - lvl * GameConstants.TURRET_COOLDOWN_REDUCTION)
 
 func reset_powerups() -> void:
 	_speed_boost_duration = 0.0
@@ -505,4 +509,4 @@ func trigger_rocket_blast() -> void:
 			var dist = blast_pos.distance_to(enemy.global_position)
 			if dist <= radius:
 				if enemy.has_method("take_damage"):
-					GameState.run_damage_stats["rocket"] = GameState.run_damage_stats.get("rocket", 0) + enemy.take_damage(damage)
+					GameState.run_damage_stats["explosion_pickup"] = GameState.run_damage_stats.get("explosion_pickup", 0) + enemy.take_damage(damage)

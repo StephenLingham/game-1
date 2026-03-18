@@ -125,39 +125,52 @@ var run_damage_floor_spikes: int:
 var run_damage_bouncing_disk: int:
 	get: return run_damage_stats.get("bouncing_disk", 0)
 	set(v): run_damage_stats["bouncing_disk"] = v
+var run_damage_explosion_pickup: int:
+	get: return run_damage_stats.get("explosion_pickup", 0)
+	set(v): run_damage_stats["explosion_pickup"] = v
 
 func get_damage_multiplier() -> float:
-	return 1.0 + 0.10 * float(perm_damage_level)
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_damage_level
+	return 1.0 + 0.10 * float(lvl)
 
 func get_atkspd_multiplier() -> float:
-	return 1.0 + 0.10 * float(perm_atkspd_level)
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_atkspd_level
+	return 1.0 + 0.10 * float(lvl)
 
 func get_pickup_radius() -> float:
 	var base := GameConstants.BASE_COLLECTION_RADIUS
-	var perm := float(perm_pickup_radius_level) * GameConstants.PERM_COLLECTION_RADIUS_INCREMENT
+	var plvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_pickup_radius_level
+	var perm := float(plvl) * GameConstants.PERM_COLLECTION_RADIUS_INCREMENT
 	var run := float(run_abilities.get("magnet", 0)) * GameConstants.COLLECTION_RADIUS_UPGRADE_AMOUNT
 	return base + perm + run
 
 func get_max_health() -> int:
-	return GameConstants.PLAYER_MAX_HEALTH + perm_max_health_level * 20
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_max_health_level
+	return GameConstants.PLAYER_MAX_HEALTH + lvl * 20
 
 func get_health_regen() -> float:
-	return float(perm_regen_level) * 0.5 # 0.5 HP per second
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_regen_level
+	return float(lvl) * 0.5 # 0.5 HP per second
 
 func get_crit_chance() -> float:
-	return float(perm_crit_level) * 0.05 # 5% per level
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_crit_level
+	return float(lvl) * 0.05 # 5% per level
 
 func get_armor() -> int:
-	return perm_armor_level * 2 # Flat damage reduction
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_armor_level
+	return lvl * 2 # Flat damage reduction
 
 func get_gold_drop_multiplier() -> float:
-	return 1.0 + float(perm_gold_drop_level) * 0.1
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gold_drop_level
+	return 1.0 + float(lvl) * 0.1
 
 func get_gem_drop_chance_bonus() -> float:
-	return float(perm_gem_drop_level) * 0.02
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gem_drop_level
+	return float(lvl) * 0.02
 
 func get_speed_multiplier() -> float:
-	return 1.0 + float(perm_speed_level) * 0.05
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_speed_level
+	return 1.0 + float(lvl) * 0.05
 
 func award_gems(amount: int) -> void:
 	gems += max(amount, 0)

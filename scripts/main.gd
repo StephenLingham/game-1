@@ -386,6 +386,7 @@ func end_run(won: bool, waves_completed: int) -> void:
 	dmg_grid.get_node("DmgTurretValue").text = "%d" % GameState.run_damage_turret
 	dmg_grid.get_node("DmgDiskValue").text = "%d" % GameState.run_damage_bouncing_disk
 	dmg_grid.get_node("DmgFloorSpikesValue").text = "%d" % GameState.run_damage_floor_spikes
+	dmg_grid.get_node("DmgExplosionValue").text = "%d" % GameState.run_damage_explosion_pickup
 
 	# Gold stats
 	var gold_grid = stats_vbox.get_node("GoldGrid")
