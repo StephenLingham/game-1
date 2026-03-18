@@ -59,6 +59,7 @@ func reset_state(pos: Vector2) -> void:
 	
 	var cam = $Camera2D as Camera2D
 	if cam:
+		cam.reset_smoothing()
 		cam.force_update_scroll()
 	
 	if GameState.run_abilities.get("turret", 0) > 0:

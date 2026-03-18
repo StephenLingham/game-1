@@ -377,16 +377,32 @@ func end_run(won: bool, waves_completed: int) -> void:
 
 	# Damage breakdown
 	var dmg_grid = stats_vbox.get_node("DmgGrid")
-	dmg_grid.get_node("DmgHandgunValue").text = "%d" % GameState.run_damage_handgun
-	dmg_grid.get_node("DmgShotgunValue").text = "%d" % GameState.run_damage_shotgun
-	dmg_grid.get_node("DmgSniperValue").text = "%d" % GameState.run_damage_sniper
-	dmg_grid.get_node("DmgRocketValue").text = "%d" % GameState.run_damage_rocket
-	dmg_grid.get_node("DmgSpikeValue").text = "%d" % GameState.run_damage_spike_ball
-	dmg_grid.get_node("DmgOrbsValue").text = "%d" % GameState.run_damage_orbs
-	dmg_grid.get_node("DmgTurretValue").text = "%d" % GameState.run_damage_turret
-	dmg_grid.get_node("DmgDiskValue").text = "%d" % GameState.run_damage_bouncing_disk
-	dmg_grid.get_node("DmgFloorSpikesValue").text = "%d" % GameState.run_damage_floor_spikes
-	dmg_grid.get_node("DmgExplosionValue").text = "%d" % GameState.run_damage_explosion_pickup
+	var dmg_stats = [
+		["DmgHandgun", GameState.run_damage_handgun],
+		["DmgShotgun", GameState.run_damage_shotgun],
+		["DmgSniper", GameState.run_damage_sniper],
+		["DmgRocket", GameState.run_damage_rocket],
+		["DmgSpike", GameState.run_damage_spike_ball],
+		["DmgOrbs", GameState.run_damage_orbs],
+		["DmgTurret", GameState.run_damage_turret],
+		["DmgDisk", GameState.run_damage_bouncing_disk],
+		["DmgFloorSpikes", GameState.run_damage_floor_spikes],
+		["DmgExplosion", GameState.run_damage_explosion_pickup]
+	]
+
+	for stat in dmg_stats:
+		var prefix = stat[0]
+		var amt = stat[1]
+		var lbl_node = dmg_grid.get_node_or_null(prefix + "Label")
+		var val_node = dmg_grid.get_node_or_null(prefix + "Value")
+		if lbl_node and val_node:
+			if amt > 0:
+				lbl_node.visible = true
+				val_node.visible = true
+				val_node.text = str(amt)
+			else:
+				lbl_node.visible = false
+				val_node.visible = false
 
 	# Gold stats
 	var gold_grid = stats_vbox.get_node("GoldGrid")
