@@ -13,6 +13,7 @@ func _ready() -> void:
 	unlocks_btn.pressed.connect(_on_unlocks_pressed)
 	
 	_refresh_gems()
+	$VersionLabel.text = GameConstants.GAME_VERSION
 
 func _refresh_gems() -> void:
 	gems_label.text = "Gems: %d" % GameState.gems
