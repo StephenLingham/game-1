@@ -161,7 +161,7 @@ const SHOP_OPTIONS_COUNT: int = 3
 const SHOP_MAX_ABILITIES: int = 6
 const SHOP_REROLL_BASE_COST: int = 2
 const SHOP_REROLL_INCREMENT: int = 2
-const SHOP_BANISH_COUNT: int = 10
+const SHOP_BANISH_COUNT: int = 3
 
 # --- POWER-UP ITEM SETTINGS ---
 const POWERUP_SPAWN_INTERVAL_MIN: float = 4
