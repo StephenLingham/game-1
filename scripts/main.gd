@@ -156,7 +156,7 @@ func _process(_delta: float) -> void:
 		lbl_hp.text = "HP: %d" % player.health
 
 func on_wave_started(w: int) -> void:
-	lbl_wave.text = "Wave: %d / 10" % w
+	lbl_wave.text = "%s — Wave: %d / 10" % [GameState.run_level_name, w]
 	
 	# Reset player to center and clear movement
 	var screen_center := get_viewport().get_visible_rect().size / 2.0
@@ -357,6 +357,7 @@ func end_run(won: bool, waves_completed: int) -> void:
 	var gems := waves_completed * 2
 	if won:
 		gems += 10
+		GameState.mark_level_completed(GameState.run_level_name)
 	
 	# Handle delayed unlocks
 	var newly_unlocked = []

@@ -179,3 +179,4 @@ const POWERUP_ICON_SCALE: float = 0.07
 const UNLOCK_KILLS_NEEDED: int = 50
 const DEBUG_UNLOCK_ALL_WEAPONS: bool = true
 const DEBUG_MAX_PERM_UPGRADES: bool = false
+const DEBUG_UNLOCK_ALL_LEVELS: bool = false

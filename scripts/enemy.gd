@@ -39,11 +39,19 @@ func _ready() -> void:
 			gold_drop_max = GameConstants.ENEMY_BIG_GOLD_MAX
 		_, "Normal":
 			speed = GameConstants.ENEMY_NORMAL_SPEED
-			health = GameConstants.ENEMY_NORMAL_HEALTH
-			damage = GameConstants.ENEMY_NORMAL_DAMAGE
+			health = int(GameConstants.ENEMY_NORMAL_HEALTH * GameState.run_difficulty_health_mult)
+			damage = int(GameConstants.ENEMY_NORMAL_DAMAGE * GameState.run_difficulty_damage_mult)
 			attack_cooldown = GameConstants.ENEMY_NORMAL_ATTACK_COOLDOWN
 			gold_drop_min = GameConstants.ENEMY_NORMAL_GOLD_MIN
 			gold_drop_max = GameConstants.ENEMY_NORMAL_GOLD_MAX
+	
+	# Apply multipliers to already set values for other types if they were set in match
+	if enemy_type == "Fast":
+		health = int(GameConstants.ENEMY_FAST_HEALTH * GameState.run_difficulty_health_mult)
+		damage = int(GameConstants.ENEMY_FAST_DAMAGE * GameState.run_difficulty_damage_mult)
+	elif enemy_type == "Big":
+		health = int(GameConstants.ENEMY_BIG_HEALTH * GameState.run_difficulty_health_mult)
+		damage = int(GameConstants.ENEMY_BIG_DAMAGE * GameState.run_difficulty_damage_mult)
 
 func _physics_process(delta: float) -> void:
 	if not can_attack:

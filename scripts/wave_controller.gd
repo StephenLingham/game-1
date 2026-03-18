@@ -41,6 +41,8 @@ func _next_wave() -> void:
 	# spawn rate ramps with wave
 	var base_wait: float = GameConstants.WAVE_BASE_SPAWN_WAIT
 	var wait: float = max(base_wait - (GameConstants.WAVE_SPAWN_WAIT_DECREMENT * float(wave - 1)), GameConstants.WAVE_MIN_SPAWN_WAIT)
+	# Difficulty adjustment
+	wait /= GameState.run_difficulty_spawn_mult
 	spawn_timer.wait_time = wait
 	spawn_timer.start()
 

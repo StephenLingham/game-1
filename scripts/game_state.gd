@@ -21,6 +21,7 @@ var perm_speed_level: int = 0
 # Unlocks
 var unlocked_items: Array = ["handgun", "magnet", "bouncing_disk"] # Items the player CAN see in shop
 var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed until end)
+var completed_levels: Array = []
 var lifetime_kills: Dictionary = {"handgun": 0}
 
 # Run-time values (reset per run)
@@ -29,6 +30,12 @@ var run_abilities: Dictionary = {} # ability_id -> level
 var run_reroll_cost: int = 2
 var run_banished_abilities: Array = []
 var run_banish_count: int = 2
+
+# Level / Difficulty Stats
+var run_difficulty_health_mult: float = 1.0
+var run_difficulty_damage_mult: float = 1.0
+var run_difficulty_spawn_mult: float = 1.0
+var run_level_name: String = "Level 1"
 
 # Run statistics (reset per run)
 var run_enemies_killed: int = 0
@@ -255,6 +262,19 @@ func finalize_run_unlocks() -> void:
 	run_unlocked_items = []
 	save()
 
+func mark_level_completed(level_name: String) -> void:
+	if not completed_levels.has(level_name):
+		completed_levels.append(level_name)
+	save()
+
+func is_level_unlocked(level_id: String) -> bool:
+	if GameConstants.DEBUG_UNLOCK_ALL_LEVELS:
+		return true
+	if level_id == "Level 1":
+		return true
+	# Level 2 and Level 3 are unlocked by completing Level 1
+	return completed_levels.has("Level 1")
+
 func _unlock_next_in_chain(id: String) -> void:
 	var next_map = {
 		"magnet": "orbs",
@@ -292,7 +312,8 @@ func save() -> void:
 		"perm_gem_drop_level": perm_gem_drop_level,
 		"perm_speed_level": perm_speed_level,
 		"unlocked_items": unlocked_items,
-		"lifetime_kills": lifetime_kills
+		"lifetime_kills": lifetime_kills,
+		"completed_levels": completed_levels
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -324,3 +345,4 @@ func load_save() -> void:
 	
 	unlocked_items = parsed.get("unlocked_items", ["handgun"])
 	lifetime_kills = parsed.get("lifetime_kills", {"handgun": 0})
+	completed_levels = parsed.get("completed_levels", [])
