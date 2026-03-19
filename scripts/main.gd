@@ -218,6 +218,78 @@ func _refresh_shop_ui() -> void:
 	for child in shop_grid.get_children():
 		child.queue_free()
 	
+	# Header for owned
+	var h_owned = Label.new()
+	h_owned.text = "--- YOUR LOADOUT ---"
+	h_owned.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	h_owned.modulate = Color.CYAN
+	shop_grid.add_child(h_owned)
+	shop_grid.add_child(Control.new())
+	shop_grid.add_child(Control.new())
+	
+	# Show currently owned abilities
+	for abi_id in GameState.run_abilities.keys():
+		var abi_data = null
+		for a in ALL_ABILITIES:
+			if a.id == abi_id:
+				abi_data = a
+				break
+		
+		if not abi_data: continue
+		
+		var level = GameState.run_abilities[abi_id]
+		var cost = _get_ability_cost(abi_id, level)
+		var max_lvl = _get_max_level(abi_id)
+		
+		var panel = PanelContainer.new()
+		var vbox = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 10)
+		vbox.custom_minimum_size = Vector2(240, 0)
+		panel.add_child(vbox)
+		
+		var lbl = Label.new()
+		var level_text = "(Lv. %d)" % level
+		if level >= max_lvl:
+			level_text = "(MAX)"
+		lbl.text = abi_data.name + "\n" + level_text
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.add_theme_font_size_override("font_size", 22)
+		vbox.add_child(lbl)
+		
+		# Upgrade button (if in shop it's already there? No, shop options might not include this.)
+		# Actually, if it's already owned, it should show its level clearly.
+		# The shop options below will show UPGRADE for these.
+		# Maybe we only show SELL buttons here for ALREADY OWNED things.
+		
+		var sell_btn = Button.new()
+		var sell_val = int(cost * 0.5)
+		sell_btn.text = "Sell for %d Gold" % sell_val
+		sell_btn.pressed.connect(_sell_ability.bind(abi_id, sell_val))
+		vbox.add_child(sell_btn)
+		
+		# Highlight owned abilities slightly
+		panel.self_modulate = Color(0.8, 1.0, 0.8, 0.5)
+		
+		shop_grid.add_child(panel)
+
+	# Separator / Header for Shop
+	# Fill current row first after owned items
+	var total_nodes_so_far = 3 + GameState.run_abilities.size() # 3 for header row
+	var remainder = total_nodes_so_far % shop_grid.columns
+	if remainder > 0:
+		for i in range(shop_grid.columns - remainder):
+			shop_grid.add_child(Control.new())
+	
+	var h_shop = Label.new()
+	h_shop.text = "--- SHOP OPTIONS ---"
+	h_shop.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	h_shop.modulate = Color.GOLD
+	shop_grid.add_child(h_shop)
+	# Add padding to make header take a whole row
+	shop_grid.add_child(Control.new())
+	shop_grid.add_child(Control.new())
+
+	# Now show shop options
 	for abi in current_shop_options:
 		var level = GameState.run_abilities.get(abi.id, 0)
 		var cost = _get_ability_cost(abi.id, level)
@@ -250,14 +322,6 @@ func _refresh_shop_ui() -> void:
 			buy_btn.disabled = GameState.run_gold < cost
 			buy_btn.pressed.connect(_buy_ability.bind(abi.id))
 		vbox.add_child(buy_btn)
-		
-		# Sell logic
-		if level > 0:
-			var sell_btn = Button.new()
-			var sell_val = int(cost * 0.5)
-			sell_btn.text = "Sell for %d Gold" % sell_val
-			sell_btn.pressed.connect(_sell_ability.bind(abi.id, sell_val))
-			vbox.add_child(sell_btn)
 		
 		if GameState.run_banish_count > 0:
 			var ban_btn = Button.new()
@@ -321,7 +385,6 @@ func _sell_ability(id: String, value: int) -> void:
 	if GameState.run_abilities.has(id):
 		GameState.run_abilities.erase(id)
 		GameState.run_gold += value
-		_generate_shop_options() # Regenerate pool since we now have slot
 		_refresh_shop_ui()
 
 func _reroll_shop() -> void:

@@ -272,8 +272,11 @@ func is_level_unlocked(level_id: String) -> bool:
 		return true
 	if level_id == "Level 1":
 		return true
-	# Level 2 and Level 3 are unlocked by completing Level 1
-	return completed_levels.has("Level 1")
+	if level_id == "Level 2":
+		return completed_levels.has("Level 1")
+	if level_id == "Level 3":
+		return completed_levels.has("Level 2")
+	return false
 
 func _unlock_next_in_chain(id: String) -> void:
 	var next_map = {
