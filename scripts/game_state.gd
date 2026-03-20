@@ -45,6 +45,45 @@ var run_damage_stats: Dictionary = {} # ability_id -> damage
 
 func _ready() -> void:
 	load_save()
+	
+	var changed := false
+	if GameConstants.DEBUG_RESET_ALL_DATA:
+		# Reset EVERYTHING
+		gems = 0
+		unlocked_items = ["handgun", "magnet"]
+		lifetime_kills = {"handgun": 0}
+		completed_levels = []
+		_reset_all_perm_levels()
+		changed = true
+		print("DEBUG: All data reset.")
+	else:
+		if GameConstants.DEBUG_RESET_UNLOCKS:
+			unlocked_items = ["handgun", "magnet"]
+			lifetime_kills = {"handgun": 0}
+			completed_levels = []
+			changed = true
+			print("DEBUG: Unlocks reset.")
+		if GameConstants.DEBUG_RESET_GEMS:
+			gems = 0
+			_reset_all_perm_levels()
+			changed = true
+			print("DEBUG: Gems & Upgrades reset.")
+	
+	if changed:
+		save()
+
+func _reset_all_perm_levels() -> void:
+	perm_damage_level = 0
+	perm_atkspd_level = 0
+	perm_pickup_radius_level = 0
+	perm_max_health_level = 0
+	perm_regen_level = 0
+	perm_crit_level = 0
+	perm_armor_level = 0
+	perm_start_gold_level = 0
+	perm_gold_drop_level = 0
+	perm_gem_drop_level = 0
+	perm_speed_level = 0
 
 func reset_run() -> void:
 	run_gold = 10 + perm_start_gold_level * 5 # Base gold + bonus

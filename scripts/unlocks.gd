@@ -5,16 +5,16 @@ extends Control
 
 const ITEMS = {
 	"handgun": {"name": "Handgun", "unlock": "Unlocked by default"},
-	"shotgun": {"name": "Shotgun", "unlock": "Kill 50 enemies with Handgun"},
-	"sniper": {"name": "Sniper Gun", "unlock": "Kill 50 enemies with Shotgun"},
-	"rocket": {"name": "Rocket Launcher", "unlock": "Kill 50 enemies with Sniper Gun"},
-	"machine_gun": {"name": "Machine Gun", "unlock": "Kill 50 enemies with Rocket Launcher"},
-	"orbs": {"name": "Energy Orbs", "unlock": "Kill 50 enemies with Machine Gun"},
-	"spike_ball": {"name": "Spike Ball", "unlock": "Kill 50 enemies with Energy Orbs"},
-	"ice_wave": {"name": "Ice Wave", "unlock": "Kill 50 enemies with Spike Ball"},
-	"floor_spikes": {"name": "Floor Spikes", "unlock": "Kill 50 enemies with Ice Wave"},
-	"turret": {"name": "Turret", "unlock": "Kill 50 enemies with Floor Spikes"},
-	"bouncing_disk": {"name": "Bouncing Disk", "unlock": "Kill 50 enemies with Turret"},
+	"floor_spikes": {"name": "Floor Spikes", "unlock": "Kill 50 enemies with Handgun"},
+	"ice_wave": {"name": "Ice Wave", "unlock": "Kill 50 enemies with Floor Spikes"},
+	"spike_ball": {"name": "Spike Ball", "unlock": "Kill 50 enemies with Ice Wave"},
+	"shotgun": {"name": "Shotgun", "unlock": "Kill 50 enemies with Spike Ball"},
+	"turret": {"name": "Turret", "unlock": "Kill 50 enemies with Shotgun"},
+	"sniper": {"name": "Sniper Gun", "unlock": "Kill 50 enemies with Turret"},
+	"orbs": {"name": "Energy Orbs", "unlock": "Kill 50 enemies with Sniper Gun"},
+	"bouncing_disk": {"name": "Bouncing Disk", "unlock": "Kill 50 enemies with Energy Orbs"},
+	"machine_gun": {"name": "Machine Gun", "unlock": "Kill 50 enemies with Bouncing Disk"},
+	"rocket": {"name": "Rocket Launcher", "unlock": "Kill 50 enemies with Machine Gun"},
 	"magnet": {"name": "Magnet", "unlock": "Unlocked by default"}
 }
 

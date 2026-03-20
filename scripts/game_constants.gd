@@ -180,3 +180,6 @@ const UNLOCK_KILLS_NEEDED: int = 50
 const DEBUG_UNLOCK_ALL_WEAPONS: bool = false
 const DEBUG_MAX_PERM_UPGRADES: bool = false
 const DEBUG_UNLOCK_ALL_LEVELS: bool = false
+const DEBUG_RESET_UNLOCKS: bool = false
+const DEBUG_RESET_GEMS: bool = false
+const DEBUG_RESET_ALL_DATA: bool = false
