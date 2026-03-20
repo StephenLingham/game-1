@@ -71,8 +71,9 @@ func _physics_process(delta: float) -> void:
 	
 	move_and_slide()
 
-func take_damage(amount: int = 1) -> int:
+func take_damage(amount: int = 1, source: String = "") -> int:
 	var actual_damage = max(0, min(amount, health))
+	var before_health = health
 	health -= amount
 	
 	# Flash white
@@ -80,8 +81,10 @@ func take_damage(amount: int = 1) -> int:
 	var tween := create_tween()
 	tween.tween_property(sprite, "modulate", Color.WHITE, 0.15)
 	
-	if health <= 0:
+	if health <= 0 and before_health > 0:
 		GameState.run_enemies_killed += 1
+		if source != "":
+			GameState.record_kill(source)
 		enemy_killed.emit()
 		_drop_gold()
 		queue_free()

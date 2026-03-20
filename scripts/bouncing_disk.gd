@@ -37,7 +37,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies"):
 		if is_instance_valid(body) and body != last_enemy_hit:
 			if body.has_method("take_damage"):
-				GameState.run_damage_stats["bouncing_disk"] = GameState.run_damage_stats.get("bouncing_disk", 0) + body.take_damage(damage)
+				GameState.run_damage_stats["bouncing_disk"] = GameState.run_damage_stats.get("bouncing_disk", 0) + body.take_damage(damage, "bouncing_disk")
 			
 			last_enemy_hit = body
 			

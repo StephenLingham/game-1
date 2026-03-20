@@ -5,5 +5,6 @@ func _ready() -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
-		var actual_dmg = body.take_damage(GameConstants.ORB_DAMAGE)
+		var actual_dmg = body.take_damage(GameConstants.ORB_DAMAGE, "orbs")
 		GameState.run_damage_orbs += actual_dmg
+		GameState.run_damage_stats["orbs"] = GameState.run_damage_stats.get("orbs", 0) + actual_dmg

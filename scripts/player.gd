@@ -324,7 +324,8 @@ func _fire_sniper() -> void:
 		_create_crosshair_effect(target.global_position)
 		# Instantly kill enemy
 		if target.has_method("take_damage"):
-			GameState.run_damage_sniper += target.take_damage(99999)
+			GameState.run_damage_sniper += target.take_damage(99999, "sniper")
+			GameState.run_damage_stats["sniper"] = GameState.run_damage_stats.get("sniper", 0) + 99999
 
 func _create_crosshair_effect(pos: Vector2) -> void:
 	var ch = Node2D.new()
@@ -482,6 +483,7 @@ func _trigger_ice_wave() -> void:
 		if is_instance_valid(e) and global_position.distance_to(e.global_position) <= radius:
 			if e.has_method("freeze"):
 				e.freeze(GameConstants.ICE_FREEZE_DURATION)
+				GameState.record_kill("ice_wave")
 
 func _fire_machine_gun(target: Node2D) -> void:
 	if not target: return

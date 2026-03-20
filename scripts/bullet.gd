@@ -19,19 +19,11 @@ func _physics_process(delta: float) -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies"):
-		var enemy_health_before = body.health
-		var actual_dmg = body.take_damage(damage)
+		var actual_dmg = body.take_damage(damage, weapon_source)
 		
 		# Unified tracking
 		GameState.run_damage_stats[weapon_source] = GameState.run_damage_stats.get(weapon_source, 0) + actual_dmg
 		
-		# Legacy tracking for UI (until UI is updated)
-		if weapon_source == "handgun": GameState.run_damage_handgun += actual_dmg
-		elif weapon_source == "shotgun": GameState.run_damage_shotgun += actual_dmg
-		
-		if body.health <= 0 and enemy_health_before > 0:
-			GameState.record_kill(weapon_source)
-			
 		queue_free()
 	elif body.is_in_group("walls"):
 		queue_free()

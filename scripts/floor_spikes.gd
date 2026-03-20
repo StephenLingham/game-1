@@ -38,5 +38,5 @@ func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies"):
 		if is_instance_valid(body):
 			if body.has_method("take_damage"):
-				GameState.run_damage_stats["floor_spikes"] = GameState.run_damage_stats.get("floor_spikes", 0) + body.take_damage(damage)
+				GameState.run_damage_stats["floor_spikes"] = GameState.run_damage_stats.get("floor_spikes", 0) + body.take_damage(damage, "floor_spikes")
 			queue_free()

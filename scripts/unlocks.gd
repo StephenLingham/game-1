@@ -7,7 +7,7 @@ const ITEMS = {
 	"handgun": {"name": "Handgun", "unlock": "Unlocked by default"},
 	"floor_spikes": {"name": "Floor Spikes", "unlock": "Kill 50 enemies with Handgun"},
 	"ice_wave": {"name": "Ice Wave", "unlock": "Kill 50 enemies with Floor Spikes"},
-	"spike_ball": {"name": "Spike Ball", "unlock": "Kill 50 enemies with Ice Wave"},
+	"spike_ball": {"name": "Spike Ball", "unlock": "Freeze 50 enemies with Ice Wave"},
 	"shotgun": {"name": "Shotgun", "unlock": "Kill 50 enemies with Spike Ball"},
 	"turret": {"name": "Turret", "unlock": "Kill 50 enemies with Shotgun"},
 	"sniper": {"name": "Sniper Gun", "unlock": "Kill 50 enemies with Turret"},
