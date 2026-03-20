@@ -19,7 +19,7 @@ var perm_gem_drop_level: int = 0
 var perm_speed_level: int = 0
 
 # Unlocks
-var unlocked_items: Array = ["handgun", "magnet", "bouncing_disk"] # Items the player CAN see in shop
+var unlocked_items: Array = ["handgun", "magnet"] # Items the player CAN see in shop
 var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed until end)
 var completed_levels: Array = []
 var lifetime_kills: Dictionary = {"handgun": 0}
@@ -242,8 +242,6 @@ func record_kill(weapon: String) -> void:
 	save()
 
 func record_ability_upgrade(id: String, level: int) -> void:
-	if level >= 2: # "upgrade once" means level 2
-		_unlock_next_in_chain(id)
 	# No save() here to avoid mid-run permanent save of kills/unlocks if we want to be strict, 
 	# but kills are already being saved in record_kill. Let's be consistent.
 	save()
@@ -278,21 +276,12 @@ func is_level_unlocked(level_id: String) -> bool:
 		return completed_levels.has("Level 2")
 	return false
 
-func _unlock_next_in_chain(id: String) -> void:
-	var next_map = {
-		"magnet": "orbs",
-		"orbs": "ice_wave",
-		"ice_wave": "floor_spikes",
-		"floor_spikes": "turret"
-	}
-	if next_map.has(id):
-		var next = next_map[id]
-		if not unlocked_items.has(next) and not run_unlocked_items.has(next):
-			run_unlocked_items.append(next)
-
 func _check_unlocks() -> void:
 	# Handgun -> Shotgun -> Sniper -> Rocket -> Machine Gun
-	var weapon_chain = ["handgun", "shotgun", "sniper", "rocket", "machine_gun"]
+	var weapon_chain = [
+		"handgun", "floor_spikes", "ice_wave", "spike_ball", "shotgun", "turret", 
+		"sniper", "orbs", "bouncing_disk", "machine_gun", "rocket",
+	]
 	for i in range(weapon_chain.size() - 1):
 		var current = weapon_chain[i]
 		var next = weapon_chain[i+1]

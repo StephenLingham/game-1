@@ -5,16 +5,17 @@ extends Control
 
 const ITEMS = {
 	"handgun": {"name": "Handgun", "unlock": "Unlocked by default"},
-	"shotgun": {"name": "Shotgun", "unlock": "Kill 100 enemies with Handgun"},
-	"sniper": {"name": "Sniper", "unlock": "Kill 100 enemies with Shotgun"},
-	"rocket": {"name": "Rocket Launcher", "unlock": "Kill 100 enemies with Sniper"},
-	"machine_gun": {"name": "Machine Gun", "unlock": "Kill 100 enemies with Rocket"},
-	"magnet": {"name": "Magnet", "unlock": "Unlocked by default"},
-	"orbs": {"name": "Energy Orbs", "unlock": "Upgrade Magnet once in a run"},
-	"ice_wave": {"name": "Ice Wave", "unlock": "Upgrade Orbs once in a run"},
-	"floor_spikes": {"name": "Floor Spikes", "unlock": "Upgrade Ice Wave once in a run"},
-	"turret": {"name": "Turret", "unlock": "Upgrade Floor Spikes once in a run"},
-	"bouncing_disk": {"name": "Bouncing Disk", "unlock": "Temporary Secret (Check back later!)"}
+	"shotgun": {"name": "Shotgun", "unlock": "Kill 50 enemies with Handgun"},
+	"sniper": {"name": "Sniper Gun", "unlock": "Kill 50 enemies with Shotgun"},
+	"rocket": {"name": "Rocket Launcher", "unlock": "Kill 50 enemies with Sniper Gun"},
+	"machine_gun": {"name": "Machine Gun", "unlock": "Kill 50 enemies with Rocket Launcher"},
+	"orbs": {"name": "Energy Orbs", "unlock": "Kill 50 enemies with Machine Gun"},
+	"spike_ball": {"name": "Spike Ball", "unlock": "Kill 50 enemies with Energy Orbs"},
+	"ice_wave": {"name": "Ice Wave", "unlock": "Kill 50 enemies with Spike Ball"},
+	"floor_spikes": {"name": "Floor Spikes", "unlock": "Kill 50 enemies with Ice Wave"},
+	"turret": {"name": "Turret", "unlock": "Kill 50 enemies with Floor Spikes"},
+	"bouncing_disk": {"name": "Bouncing Disk", "unlock": "Kill 50 enemies with Turret"},
+	"magnet": {"name": "Magnet", "unlock": "Unlocked by default"}
 }
 
 func _ready() -> void:
