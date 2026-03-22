@@ -12,11 +12,11 @@ func _ready() -> void:
 func _check_locks() -> void:
 	if not GameState.is_level_unlocked("Level 2"):
 		$VBox/Level2.disabled = true
-		$VBox/Level2.text = "[ LOCKED ] Complete Level 1 to Unlock"
+		$VBox/Level2.text = "Complete Level 1 to Unlock"
 	
 	if not GameState.is_level_unlocked("Level 3"):
 		$VBox/Level3.disabled = true
-		$VBox/Level3.text = "[ LOCKED ] Complete Level 2 to Unlock"
+		$VBox/Level3.text = "Complete Level 2 to Unlock"
 
 func _on_level_1_pressed() -> void:
 	_start_level(0.6, 0.6, 0.8, "Level 1")

@@ -37,7 +37,7 @@ func _refresh_ui() -> void:
 		panel.add_child(vbox)
 		
 		var title = Label.new()
-		title.text = item.name if is_unlocked else "???"
+		title.text = item.name
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		title.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(title)
