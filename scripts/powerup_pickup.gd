@@ -4,6 +4,12 @@ enum Type { MAGNET, SPEED, HEAL, ROCKET, GEM, ATK_SPEED }
 
 @export var type: Type = Type.MAGNET
 
+var _tex_magnet = preload("res://assets/powerup_magnet_2.png")
+var _tex_speed = preload("res://assets/powerup_speed_2.png")
+var _tex_heal = preload("res://assets/powerup_heal_2.png")
+var _tex_explosion = preload("res://assets/powerup_explosion_2.png")
+var _tex_gem = preload("res://assets/gem_icon.png")
+
 func _ready() -> void:
 	add_to_group("powerups")
 	body_entered.connect(_on_body_entered)
@@ -11,24 +17,22 @@ func _ready() -> void:
 	# Visual setup based on type
 	var sprite = $Sprite2D
 	if sprite:
-		var tex_path := ""
+		var tex: Texture2D = null
 		match type:
-			Type.MAGNET: tex_path = "res://assets/powerup_magnet_2.png"
-			Type.SPEED: tex_path = "res://assets/powerup_speed_2.png"
-			Type.HEAL: tex_path = "res://assets/powerup_heal_2.png"
-			Type.ROCKET: tex_path = "res://assets/powerup_explosion_2.png"
-			Type.GEM: tex_path = "res://assets/gem_icon.png"
-			Type.ATK_SPEED: tex_path = "res://assets/powerup_atkspeed.png"
+			Type.MAGNET: tex = _tex_magnet
+			Type.SPEED: tex = _tex_speed
+			Type.HEAL: tex = _tex_heal
+			Type.ROCKET: tex = _tex_explosion
+			Type.GEM: tex = _tex_gem
+			Type.ATK_SPEED:
+				if ResourceLoader.exists("res://assets/powerup_atkspeed.png"):
+					tex = load("res://assets/powerup_atkspeed.png")
+				else:
+					tex = _tex_speed
+					sprite.modulate = Color(1.0, 0.2, 0.2) # Red for attack speed
 		
-		# Fallback if specific file doesn't exist (e.g. for attack speed)
-		if not ResourceLoader.exists(tex_path) and type == Type.ATK_SPEED:
-			tex_path = "res://assets/powerup_speed_2.png"
-			sprite.modulate = Color(1.0, 0.2, 0.2) # Red for attack speed
-		
-		if ResourceLoader.exists(tex_path):
-			var tex = load(tex_path)
-			if tex:
-				sprite.texture = tex
+		if tex:
+			sprite.texture = tex
 		
 		# Reset spritesheet logic
 		sprite.hframes = 1

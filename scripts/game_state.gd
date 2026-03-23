@@ -48,6 +48,7 @@ var run_damage_stats: Dictionary = {} # ability_id -> damage
 
 func _ready() -> void:
 	load_save()
+	get_tree().set_auto_accept_quit(false)
 	
 	var changed := false
 	if GameConstants.DEBUG_RESET_ALL_DATA:
@@ -74,6 +75,16 @@ func _ready() -> void:
 	
 	if changed:
 		save()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		# Clear references to prevent texture/resource leaks on exit
+		run_damage_stats.clear()
+		run_abilities.clear()
+		run_banished_abilities.clear()
+		run_unlocked_items.clear()
+		lifetime_kills.clear()
+		get_tree().quit()
 
 func _reset_all_perm_levels() -> void:
 	perm_damage_level = 0
