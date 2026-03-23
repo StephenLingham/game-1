@@ -52,14 +52,12 @@ func _refresh_ui() -> void:
 		status.add_theme_font_size_override("font_size", 18)
 		vbox.add_child(status)
 		
-		var progress = Label.new()
-		if id == "handgun" or is_unlocked:
-			progress.text = ""
-		else:
+		if id != "handgun" and not is_unlocked:
 			# Find the precursor to show its kills
 			var precursor = _get_precursor(id)
 			if precursor != "":
 				var pkills = GameState.lifetime_kills.get(precursor, 0)
+				var progress = Label.new()
 				progress.text = "Progress: %d / %d" % [pkills, needed]
 				progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 				progress.modulate = Color.CYAN
