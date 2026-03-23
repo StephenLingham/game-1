@@ -5,6 +5,12 @@ const SAVE_PATH := "user://save.json"
 
 var gems: int = 0
 
+# Unlocks
+var unlocked_items: Array = ["handgun"] # Items the player CAN see in shop
+var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed until end)
+var completed_levels: Array = []
+var lifetime_kills: Dictionary = {"handgun": 0}
+
 # Permanent Upgrades
 var perm_damage_level: int = 0
 var perm_atkspd_level: int = 0
@@ -13,16 +19,13 @@ var perm_max_health_level: int = 0
 var perm_regen_level: int = 0
 var perm_crit_level: int = 0
 var perm_armor_level: int = 0
+var perm_armor_percent_level: int = 0
 var perm_start_gold_level: int = 0
 var perm_gold_drop_level: int = 0
 var perm_gem_drop_level: int = 0
 var perm_speed_level: int = 0
-
-# Unlocks
-var unlocked_items: Array = ["handgun", "magnet"] # Items the player CAN see in shop
-var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed until end)
-var completed_levels: Array = []
-var lifetime_kills: Dictionary = {"handgun": 0}
+var perm_thorns_level: int = 0
+var perm_spawn_rate_level: int = 0
 
 # Run-time values (reset per run)
 var run_gold: int = 0
@@ -50,7 +53,7 @@ func _ready() -> void:
 	if GameConstants.DEBUG_RESET_ALL_DATA:
 		# Reset EVERYTHING
 		gems = 0
-		unlocked_items = ["handgun", "magnet"]
+		unlocked_items = ["handgun"]
 		lifetime_kills = {"handgun": 0}
 		completed_levels = []
 		_reset_all_perm_levels()
@@ -58,7 +61,7 @@ func _ready() -> void:
 		print("DEBUG: All data reset.")
 	else:
 		if GameConstants.DEBUG_RESET_UNLOCKS:
-			unlocked_items = ["handgun", "magnet"]
+			unlocked_items = ["handgun"]
 			lifetime_kills = {"handgun": 0}
 			completed_levels = []
 			changed = true
@@ -80,10 +83,13 @@ func _reset_all_perm_levels() -> void:
 	perm_regen_level = 0
 	perm_crit_level = 0
 	perm_armor_level = 0
+	perm_armor_percent_level = 0
 	perm_start_gold_level = 0
 	perm_gold_drop_level = 0
 	perm_gem_drop_level = 0
 	perm_speed_level = 0
+	perm_thorns_level = 0
+	perm_spawn_rate_level = 0
 
 func reset_run() -> void:
 	run_gold = 10 + perm_start_gold_level * 5 # Base gold + bonus
@@ -187,8 +193,7 @@ func get_pickup_radius() -> float:
 	var base := GameConstants.BASE_COLLECTION_RADIUS
 	var plvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_pickup_radius_level
 	var perm := float(plvl) * GameConstants.PERM_COLLECTION_RADIUS_INCREMENT
-	var run := float(run_abilities.get("magnet", 0)) * GameConstants.COLLECTION_RADIUS_UPGRADE_AMOUNT
-	return base + perm + run
+	return base + perm
 
 func get_max_health() -> int:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_max_health_level
@@ -205,6 +210,18 @@ func get_crit_chance() -> float:
 func get_armor() -> int:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_armor_level
 	return lvl * 2 # Flat damage reduction
+
+func get_armor_percent() -> float:
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_armor_percent_level
+	return float(lvl) * 0.05 # 5% reduction per level
+
+func get_thorns_percentage() -> float:
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_thorns_level
+	return float(lvl) * 0.1 # 10% thorns per level
+
+func get_spawn_rate_multiplier() -> float:
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_spawn_rate_level
+	return 1.0 + float(lvl) * 0.1 # +10% spawn rate per level
 
 func get_gold_drop_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gold_drop_level
@@ -232,10 +249,13 @@ func reset_gems() -> void:
 	spent += _calculate_spent(perm_regen_level)
 	spent += _calculate_spent(perm_crit_level)
 	spent += _calculate_spent(perm_armor_level)
+	spent += _calculate_spent(perm_armor_percent_level)
 	spent += _calculate_spent(perm_start_gold_level)
 	spent += _calculate_spent(perm_gold_drop_level)
 	spent += _calculate_spent(perm_gem_drop_level)
 	spent += _calculate_spent(perm_speed_level)
+	spent += _calculate_spent(perm_thorns_level)
+	spent += _calculate_spent(perm_spawn_rate_level)
 	
 	gems += spent
 	
@@ -247,10 +267,13 @@ func reset_gems() -> void:
 	perm_regen_level = 0
 	perm_crit_level = 0
 	perm_armor_level = 0
+	perm_armor_percent_level = 0
 	perm_start_gold_level = 0
 	perm_gold_drop_level = 0
 	perm_gem_drop_level = 0
 	perm_speed_level = 0
+	perm_thorns_level = 0
+	perm_spawn_rate_level = 0
 	
 	save()
 
@@ -338,10 +361,13 @@ func save() -> void:
 		"perm_regen_level": perm_regen_level,
 		"perm_crit_level": perm_crit_level,
 		"perm_armor_level": perm_armor_level,
+		"perm_armor_percent_level": perm_armor_percent_level,
 		"perm_start_gold_level": perm_start_gold_level,
 		"perm_gold_drop_level": perm_gold_drop_level,
 		"perm_gem_drop_level": perm_gem_drop_level,
 		"perm_speed_level": perm_speed_level,
+		"perm_thorns_level": perm_thorns_level,
+		"perm_spawn_rate_level": perm_spawn_rate_level,
 		"unlocked_items": unlocked_items,
 		"lifetime_kills": lifetime_kills,
 		"completed_levels": completed_levels
@@ -369,10 +395,13 @@ func load_save() -> void:
 	perm_regen_level = int(parsed.get("perm_regen_level", 0))
 	perm_crit_level = int(parsed.get("perm_crit_level", 0))
 	perm_armor_level = int(parsed.get("perm_armor_level", 0))
+	perm_armor_percent_level = int(parsed.get("perm_armor_percent_level", 0))
 	perm_start_gold_level = int(parsed.get("perm_start_gold_level", 0))
 	perm_gold_drop_level = int(parsed.get("perm_gold_drop_level", 0))
 	perm_gem_drop_level = int(parsed.get("perm_gem_drop_level", 0))
 	perm_speed_level = int(parsed.get("perm_speed_level", 0))
+	perm_thorns_level = int(parsed.get("perm_thorns_level", 0))
+	perm_spawn_rate_level = int(parsed.get("perm_spawn_rate_level", 0))
 	
 	unlocked_items = parsed.get("unlocked_items", ["handgun"])
 	lifetime_kills = parsed.get("lifetime_kills", {"handgun": 0})

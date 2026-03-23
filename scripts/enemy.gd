@@ -111,4 +111,4 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player") and can_attack:
 		can_attack = false
 		attack_timer = attack_cooldown
-		body.take_damage(damage)
+		body.take_damage(damage, self)

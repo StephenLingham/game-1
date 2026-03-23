@@ -357,9 +357,19 @@ func _create_blood_effect(pos: Vector2) -> void:
 	var timer = get_tree().create_timer(1.0)
 	timer.timeout.connect(particles.queue_free)
 
-func take_damage(amount: int = 1) -> void:
-	var reduced = max(1, amount - GameState.get_armor())
+func take_damage(amount: int = 1, attacker: Node2D = null) -> void:
+	var percent_red = GameState.get_armor_percent()
+	var after_percent = float(amount) * (1.0 - percent_red)
+	var reduced = max(1, int(round(after_percent)) - GameState.get_armor())
+	
 	health -= reduced
+	
+	# Thorns
+	var thorns_pct = GameState.get_thorns_percentage()
+	if thorns_pct > 0 and attacker and is_instance_valid(attacker):
+		if attacker.has_method("take_damage"):
+			# Enemies take a percentage of the damage they deal *before* armor
+			attacker.take_damage(int(round(float(amount) * thorns_pct)), "thorns")
 	
 	# Flash red
 	sprite.modulate = Color(1, 0.3, 0.3)

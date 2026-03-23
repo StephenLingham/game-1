@@ -8,9 +8,6 @@ func _ready() -> void:
 	# Mask 2 for enemies
 	collision_mask = 2
 	body_entered.connect(_on_body_entered)
-	# Disappear after 15 seconds
-	get_tree().create_timer(15.0).timeout.connect(queue_free)
-	
 	if has_node("Visual"):
 		$Visual.hide()
 	queue_redraw()
@@ -39,4 +36,3 @@ func _on_body_entered(body: Node2D) -> void:
 		if is_instance_valid(body):
 			if body.has_method("take_damage"):
 				GameState.run_damage_stats["floor_spikes"] = GameState.run_damage_stats.get("floor_spikes", 0) + body.take_damage(damage, "floor_spikes")
-			queue_free()

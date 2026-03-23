@@ -19,13 +19,13 @@ func _check_locks() -> void:
 		$VBox/Level3.text = "Complete Level 2 to Unlock"
 
 func _on_level_1_pressed() -> void:
-	_start_level(0.6, 0.6, 0.8, "Level 1")
+	_start_level(1.0, 1.0, 1.0, "Level 1")
 
 func _on_level_2_pressed() -> void:
-	_start_level(1.0, 1.0, 1.0, "Level 2")
+	_start_level(2.0, 1.5, 1.3, "Level 2")
 
 func _on_level_3_pressed() -> void:
-	_start_level(1.8, 1.8, 1.4, "Level 3")
+	_start_level(5.0, 3.0, 1.8, "Level 3")
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")

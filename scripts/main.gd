@@ -23,7 +23,6 @@ const ALL_ABILITIES = [
 	{"id": "sniper", "name": "Sniper Gun", "weapon": true},
 	{"id": "rocket", "name": "Rocket Launcher", "weapon": true},
 	{"id": "machine_gun", "name": "Machine Gun", "weapon": true},
-	{"id": "magnet", "name": "Magnet", "weapon": false},
 	{"id": "orbs", "name": "Energy Orbs", "weapon": false},
 	{"id": "spike_ball", "name": "Spike Ball", "weapon": false},
 	{"id": "bouncing_disk", "name": "Bouncing Disk", "weapon": false},
@@ -334,7 +333,6 @@ func _refresh_shop_ui() -> void:
 func _get_max_level(id: String) -> int:
 	match id:
 		"handgun": return GameConstants.GUN_MAX_LEVEL
-		"magnet": return GameConstants.MAGNET_MAX_LEVEL
 		"orbs": return GameConstants.ORB_MAX_LEVEL
 		"spike_ball": return GameConstants.SPIKE_BALL_MAX_LEVEL
 		"shotgun": return GameConstants.SHOTGUN_MAX_LEVEL
@@ -352,7 +350,6 @@ func _get_ability_cost(id: String, level: int) -> int:
 	var inc = 10
 	match id:
 		"handgun": base = GameConstants.GUN_BASE_COST; inc = GameConstants.GUN_COST_INCREMENT
-		"magnet": base = GameConstants.MAGNET_BASE_COST; inc = GameConstants.MAGNET_COST_INCREMENT
 		"orbs": base = GameConstants.ORB_BASE_COST; inc = GameConstants.ORB_COST_INCREMENT_PER_LEVEL
 		"spike_ball": base = GameConstants.SPIKE_BALL_BASE_COST; inc = GameConstants.SPIKE_BALL_COST_INCREMENT_PER_LEVEL
 		"shotgun": base = GameConstants.SHOTGUN_BASE_COST; inc = GameConstants.SHOTGUN_COST_INCREMENT_PER_LEVEL

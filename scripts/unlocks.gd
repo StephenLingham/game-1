@@ -15,7 +15,6 @@ const ITEMS = {
 	"bouncing_disk": {"name": "Bouncing Disk", "unlock": "Kill 50 enemies with Energy Orbs"},
 	"machine_gun": {"name": "Machine Gun", "unlock": "Kill 50 enemies with Bouncing Disk"},
 	"rocket": {"name": "Rocket Launcher", "unlock": "Kill 50 enemies with Machine Gun"},
-	"magnet": {"name": "Magnet", "unlock": "Unlocked by default"}
 }
 
 func _ready() -> void:
@@ -29,6 +28,10 @@ func _refresh_ui() -> void:
 	for id in ITEMS:
 		var item = ITEMS[id]
 		var is_unlocked = GameState.is_item_unlocked(id)
+		
+		# Progress info
+		var kills = GameState.lifetime_kills.get(id, 0)
+		var needed = GameConstants.UNLOCK_KILLS_NEEDED
 		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
@@ -49,6 +52,19 @@ func _refresh_ui() -> void:
 		status.add_theme_font_size_override("font_size", 18)
 		vbox.add_child(status)
 		
+		var progress = Label.new()
+		if id == "handgun" or is_unlocked:
+			progress.text = ""
+		else:
+			# Find the precursor to show its kills
+			var precursor = _get_precursor(id)
+			if precursor != "":
+				var pkills = GameState.lifetime_kills.get(precursor, 0)
+				progress.text = "Progress: %d / %d" % [pkills, needed]
+				progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				progress.modulate = Color.CYAN
+				vbox.add_child(progress)
+
 		var desc = Label.new()
 		desc.text = item.unlock
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -57,6 +73,16 @@ func _refresh_ui() -> void:
 		vbox.add_child(desc)
 		
 		grid.add_child(panel)
+
+func _get_precursor(id: String) -> String:
+	var weapon_chain = [
+		"handgun", "floor_spikes", "ice_wave", "spike_ball", "shotgun", "turret", 
+		"sniper", "orbs", "bouncing_disk", "machine_gun", "rocket",
+	]
+	var idx = weapon_chain.find(id)
+	if idx > 0:
+		return weapon_chain[idx-1]
+	return ""
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")
