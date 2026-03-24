@@ -51,7 +51,7 @@ func _next_wave() -> void:
 
 	powerup_spawn_timer = randf_range(GameConstants.POWERUP_SPAWN_INTERVAL_MIN, GameConstants.POWERUP_SPAWN_INTERVAL_MAX)
 
-	game.call_deferred("on_wave_started", wave)
+	game.on_wave_started(wave)
 
 func _process(delta: float) -> void:
 	if not spawning:

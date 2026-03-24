@@ -62,8 +62,24 @@ func reset_state(pos: Vector2) -> void:
 		cam.reset_smoothing()
 		cam.force_update_scroll()
 	
+	# Reset all ability timers at the start of each wave to ensure zero delay for most weapons
+	# except for floor spikes and ice wave which use a bit of a countdown as requested.
+	can_fire = true
+	fire_timer = 0.0
+	spike_ball_timer = 0.0
+	shotgun_timer = 0.0
+	sniper_timer = 0.0
+	rocket_timer = 0.0
+	disk_timer = 0.0
+	mg_timer = 0.0
+	
+	# Floor spikes and Ice wave are reset to their full cooldown at the start of each wave
+	# so they don't fire immediately.
+	spikes_timer = GameConstants.SPIKES_BASE_COOLDOWN
+	ice_timer = GameConstants.ICE_BASE_COOLDOWN
+	
+	# Turrets also use their cooldown for the initial delay
 	if GameState.run_abilities.get("turret", 0) > 0:
-		# Give a small initial delay at start of wave
 		var lvl = GameState.run_abilities.get("turret", 1)
 		turret_timer = (GameConstants.TURRET_BASE_COOLDOWN - lvl * GameConstants.TURRET_COOLDOWN_REDUCTION)
 

@@ -126,13 +126,6 @@ const DISK_BASE_COST: int = 20
 const DISK_COST_INCREMENT: int = 15
 const DISK_SPEED: float = 500.0
 
-# Floor Spikes
-const SPIKES_BASE_COOLDOWN: float = 2.0
-const SPIKES_BASE_DAMAGE: int = 500
-const SPIKES_MAX_LEVEL: int = 5
-const SPIKES_BASE_COST: int = 15
-const SPIKES_COST_INCREMENT: int = 10
-
 # Turret
 const TURRET_BASE_COOLDOWN: float = 8.0
 const TURRET_COOLDOWN_REDUCTION: float = 1.0
@@ -148,6 +141,13 @@ const MG_DAMAGE: int = 50
 const MG_MAX_LEVEL: int = 5
 const MG_BASE_COST: int = 20
 const MG_COST_INCREMENT: int = 15
+
+# Floor Spikes
+const SPIKES_BASE_COOLDOWN: float = 2.0
+const SPIKES_BASE_DAMAGE: int = 500
+const SPIKES_MAX_LEVEL: int = 5
+const SPIKES_BASE_COST: int = 15
+const SPIKES_COST_INCREMENT: int = 10
 
 # Ice Wave
 const ICE_BASE_COOLDOWN: float = 6.0
