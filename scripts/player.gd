@@ -224,6 +224,13 @@ func get_damage() -> int:
 	dmg *= GameState.get_damage_multiplier()
 	return int(round(dmg))
 
+func _get_final_damage(base_dmg: int) -> Dictionary:
+	var dmg = GameState.get_total_damage(base_dmg)
+	var is_crit = randf() < GameState.get_crit_chance()
+	if is_crit:
+		dmg = int(round(float(dmg) * GameState.get_crit_multiplier()))
+	return {"damage": dmg, "is_crit": is_crit}
+
 func _get_fire_interval() -> float:
 	var atk_mult := GameState.get_atkspd_multiplier() * GameState.get_gun_atk_speed_mult() * _atk_speed_boost_multiplier
 	# Apply same logic to other timers
@@ -276,9 +283,8 @@ func fire() -> void:
 	bullet.global_position = muzzle.global_position
 	bullet.rotation = rotation
 	bullet.direction = Vector2.RIGHT.rotated(rotation)
-	var is_crit = randf() < GameState.get_crit_chance()
-	bullet.damage = get_damage() * (2 if is_crit else 1)
-	if is_crit: bullet.modulate = Color(2, 2, 0) # Glow yellow
+	var res = _get_final_damage(base_damage)
+	bullet.damage = res.damage
 	get_tree().current_scene.add_child(bullet)
 
 func _fire_shotgun(target: Node2D) -> void:
@@ -301,7 +307,8 @@ func _fire_shotgun(target: Node2D) -> void:
 		bullet.global_position = muzzle.global_position
 		bullet.rotation = angle
 		bullet.direction = Vector2.RIGHT.rotated(angle)
-		bullet.damage = get_damage()
+		var res = _get_final_damage(base_damage)
+		bullet.damage = res.damage
 		bullet.weapon_source = "shotgun"
 		get_tree().current_scene.add_child(bullet)
 
@@ -409,7 +416,8 @@ func _fire_spike_ball(target: Node2D) -> void:
 		dir = (target.global_position - global_position).normalized()
 	
 	ball.direction = dir
-	ball.damage = GameConstants.SPIKE_BALL_BASE_DAMAGE + GameState.get_gun_damage_bonus()
+	var res = _get_final_damage(GameConstants.SPIKE_BALL_BASE_DAMAGE)
+	ball.damage = res.damage
 	var lvl = GameState.run_abilities.get("spike_ball", 0)
 	ball.max_distance = GameConstants.SPIKE_BALL_BASE_DISTANCE + (lvl - 1) * GameConstants.SPIKE_BALL_DISTANCE_PER_LEVEL
 	get_tree().current_scene.add_child(ball)
@@ -432,7 +440,8 @@ func _fire_rocket() -> void:
 		var rocket = rocket_scene.instantiate()
 		rocket.global_position = muzzle.global_position
 		rocket.target = target
-		rocket.damage = GameConstants.ROCKET_DAMAGE
+		var res = _get_final_damage(GameConstants.ROCKET_DAMAGE)
+		rocket.damage = res.damage
 		rocket.blast_radius = GameState.get_rocket_blast_radius()
 		
 		# Initial direction towards target
@@ -468,19 +477,21 @@ func _fire_disk() -> void:
 	disk.global_position = global_position
 	var lvl = GameState.run_abilities.get("bouncing_disk", 1)
 	disk.bounces_left = lvl # Increase with each upgrade
-	disk.damage = GameConstants.DISK_BASE_DAMAGE + GameState.get_gun_damage_bonus()
+	var res = _get_final_damage(GameConstants.DISK_BASE_DAMAGE)
+	disk.damage = res.damage
 	get_tree().current_scene.add_child(disk)
 
 func _drop_spikes() -> void:
 	var spikes = spikes_scene.instantiate()
 	spikes.global_position = global_position + Vector2(randf_range(-50, 50), randf_range(-50, 50))
-	spikes.damage = GameConstants.SPIKES_BASE_DAMAGE + GameState.get_gun_damage_bonus()
+	var res = _get_final_damage(GameConstants.SPIKES_BASE_DAMAGE)
+	spikes.damage = res.damage
 	get_tree().current_scene.add_child(spikes)
 
 func _place_turret() -> void:
 	var t = turret_scene.instantiate()
 	t.global_position = global_position + Vector2.RIGHT.rotated(randf() * TAU) * 100.0
-	t.damage = GameConstants.TURRET_DAMAGE + GameState.get_gun_damage_bonus()
+	t.damage = GameConstants.TURRET_DAMAGE
 	get_tree().current_scene.add_child(t)
 
 func _trigger_ice_wave() -> void:
@@ -518,14 +529,16 @@ func _fire_machine_gun(target: Node2D) -> void:
 	var dir = (target.global_position - global_position).normalized()
 	b.direction = dir
 	b.rotation = dir.angle()
-	b.damage = GameConstants.MG_DAMAGE + GameState.get_gun_damage_bonus()
+	var res = _get_final_damage(GameConstants.MG_DAMAGE)
+	b.damage = res.damage
 	b.weapon_source = "machine_gun"
 	get_tree().current_scene.add_child(b)
 
 func trigger_rocket_blast() -> void:
 	var blast_pos = global_position
 	var radius = GameConstants.ROCKET_BASE_BLAST_RADIUS + (GameConstants.ROCKET_MAX_LEVEL - 1) * GameConstants.ROCKET_BLAST_RADIUS_PER_LEVEL
-	var damage = GameConstants.ROCKET_DAMAGE
+	var final_res = _get_final_damage(GameConstants.ROCKET_DAMAGE)
+	var damage = final_res.damage
 	
 	if ResourceLoader.exists("res://scripts/rocket.gd"):
 		var script = load("res://scripts/rocket.gd")

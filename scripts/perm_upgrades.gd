@@ -12,6 +12,7 @@ const UPGRADES = [
 	{"id": "max_health", "name": "Max Health", "desc": "+20 Health per level"},
 	{"id": "regen", "name": "Health Regen", "desc": "+0.5 HP/sec per level"},
 	{"id": "crit", "name": "Crit Chance", "desc": "+5% Crit Chance per level"},
+	{"id": "crit_damage", "name": "Crit Damage", "desc": "+20% Crit Multiplier per level"},
 	{"id": "armor", "name": "Armor (Flat)", "desc": "+2 Flat damage reduction per level"},
 	{"id": "armor_percent", "name": "Armor (%)", "desc": "+5% Total damage reduction per level"},
 	{"id": "thorns", "name": "Thorns", "desc": "Reflect 10% damage back to attackers"},

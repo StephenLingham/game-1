@@ -46,6 +46,12 @@ func _fire(target: Node2D) -> void:
 	var dir = (target.global_position - b.global_position).normalized()
 	b.direction = dir
 	b.rotation = dir.angle()
-	b.damage = damage
+	
+	var final_dmg = GameState.get_total_damage(damage)
+	var is_crit = randf() < GameState.get_crit_chance()
+	if is_crit:
+		final_dmg = int(round(float(final_dmg) * GameState.get_crit_multiplier()))
+		
+	b.damage = final_dmg
 	b.weapon_source = "turret"
 	get_tree().current_scene.add_child(b)

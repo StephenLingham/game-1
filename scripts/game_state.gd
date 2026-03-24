@@ -26,6 +26,7 @@ var perm_gem_drop_level: int = 0
 var perm_speed_level: int = 0
 var perm_thorns_level: int = 0
 var perm_spawn_rate_level: int = 0
+var perm_crit_damage_level: int = 0
 
 # Run-time values (reset per run)
 var run_gold: int = 0
@@ -101,6 +102,7 @@ func _reset_all_perm_levels() -> void:
 	perm_speed_level = 0
 	perm_thorns_level = 0
 	perm_spawn_rate_level = 0
+	perm_crit_damage_level = 0
 
 func reset_run() -> void:
 	run_gold = 10 + perm_start_gold_level * 5 # Base gold + bonus
@@ -206,6 +208,11 @@ func get_pickup_radius() -> float:
 	var perm := float(plvl) * GameConstants.PERM_COLLECTION_RADIUS_INCREMENT
 	return base + perm
 
+func get_total_damage(base: int) -> int:
+	var dmg = float(base + get_gun_damage_bonus())
+	dmg *= get_damage_multiplier()
+	return int(round(dmg))
+
 func get_max_health() -> int:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_max_health_level
 	return GameConstants.PLAYER_MAX_HEALTH + lvl * 20
@@ -217,6 +224,10 @@ func get_health_regen() -> float:
 func get_crit_chance() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_crit_level
 	return float(lvl) * 0.05 # 5% per level
+
+func get_crit_multiplier() -> float:
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_crit_damage_level
+	return 2.0 + float(lvl) * 0.2 # Base 2.0x, +0.2x per level
 
 func get_armor() -> int:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_armor_level
@@ -267,6 +278,7 @@ func reset_gems() -> void:
 	spent += _calculate_spent(perm_speed_level)
 	spent += _calculate_spent(perm_thorns_level)
 	spent += _calculate_spent(perm_spawn_rate_level)
+	spent += _calculate_spent(perm_crit_damage_level)
 	
 	gems += spent
 	
@@ -285,6 +297,7 @@ func reset_gems() -> void:
 	perm_speed_level = 0
 	perm_thorns_level = 0
 	perm_spawn_rate_level = 0
+	perm_crit_damage_level = 0
 	
 	save()
 
@@ -379,6 +392,7 @@ func save() -> void:
 		"perm_speed_level": perm_speed_level,
 		"perm_thorns_level": perm_thorns_level,
 		"perm_spawn_rate_level": perm_spawn_rate_level,
+		"perm_crit_damage_level": perm_crit_damage_level,
 		"unlocked_items": unlocked_items,
 		"lifetime_kills": lifetime_kills,
 		"completed_levels": completed_levels
@@ -413,6 +427,7 @@ func load_save() -> void:
 	perm_speed_level = int(parsed.get("perm_speed_level", 0))
 	perm_thorns_level = int(parsed.get("perm_thorns_level", 0))
 	perm_spawn_rate_level = int(parsed.get("perm_spawn_rate_level", 0))
+	perm_crit_damage_level = int(parsed.get("perm_crit_damage_level", 0))
 	
 	unlocked_items = parsed.get("unlocked_items", ["handgun"])
 	lifetime_kills = parsed.get("lifetime_kills", {"handgun": 0})
