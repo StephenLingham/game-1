@@ -5,16 +5,27 @@ func _ready() -> void:
 	add_to_group("chests")
 	
 	# Visual setup - use image if provided, otherwise procedural
-	if ResourceLoader.exists("res://assets/treasure_chest.png"):
-		$Sprite2D.texture = load("res://assets/treasure_chest.png")
+	var texture: Texture2D = null
+	var potential_paths = [
+		"res://assets/treasure_chest.jpg",
+		"res://assets/treasure_chest.png"
+	]
+	
+	for path in potential_paths:
+		if ResourceLoader.exists(path):
+			texture = load(path)
+			if texture: break
+	
+	if texture:
+		$Sprite2D.texture = texture
+		$Sprite2D.visible = true
 		$Visual.visible = false
 	else:
+		# Fallback if image is missing or didn't load yet
 		$Sprite2D.visible = false
 		$Visual.visible = true
-	
+
 	body_entered.connect(_on_body_entered)
-
-
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
