@@ -210,8 +210,8 @@ const ITEMS: Dictionary = {
 		"name": "Drunken Pirate’s Bottomless Rum",
 		"stats": {"damage_multiplier": 0.5, "speed_multiplier": 0.2}
 	},
-	"itchy_sand": {
-		"name": "Pocket Full of Sand",
+	"friendly_spoon": {
+		"name": "Friendly Spoon",
 		"stats": {"armor": 20, "atkspd_multiplier": 0.1}
 	},
 	"bouncy_armor": {
@@ -227,7 +227,7 @@ const ITEMS: Dictionary = {
 		"stats": {"armor": 15, "thorns_percentage": 0.25}
 	},
 	"disco_ball": {
-		"name": "Charming Disco Ball",
+		"name": "Laser Disco Ball",
 		"stats": {"crit_chance": 0.15, "pickup_radius": 30.0}
 	},
 	"clown_horn": {
@@ -246,8 +246,8 @@ const ITEMS: Dictionary = {
 		"name": "Sentient Boomerang",
 		"stats": {"crit_chance": 0.1, "crit_multiplier": 0.5}
 	},
-	"pufferfish_pouch": {
-		"name": "Pufferfish Surprise Pouch",
+	"lunchbox": {
+		"name": "Lunchbox of Plenty",
 		"stats": {"thorns_percentage": 0.5, "armor": 5}
 	},
 	"eight_ball": {

@@ -560,7 +560,7 @@ func show_item_window(_deprecated_item_id: String = "") -> void:
 		btn.add_theme_font_size_override("font_size", 18)
 		
 		# Build description text
-		var text = "[ " + item_data.name + " ]\n\n"
+		var text = item_data.name + "\n\n"
 		var stats = item_data.get("stats", {})
 		for stat_key in stats.keys():
 			var val = stats[stat_key]
@@ -571,7 +571,11 @@ func show_item_window(_deprecated_item_id: String = "") -> void:
 				percent = "%"
 			
 			var human_name = stat_key.replace("_", " ").capitalize()
+			if stat_key == "atkspd_multiplier":
+				human_name = "Attack Speed Multiplier"
+				
 			text += "%s%s%s %s\n" % [sign_str, str(val), percent, human_name]
+
 		
 		btn.text = text
 		btn.pressed.connect(_on_item_chosen.bind(item_id))
@@ -627,7 +631,7 @@ func _ensure_item_popup_exists() -> void:
 	margin.add_child(vbox)
 	
 	var title = Label.new()
-	title.text = "Choose Your Treasure"
+	title.text = "Choose Your Item"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 36)
 	title.modulate = Color.GOLD
