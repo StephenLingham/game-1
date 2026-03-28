@@ -6,6 +6,8 @@ extends Node
 var enemy_fast_scene := preload("res://scenes/enemy_fast.tscn")
 var enemy_big_scene := preload("res://scenes/enemy_big.tscn")
 var powerup_scene := preload("res://scenes/PowerupPickup.tscn")
+var chest_scene := preload("res://scenes/TreasureChest.tscn")
+
 
 var wave: int = 0
 var wave_time_left: float = 0.0
@@ -15,6 +17,8 @@ var spawning: bool = false
 @onready var game: Node = get_tree().current_scene
 
 var powerup_spawn_timer: float = 0.0
+var chest_spawn_timer: float = 0.0
+
 
 var arena_rect: Rect2
 
@@ -49,7 +53,10 @@ func _next_wave() -> void:
 	spawn_timer.wait_time = wait
 	spawn_timer.start()
 
+
 	powerup_spawn_timer = randf_range(GameConstants.POWERUP_SPAWN_INTERVAL_MIN, GameConstants.POWERUP_SPAWN_INTERVAL_MAX)
+	chest_spawn_timer = randf_range(10.0, 15.0) # Start first chest early
+
 
 	game.on_wave_started(wave)
 
@@ -69,6 +76,15 @@ func _process(delta: float) -> void:
 			_spawn_powerup()
 			# Spawn every 8-12 seconds
 			powerup_spawn_timer = randf_range(GameConstants.POWERUP_SPAWN_INTERVAL_MIN, GameConstants.POWERUP_SPAWN_INTERVAL_MAX)
+
+	# Chest spawning
+	if spawning:
+		chest_spawn_timer -= delta
+		if chest_spawn_timer <= 0:
+			_spawn_chest()
+			# Spawn every 8-12 seconds ensures a few per 30s wave
+			chest_spawn_timer = randf_range(8.0, 12.0)
+
 
 func _end_wave() -> void:
 	spawning = false
@@ -170,4 +186,20 @@ func _spawn_powerup() -> void:
 	
 	p.global_position = spawn_pos
 	game.get_node("PickupContainer").add_child(p)
+
+func _spawn_chest() -> void:
+	if chest_scene == null: return
+	
+	var c = chest_scene.instantiate()
+	
+	# Spawn randomly within the arena bounds
+	var margin := 150.0
+	var spawn_pos := Vector2(
+		randf_range(arena_rect.position.x + margin, arena_rect.position.x + arena_rect.size.x - margin),
+		randf_range(arena_rect.position.y + margin, arena_rect.position.y + arena_rect.size.y - margin)
+	)
+	
+	c.global_position = spawn_pos
+	game.get_node("PickupContainer").add_child(c)
+
 

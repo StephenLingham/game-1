@@ -183,3 +183,87 @@ const DEBUG_UNLOCK_ALL_LEVELS: bool = false
 const DEBUG_RESET_UNLOCKS: bool = false
 const DEBUG_RESET_GEMS: bool = false
 const DEBUG_RESET_ALL_DATA: bool = false
+
+# --- ITEMS ---
+const ITEMS: Dictionary = {
+	"whoopee_cushion": {
+		"name": "Nuclear Giraffe",
+		"stats": {"crit_multiplier": 1.0, "crit_chance": 0.05}
+	},
+	"rubber_chicken": {
+		"name": "Wholemeal Sandwich",
+		"stats": {"atkspd_multiplier": 0.3, "armor": 10}
+	},
+	"banana_peel": {
+		"name": "Slippery Banana Peel Dispenser",
+		"stats": {"speed_multiplier": 0.2, "armor_percent": 0.1}
+	},
+	"meatloaf": {
+		"name": "Grandma’s Hearty Meatloaf",
+		"stats": {"max_health": 50, "health_regen": 1.0}
+	},
+	"quantum_socks": {
+		"name": "Quantum Socks",
+		"stats": {"pickup_radius": 50.0, "speed_multiplier": 0.1}
+	},
+	"pirate_rum": {
+		"name": "Drunken Pirate’s Bottomless Rum",
+		"stats": {"damage_multiplier": 0.5, "speed_multiplier": 0.2}
+	},
+	"itchy_sand": {
+		"name": "Pocket Full of Sand",
+		"stats": {"armor": 20, "atkspd_multiplier": 0.1}
+	},
+	"bouncy_armor": {
+		"name": "Inflatable Bouncy Castle Armor",
+		"stats": {"armor": 10, "armor_percent": 0.2, "damage_multiplier": 0.15}
+	},
+	"coffee_thermos": {
+		"name": "Bottomless Coffee Thermos",
+		"stats": {"atkspd_multiplier": 0.25, "speed_multiplier": 0.15}
+	},
+	"pet_rock": {
+		"name": "Loyal Pet Rock",
+		"stats": {"armor": 15, "thorns_percentage": 0.25}
+	},
+	"disco_ball": {
+		"name": "Charming Disco Ball",
+		"stats": {"crit_chance": 0.15, "pickup_radius": 30.0}
+	},
+	"clown_horn": {
+		"name": "The Over-Enthusiastic Megaphone",
+		"stats": {"damage_multiplier": 0.3, "atkspd_multiplier": 0.2}
+	},
+	"hamster_wheel": {
+		"name": "Unstable Hamster Wheel",
+		"stats": {"speed_multiplier": 0.5, "max_health": 30}
+	},
+	"toaster": {
+		"name": "Fiery Toaster Attachment",
+		"stats": {"damage_multiplier": 0.4, "thorns_percentage": 0.3}
+	},
+	"boomerang": {
+		"name": "Sentient Boomerang",
+		"stats": {"crit_chance": 0.1, "crit_multiplier": 0.5}
+	},
+	"pufferfish_pouch": {
+		"name": "Pufferfish Surprise Pouch",
+		"stats": {"thorns_percentage": 0.5, "armor": 5}
+	},
+	"eight_ball": {
+		"name": "Magic 8-Ball of Chaos",
+		"stats": {"damage_multiplier": 0.2, "crit_multiplier": 0.3, "crit_chance": 0.05}
+	},
+	"squirrel_launcher": {
+		"name": "Hyperactive Squirrel Acorn Launcher",
+		"stats": {"atkspd_multiplier": 0.6, "damage_multiplier": 0.25}
+	},
+	"springy_shoes": {
+		"name": "Springy Shoes",
+		"stats": {"health_regen": 3.0, "speed_multiplier": 0.15}
+	},
+	"pinata_buddy": {
+		"name": "Sentient Piñata Buddy",
+		"stats": {"gold_drop_multiplier": 0.5, "gem_drop_chance_bonus": 0.05}
+	}
+}

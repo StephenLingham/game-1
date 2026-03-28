@@ -47,10 +47,20 @@ var turret_scene: PackedScene = preload("res://scenes/turret.tscn")
 
 func _ready() -> void:
 	add_to_group("player")
-	max_health = GameState.get_max_health()
+	refresh_stats()
 	health = max_health
+
+func refresh_stats() -> void:
+	var old_max = max_health
+	max_health = GameState.get_max_health()
+	if max_health > old_max:
+		health += (max_health - old_max)
+	
 	_base_speed = GameConstants.PLAYER_SPEED * GameState.get_speed_multiplier()
-	speed = _base_speed
+	# Update current speed only if no active boost
+	if _speed_boost_duration <= 0:
+		speed = _base_speed
+
 
 func reset_state(pos: Vector2) -> void:
 	global_position = pos

@@ -34,6 +34,8 @@ var run_abilities: Dictionary = {} # ability_id -> level
 var run_reroll_cost: int = 2
 var run_banished_abilities: Array = []
 var run_banish_count: int = 2
+var run_items: Array = [] # [item_id, item_id, ...]
+
 
 # Level / Difficulty Stats
 var run_difficulty_health_mult: float = 1.0
@@ -116,6 +118,8 @@ func reset_run() -> void:
 	run_gold_spent = 0
 	run_damage_stats = {}
 	run_unlocked_items = []
+	run_items = []
+
 
 # --- HELPER GETTERS (Backward Compatibility) ---
 
@@ -196,17 +200,32 @@ var run_damage_explosion_pickup: int:
 
 func get_damage_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_damage_level
-	return 1.0 + 0.10 * float(lvl)
+	var mult = 1.0 + 0.10 * float(lvl)
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		mult += stats.get("damage_multiplier", 0.0)
+	return mult
+
 
 func get_atkspd_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_atkspd_level
-	return 1.0 + 0.10 * float(lvl)
+	var mult = 1.0 + 0.10 * float(lvl)
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		mult += stats.get("atkspd_multiplier", 0.0)
+	return mult
+
 
 func get_pickup_radius() -> float:
 	var base := GameConstants.BASE_COLLECTION_RADIUS
 	var plvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_pickup_radius_level
 	var perm := float(plvl) * GameConstants.PERM_COLLECTION_RADIUS_INCREMENT
-	return base + perm
+	var bonus := 0.0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("pickup_radius", 0.0)
+	return base + perm + bonus
+
 
 func get_total_damage(base: int) -> int:
 	var dmg = float(base + get_gun_damage_bonus())
@@ -215,31 +234,73 @@ func get_total_damage(base: int) -> int:
 
 func get_max_health() -> int:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_max_health_level
-	return GameConstants.PLAYER_MAX_HEALTH + lvl * 20
+	var base = GameConstants.PLAYER_MAX_HEALTH + lvl * 20
+	var bonus = 0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("max_health", 0)
+	return base + bonus
+
 
 func get_health_regen() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_regen_level
-	return float(lvl) * 0.5 # 0.5 HP per second
+	var base = float(lvl) * 0.5 # 0.5 HP per second
+	var bonus = 0.0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("health_regen", 0.0)
+	return base + bonus
+
 
 func get_crit_chance() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_crit_level
-	return float(lvl) * 0.05 # 5% per level
+	var base = float(lvl) * 0.05 # 5% per level
+	var bonus = 0.0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("crit_chance", 0.0)
+	return base + bonus
+
 
 func get_crit_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_crit_damage_level
-	return 2.0 + float(lvl) * 0.2 # Base 2.0x, +0.2x per level
+	var base = 2.0 + float(lvl) * 0.2 # Base 2.0x, +0.2x per level
+	var bonus = 0.0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("crit_multiplier", 0.0)
+	return base + bonus
+
 
 func get_armor() -> int:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_armor_level
-	return lvl * 2 # Flat damage reduction
+	var base = lvl * 2 # Flat damage reduction
+	var bonus = 0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("armor", 0)
+	return base + bonus
+
 
 func get_armor_percent() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_armor_percent_level
-	return float(lvl) * 0.05 # 5% reduction per level
+	var base = float(lvl) * 0.05 # 5% reduction per level
+	var bonus = 0.0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("armor_percent", 0.0)
+	return base + bonus
+
 
 func get_thorns_percentage() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_thorns_level
-	return float(lvl) * 0.1 # 10% thorns per level
+	var base = float(lvl) * 0.1 # 10% thorns per level
+	var bonus = 0.0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("thorns_percentage", 0.0)
+	return base + bonus
+
 
 func get_spawn_rate_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_spawn_rate_level
@@ -247,15 +308,40 @@ func get_spawn_rate_multiplier() -> float:
 
 func get_gold_drop_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gold_drop_level
-	return 1.0 + float(lvl) * 0.1
+	var base = 1.0 + float(lvl) * 0.1
+	var bonus = 0.0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("gold_drop_multiplier", 0.0)
+	return base + bonus
+
 
 func get_gem_drop_chance_bonus() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gem_drop_level
-	return float(lvl) * 0.02
+	var base = float(lvl) * 0.02
+	var bonus = 0.0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("gem_drop_chance_bonus", 0.0)
+	return base + bonus
+
 
 func get_speed_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_speed_level
-	return 1.0 + float(lvl) * 0.05
+	var base = 1.0 + float(lvl) * 0.05
+	var bonus = 0.0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus += stats.get("speed_multiplier", 0.0)
+	return base + bonus
+
+func add_run_item(item_id: String) -> void:
+	run_items.append(item_id)
+	var p = get_tree().get_first_node_in_group("player")
+	if p and p.has_method("refresh_stats"):
+		p.refresh_stats()
+
+
 
 func award_gems(amount: int) -> void:
 	gems += max(amount, 0)

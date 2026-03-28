@@ -6,12 +6,18 @@ extends Node2D
 @onready var shop_panel: Control = $UI/ShopPanel
 @onready var game_over_panel: Control = $UI/GameOverPanel
 @onready var pause_panel: Control = $UI/PausePanel
+var item_popup_panel: Control
+
+
 
 @onready var shop_grid: GridContainer = $UI/ShopPanel/Margin/VBox/Scroll/Grid
 @onready var shop_gold_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/GoldLabel
 @onready var shop_gems_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/GemsLabel
 @onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
 @onready var shop_capacity_label: Label = Label.new() # Will add to UI
+var current_chest_options: Array = []
+
+
 
 var reroll_btn: Button
 var banish_active: bool = false
@@ -39,6 +45,9 @@ const ALL_ABILITIES = [
 
 func _ready() -> void:
 	player.player_died.connect(_on_player_died)
+	
+	_ensure_item_popup_exists()
+
 
 	# Shop is now dynamic, no need to wire hardcoded buttons
 	
@@ -71,6 +80,15 @@ func _ready() -> void:
 	
 	game_over_panel.visible = false
 	pause_panel.visible = false
+	if item_popup_panel:
+		item_popup_panel.visible = false
+	
+	# Setup Item Popup Close Button
+	var item_ok_btn = item_popup_panel.get_node_or_null("Margin/VBox/CloseButton") as Button
+	if item_ok_btn:
+		item_ok_btn.pressed.connect(_close_item_window)
+
+
 
 	# Position player at center of viewport dynamically first
 	var screen_center := get_viewport().get_visible_rect().size / 2.0
@@ -517,3 +535,125 @@ func _resume() -> void:
 func _abandon_run() -> void:
 	end_run(false, wave_controller.wave)
 	pause_panel.visible = false
+
+func show_item_window(_deprecated_item_id: String = "") -> void:
+	# Ignore the passed item_id, we generate 3 new ones here
+	var all_keys = GameConstants.ITEMS.keys()
+	all_keys.shuffle()
+	current_chest_options = all_keys.slice(0, 3)
+	
+	if not item_popup_panel:
+		_ensure_item_popup_exists()
+
+	get_tree().paused = true
+	item_popup_panel.visible = true
+	item_popup_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	var grid = item_popup_panel.get_node("Margin/VBox/ItemGrid")
+	for child in grid.get_children():
+		child.queue_free()
+	
+	for item_id in current_chest_options:
+		var item_data = GameConstants.ITEMS[item_id]
+		var btn = Button.new()
+		btn.custom_minimum_size = Vector2(250, 180)
+		btn.add_theme_font_size_override("font_size", 18)
+		
+		# Build description text
+		var text = "[ " + item_data.name + " ]\n\n"
+		var stats = item_data.get("stats", {})
+		for stat_key in stats.keys():
+			var val = stats[stat_key]
+			var sign_str = "+" if val > 0 else ""
+			var percent = ""
+			if stat_key.ends_with("_multiplier") or stat_key.ends_with("_percent") or stat_key.ends_with("_chance") or stat_key == "thorns_percentage" or stat_key == "gem_drop_chance_bonus":
+				val *= 100.0
+				percent = "%"
+			
+			var human_name = stat_key.replace("_", " ").capitalize()
+			text += "%s%s%s %s\n" % [sign_str, str(val), percent, human_name]
+		
+		btn.text = text
+		btn.pressed.connect(_on_item_chosen.bind(item_id))
+		grid.add_child(btn)
+
+func _on_item_chosen(item_id: String) -> void:
+	if item_id != "skip":
+		GameState.add_run_item(item_id)
+	_close_item_window()
+
+func _ensure_item_popup_exists() -> void:
+	if has_node("UI/ItemPopupPanel"):
+		item_popup_panel = get_node("UI/ItemPopupPanel")
+		return
+	
+	# Build it programmatically if missing
+	item_popup_panel = PanelContainer.new()
+	item_popup_panel.name = "ItemPopupPanel"
+	
+	# Solid dark background with gold border
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.1, 0.1, 0.15, 1.0) # Solid, no transparency
+	sb.border_width_left = 5
+	sb.border_width_top = 5
+	sb.border_width_right = 5
+	sb.border_width_bottom = 5
+	sb.border_color = Color(0.8, 0.6, 0.1, 1.0) # Gold border
+	sb.corner_radius_top_left = 12
+	sb.corner_radius_top_right = 12
+	sb.corner_radius_bottom_left = 12
+	sb.corner_radius_bottom_right = 12
+	item_popup_panel.add_theme_stylebox_override("panel", sb)
+
+	item_popup_panel.custom_minimum_size = Vector2(900, 450)
+	
+	# Centering logic
+	item_popup_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	item_popup_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	item_popup_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	
+	var margin = MarginContainer.new()
+
+	margin.name = "Margin"
+	margin.add_theme_constant_override("margin_left", 30)
+	margin.add_theme_constant_override("margin_right", 30)
+	margin.add_theme_constant_override("margin_top", 30)
+	margin.add_theme_constant_override("margin_bottom", 30)
+	item_popup_panel.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.name = "VBox"
+	vbox.add_theme_constant_override("separation", 25)
+	margin.add_child(vbox)
+	
+	var title = Label.new()
+	title.text = "Choose Your Treasure"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 36)
+	title.modulate = Color.GOLD
+	vbox.add_child(title)
+	
+	var grid = HBoxContainer.new()
+	grid.name = "ItemGrid"
+	grid.alignment = BoxContainer.ALIGNMENT_CENTER
+	grid.add_theme_constant_override("separation", 30)
+	vbox.add_child(grid)
+	
+	var skip_box = CenterContainer.new()
+	vbox.add_child(skip_box)
+	
+	var skip_btn = Button.new()
+	skip_btn.text = "Skip Treasure (No Item)"
+	skip_btn.custom_minimum_size = Vector2(300, 40)
+	skip_btn.pressed.connect(_on_item_chosen.bind("skip"))
+	skip_box.add_child(skip_btn)
+	
+	$UI.add_child(item_popup_panel)
+	item_popup_panel.visible = false
+
+
+
+func _close_item_window() -> void:
+	item_popup_panel.visible = false
+	get_tree().paused = false
+

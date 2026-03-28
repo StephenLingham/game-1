@@ -1,0 +1,54 @@
+[gd_scene load_steps=3 format=3 uid="uid://treasurechest1"]
+
+[ext_resource type="Script" path="res://scripts/treasure_chest.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="1"]
+size = Vector2(48, 40)
+
+[node name="TreasureChest" type="Area2D"]
+script = ExtResource("1")
+collision_layer = 8
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.2, 0.2)
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Main" type="ColorRect" parent="Visual"]
+offset_left = -24.0
+offset_top = -15.0
+offset_right = 24.0
+offset_bottom = 20.0
+color = Color(0.447059, 0.298039, 0.14902, 1)
+
+[node name="Lid" type="ColorRect" parent="Visual"]
+offset_left = -26.0
+offset_top = -22.0
+offset_right = 26.0
+offset_bottom = -13.0
+color = Color(0.588235, 0.411765, 0.235294, 1)
+
+[node name="Lock" type="ColorRect" parent="Visual"]
+offset_left = -5.0
+offset_top = -15.0
+offset_right = 5.0
+offset_bottom = -5.0
+color = Color(1, 0.843137, 0, 1)
+
+[node name="StrapLeft" type="ColorRect" parent="Visual"]
+offset_left = -16.0
+offset_top = -22.0
+offset_right = -12.0
+offset_bottom = 20.0
+color = Color(0.3, 0.2, 0.1, 1)
+
+[node name="StrapRight" type="ColorRect" parent="Visual"]
+offset_left = 12.0
+offset_top = -22.0
+offset_right = 16.0
+offset_bottom = 20.0
+color = Color(0.3, 0.2, 0.1, 1)
