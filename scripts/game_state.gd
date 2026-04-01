@@ -6,10 +6,12 @@ const SAVE_PATH := "user://save.json"
 var gems: int = 0
 
 # Unlocks
-var unlocked_items: Array = ["handgun"] # Items the player CAN see in shop
+var unlocked_items: Array = ["handgun"] # Abilities the player CAN see in shop
+var unlocked_treasure_items: Array = [] # Items the player CAN see in chests
 var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed until end)
 var completed_levels: Array = []
 var lifetime_kills: Dictionary = {"handgun": 0}
+var lifetime_chests_opened: int = 0
 
 # Permanent Upgrades
 var perm_damage_level: int = 0
@@ -58,7 +60,9 @@ func _ready() -> void:
 		# Reset EVERYTHING
 		gems = 0
 		unlocked_items = ["handgun"]
+		unlocked_treasure_items = []
 		lifetime_kills = {"handgun": 0}
+		lifetime_chests_opened = 0
 		completed_levels = []
 		_reset_all_perm_levels()
 		changed = true
@@ -66,10 +70,24 @@ func _ready() -> void:
 	else:
 		if GameConstants.DEBUG_RESET_UNLOCKS:
 			unlocked_items = ["handgun"]
+			unlocked_treasure_items = []
 			lifetime_kills = {"handgun": 0}
+			lifetime_chests_opened = 0
 			completed_levels = []
 			changed = true
 			print("DEBUG: Unlocks reset.")
+	
+	# Initial 5 items if none unlocked yet
+	if unlocked_treasure_items.size() < 5:
+		var all_items = GameConstants.ITEMS.keys()
+		# For consistency, let's just pick the first 5 in the dictionary order for now, 
+		# or shuffle if we want it random for each player's save start.
+		# A stable set is usually better for "starting with 5".
+		for i in range(min(5, all_items.size())):
+			var id = all_items[i]
+			if not unlocked_treasure_items.has(id):
+				unlocked_treasure_items.append(id)
+		changed = true
 		if GameConstants.DEBUG_RESET_GEMS:
 			gems = 0
 			_reset_all_perm_levels()
@@ -413,6 +431,11 @@ func record_kill(weapon: String) -> void:
 	_check_unlocks()
 	save()
 
+func record_chest_opened() -> void:
+	lifetime_chests_opened += 1
+	_check_unlocks()
+	save()
+
 func record_ability_upgrade(id: String, level: int) -> void:
 	# No save() here to avoid mid-run permanent save of kills/unlocks if we want to be strict, 
 	# but kills are already being saved in record_kill. Let's be consistent.
@@ -427,8 +450,12 @@ func is_item_unlocked(id: String) -> bool:
 
 func finalize_run_unlocks() -> void:
 	for item in run_unlocked_items:
-		if not unlocked_items.has(item):
-			unlocked_items.append(item)
+		if item in GameConstants.ITEMS:
+			if not unlocked_treasure_items.has(item):
+				unlocked_treasure_items.append(item)
+		else:
+			if not unlocked_items.has(item):
+				unlocked_items.append(item)
 	run_unlocked_items = []
 	save()
 
@@ -460,6 +487,22 @@ func _check_unlocks() -> void:
 		if lifetime_kills.get(current, 0) >= GameConstants.UNLOCK_KILLS_NEEDED:
 			if not unlocked_items.has(next) and not run_unlocked_items.has(next):
 				run_unlocked_items.append(next)
+	
+	# Treasure items: Unlock 1 every 5 chests
+	var total_items = GameConstants.ITEMS.size()
+	var should_have_unlocked = 5 + floor(lifetime_chests_opened / 5.0)
+	should_have_unlocked = min(should_have_unlocked, total_items)
+	
+	if unlocked_treasure_items.size() < should_have_unlocked:
+		var all_item_keys = GameConstants.ITEMS.keys()
+		# Find an item that isn't unlocked yet
+		for id in all_item_keys:
+			if not unlocked_treasure_items.has(id) and not run_unlocked_items.has(id):
+				run_unlocked_items.append(id)
+				# Break if we just need one? Or should we fill all missing ones?
+				# The wording "every time you open 5 treasure chests" implies one by one.
+				if (unlocked_treasure_items.size() + run_unlocked_items.size()) >= should_have_unlocked:
+					break
 
 func save() -> void:
 	var data := {
@@ -480,7 +523,9 @@ func save() -> void:
 		"perm_spawn_rate_level": perm_spawn_rate_level,
 		"perm_crit_damage_level": perm_crit_damage_level,
 		"unlocked_items": unlocked_items,
+		"unlocked_treasure_items": unlocked_treasure_items,
 		"lifetime_kills": lifetime_kills,
+		"lifetime_chests_opened": lifetime_chests_opened,
 		"completed_levels": completed_levels
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -516,5 +561,7 @@ func load_save() -> void:
 	perm_crit_damage_level = int(parsed.get("perm_crit_damage_level", 0))
 	
 	unlocked_items = parsed.get("unlocked_items", ["handgun"])
+	unlocked_treasure_items = parsed.get("unlocked_treasure_items", [])
 	lifetime_kills = parsed.get("lifetime_kills", {"handgun": 0})
+	lifetime_chests_opened = int(parsed.get("lifetime_chests_opened", 0))
 	completed_levels = parsed.get("completed_levels", [])

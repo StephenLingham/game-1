@@ -537,8 +537,8 @@ func _abandon_run() -> void:
 	pause_panel.visible = false
 
 func show_item_window(_deprecated_item_id: String = "") -> void:
-	# Ignore the passed item_id, we generate 3 new ones here
-	var all_keys = GameConstants.ITEMS.keys()
+	# Only show items the player has unlocked
+	var all_keys = GameState.unlocked_treasure_items.duplicate()
 	all_keys.shuffle()
 	current_chest_options = all_keys.slice(0, 3)
 	

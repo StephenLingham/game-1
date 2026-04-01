@@ -31,13 +31,13 @@ func _ready() -> void:
 	$VBox.move_child(hbox, 1) # After Title
 	
 	weapon_tab = Button.new()
-	weapon_tab.text = "Weapons & Abilities"
+	weapon_tab.text = "Weapons"
 	weapon_tab.custom_minimum_size = Vector2(250, 40)
 	weapon_tab.pressed.connect(_on_view_changed.bind("weapons"))
 	hbox.add_child(weapon_tab)
 	
 	item_tab = Button.new()
-	item_tab.text = "Items (Treasures)"
+	item_tab.text = "Items"
 	item_tab.custom_minimum_size = Vector2(250, 40)
 	item_tab.pressed.connect(_on_view_changed.bind("items"))
 	hbox.add_child(item_tab)
@@ -53,7 +53,7 @@ func _refresh_ui() -> void:
 		child.queue_free()
 	
 	# Update title
-	$VBox/Header/Title.text = "Unlocks: Weapons" if current_view == "weapons" else "Unlocks: Items"
+	$VBox/Header/Title.text = "Weapons" if current_view == "weapons" else "Items"
 	
 	# Update tab visual focus
 	weapon_tab.modulate = Color.WHITE if current_view == "weapons" else Color(0.6, 0.6, 0.6)
@@ -114,8 +114,35 @@ func _show_weapons() -> void:
 
 func _show_items() -> void:
 	var items = GameConstants.ITEMS
+	var unlocked = GameState.unlocked_treasure_items
+	
+	# Show overall progress header
+	var progress_panel = PanelContainer.new()
+	var progress_vbox = VBoxContainer.new()
+	progress_panel.add_child(progress_vbox)
+	
+	var chests = GameState.lifetime_chests_opened
+	var next_goal = (floor(chests / 5.0) + 1) * 5
+	if unlocked.size() >= items.size():
+		next_goal = -1 # All unlocked
+		
+	var progress_lbl = Label.new()
+	progress_lbl.text = "Total Chests Opened: %d" % chests
+	if next_goal != -1:
+		progress_lbl.text += "\nNext Item Unlock at %d Chests (Progress: %d/5)" % [next_goal, chests % 5]
+	else:
+		progress_lbl.text += "\nAll Items Unlocked!"
+	
+	progress_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	progress_lbl.modulate = Color.GOLD
+	progress_vbox.add_child(progress_lbl)
+	
+	grid.add_child(progress_panel)
+	# Pad the row if needed, but GridContainer handles it
+	
 	for id in items:
 		var item_data = items[id]
+		var is_unlocked = unlocked.has(id)
 		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
@@ -124,33 +151,48 @@ func _show_items() -> void:
 		panel.add_child(vbox)
 		
 		var title = Label.new()
-		title.text = item_data.name
+		title.text = item_data.name if is_unlocked else "???"
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		title.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(title)
 		
-		var stats_lbl = Label.new()
-		var stats_text = ""
-		var stats = item_data.get("stats", {})
-		for stat_key in stats.keys():
-			var val = stats[stat_key]
-			var sign_str = "+" if val > 0 else ""
-			var percent = ""
-			if stat_key.ends_with("_multiplier") or stat_key.ends_with("_percent") or stat_key.ends_with("_chance") or stat_key == "thorns_percentage" or stat_key == "gem_drop_chance_bonus":
-				val *= 100.0
-				percent = "%"
-			
-			var human_name = stat_key.replace("_", " ").capitalize()
-			if stat_key == "atkspd_multiplier":
-				human_name = "Attack Speed"
-				
-			stats_text += "%s%s%s %s\n" % [sign_str, str(val), percent, human_name]
+		var status = Label.new()
+		status.text = "Unlocked" if is_unlocked else "Locked"
+		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		status.modulate = Color.SPRING_GREEN if is_unlocked else Color.TOMATO
+		status.add_theme_font_size_override("font_size", 18)
+		vbox.add_child(status)
 		
-		stats_lbl.text = stats_text
-		stats_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		stats_lbl.modulate = Color.LIGHT_BLUE
-		stats_lbl.add_theme_font_size_override("font_size", 14)
-		vbox.add_child(stats_lbl)
+		if is_unlocked:
+			var stats_lbl = Label.new()
+			var stats_text = ""
+			var stats = item_data.get("stats", {})
+			for stat_key in stats.keys():
+				var val = stats[stat_key]
+				var sign_str = "+" if val > 0 else ""
+				var percent = ""
+				if stat_key.ends_with("_multiplier") or stat_key.ends_with("_percent") or stat_key.ends_with("_chance") or stat_key == "thorns_percentage" or stat_key == "gem_drop_chance_bonus":
+					val *= 100.0
+					percent = "%"
+				
+				var human_name = stat_key.replace("_", " ").capitalize()
+				if stat_key == "atkspd_multiplier":
+					human_name = "Attack Speed"
+					
+				stats_text += "%s%s%s %s\n" % [sign_str, str(val), percent, human_name]
+			
+			stats_lbl.text = stats_text
+			stats_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			stats_lbl.modulate = Color.LIGHT_BLUE
+			stats_lbl.add_theme_font_size_override("font_size", 14)
+			vbox.add_child(stats_lbl)
+		else:
+			var lock_info = Label.new()
+			lock_info.text = "Open more treasure chests to unlock this item"
+			lock_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			lock_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			lock_info.modulate = Color(0.5, 0.5, 0.5)
+			vbox.add_child(lock_info)
 		
 		grid.add_child(panel)
 

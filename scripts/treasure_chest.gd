@@ -41,6 +41,7 @@ func _collect() -> void:
 		
 	# Visual feedback for ground
 	_spawn_particles()
+	GameState.record_chest_opened()
 	queue_free()
 
 
