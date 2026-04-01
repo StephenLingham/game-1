@@ -7,8 +7,8 @@ func _ready() -> void:
 	# Visual setup - use image if provided, otherwise procedural
 	var texture: Texture2D = null
 	var potential_paths = [
-		"res://assets/treasure_chest.jpg",
-		"res://assets/treasure_chest.png"
+		"res://assets/treasure_chest.png",
+		"res://assets/treasure_chest.jpg"
 	]
 	
 	for path in potential_paths:
