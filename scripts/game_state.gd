@@ -246,7 +246,12 @@ func get_pickup_radius() -> float:
 
 
 func get_total_damage(base: int) -> int:
-	var dmg = float(base + get_gun_damage_bonus())
+	var bonus_flat := 0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		bonus_flat += stats.get("damage", 0)
+		
+	var dmg = float(base + get_gun_damage_bonus() + bonus_flat)
 	dmg *= get_damage_multiplier()
 	return int(round(dmg))
 

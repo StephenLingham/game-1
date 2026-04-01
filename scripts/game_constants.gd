@@ -268,6 +268,6 @@ const ITEMS: Dictionary = {
 	},
 	"cosmic_sausage": {
 		"name": "Cosmic Sausage",
-		"stats": {"max_health": -5, "damage_multiplier": 0.05}
+		"stats": {"max_health": -5, "damage": 5}
 	}
 }
