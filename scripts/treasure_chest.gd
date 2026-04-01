@@ -24,6 +24,8 @@ func _ready() -> void:
 		# Fallback if image is missing or didn't load yet
 		$Sprite2D.visible = false
 		$Visual.visible = true
+	
+	scale = Vector2(0.5, 0.5)
 
 	body_entered.connect(_on_body_entered)
 
