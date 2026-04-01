@@ -186,11 +186,11 @@ const DEBUG_RESET_ALL_DATA: bool = false
 
 # --- ITEMS ---
 const ITEMS: Dictionary = {
-	"whoopee_cushion": {
+	"nuclear_giraffe": {
 		"name": "Nuclear Giraffe",
 		"stats": {"crit_multiplier": 1.0, "crit_chance": 0.05}
 	},
-	"rubber_chicken": {
+	"wholemeal_sandwich": {
 		"name": "Wholemeal Sandwich",
 		"stats": {"atkspd_multiplier": 0.3, "armor": 10}
 	},
@@ -265,5 +265,9 @@ const ITEMS: Dictionary = {
 	"pinata_buddy": {
 		"name": "Sentient Piñata Buddy",
 		"stats": {"gold_drop_multiplier": 0.5, "gem_drop_chance_bonus": 0.05}
+	},
+	"cosmic_sausage": {
+		"name": "Cosmic Sausage",
+		"stats": {"max_health": -5, "damage_multiplier": 0.05}
 	}
 }
