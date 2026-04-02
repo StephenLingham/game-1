@@ -274,7 +274,7 @@ func _generate_shop_options() -> void:
 
 func _refresh_shop_ui() -> void:
 	var abi_count = GameState.run_abilities.size()
-	shop_capacity_label.text = "Abilities: %d / %d" % [abi_count, GameConstants.SHOP_MAX_ABILITIES]
+	shop_capacity_label.text = "Weapons: %d / %d" % [abi_count, GameConstants.SHOP_MAX_ABILITIES]
 	if abi_count >= GameConstants.SHOP_MAX_ABILITIES:
 		shop_capacity_label.modulate = Color.VIOLET
 	else:
@@ -320,7 +320,7 @@ func _refresh_shop_ui() -> void:
 		panel.add_child(vbox)
 		
 		var lbl = Label.new()
-		var level_text = "(Lv. %d)" % level
+		var level_text = "(Lvl %d)" % level
 		if level >= max_lvl: level_text = "(MAX)"
 		lbl.text = abi_data.name + "\n" + level_text
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -360,7 +360,7 @@ func _refresh_shop_ui() -> void:
 		panel.add_child(vbox)
 		
 		var lbl = Label.new()
-		lbl.text = abi.name + " (Lv. %d)" % level
+		lbl.text = abi.name + " (Lvl %d)" % level
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(lbl)
@@ -677,7 +677,7 @@ func _ensure_item_popup_exists() -> void:
 	vbox.add_child(skip_box)
 	
 	var skip_btn = Button.new()
-	skip_btn.text = "Skip (No Item)"
+	skip_btn.text = "Skip"
 	skip_btn.custom_minimum_size = Vector2(300, 40)
 	skip_btn.pressed.connect(_on_item_chosen.bind("skip"))
 	skip_box.add_child(skip_btn)
