@@ -58,7 +58,10 @@ func collect(player: Node) -> void:
 		Type.SPEED:
 			player.apply_speed_boost(GameConstants.POWERUP_SPEED_BOOST_MULTIPLIER, GameConstants.POWERUP_SPEED_BOOST_DURATION)
 		Type.HEAL:
-			player.heal_full()
+			if player.health < player.max_health:
+				player.heal_full()
+			else:
+				return # Prevent collection
 		Type.ROCKET:
 			player.trigger_rocket_blast()
 		Type.GEM:

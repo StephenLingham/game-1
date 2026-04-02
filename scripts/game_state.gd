@@ -80,22 +80,20 @@ func _ready() -> void:
 			changed = true
 			print("DEBUG: Unlocks reset.")
 	
+	if GameConstants.DEBUG_RESET_GEMS:
+		gems = 0
+		_reset_all_perm_levels()
+		changed = true
+		print("DEBUG: Gems & Upgrades reset.")
+	
 	# Initial 5 items if none unlocked yet
 	if unlocked_treasure_items.size() < 5:
 		var all_items = GameConstants.ITEMS.keys()
-		# For consistency, let's just pick the first 5 in the dictionary order for now, 
-		# or shuffle if we want it random for each player's save start.
-		# A stable set is usually better for "starting with 5".
 		for i in range(min(5, all_items.size())):
 			var id = all_items[i]
 			if not unlocked_treasure_items.has(id):
 				unlocked_treasure_items.append(id)
 		changed = true
-		if GameConstants.DEBUG_RESET_GEMS:
-			gems = 0
-			_reset_all_perm_levels()
-			changed = true
-			print("DEBUG: Gems & Upgrades reset.")
 	
 	if changed:
 		save()
@@ -511,9 +509,9 @@ func _check_unlocks() -> void:
 			if not unlocked_items.has(next) and not run_unlocked_items.has(next):
 				run_unlocked_items.append(next)
 	
-	# Treasure items: Unlock 1 every 5 chests
+	# Treasure items: Unlock 1 every 5 chests (5th, 10th, 15th, etc.)
 	var total_items = GameConstants.ITEMS.size()
-	var should_have_unlocked = 5 + floor(lifetime_chests_opened / 5.0)
+	var should_have_unlocked = floor(float(lifetime_chests_opened) / 5.0)
 	should_have_unlocked = min(should_have_unlocked, total_items)
 	
 	if unlocked_treasure_items.size() < should_have_unlocked:

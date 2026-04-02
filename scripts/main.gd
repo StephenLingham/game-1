@@ -49,20 +49,20 @@ func _ready() -> void:
 	
 	_ensure_item_popup_exists()
 
-	# Shop Panel is now Level-Up Panel
+	# Shop Panel Styling
 	shop_continue.visible = false
-	shop_grid.columns = 1 # Vertical layout
+	shop_grid.columns = 3 # Horizontal layout as requested
 	
 	# Make shop a popup overlay
 	var overlay = shop_panel.get_node_or_null("ColorRect")
 	if overlay:
-		overlay.color = Color(0, 0, 0, 0.7) # Dim the background
+		overlay.color = Color(0, 0, 0, 0.7)
 	
 	# Center the content container
 	var shop_margin = shop_panel.get_node_or_null("Margin")
 	if shop_margin:
 		shop_margin.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-		shop_margin.custom_minimum_size = Vector2(400, 600)
+		shop_margin.custom_minimum_size = Vector2(1000, 600) # Wider popup
 		# Add a background panel style to the margin
 		var sb = StyleBoxFlat.new()
 		sb.bg_color = Color(0.1, 0.1, 0.12, 1.0)
@@ -70,13 +70,12 @@ func _ready() -> void:
 		sb.border_width_top = 4
 		sb.border_width_right = 4
 		sb.border_width_bottom = 4
-		sb.border_color = Color(0.4, 0.8, 1.0, 1.0) # Blue border for leveling
+		sb.border_color = Color(0.4, 0.8, 1.0, 1.0)
 		sb.corner_radius_top_left = 12
 		sb.corner_radius_top_right = 12
 		sb.corner_radius_bottom_left = 12
 		sb.corner_radius_bottom_right = 12
-		# We can't easily add a child and reparent here without potential issues
-		# so we apply it via a Panel node we'll create
+		
 		var pop_bg = Panel.new()
 		pop_bg.name = "PopupBG"
 		pop_bg.add_theme_stylebox_override("panel", sb)
@@ -84,11 +83,27 @@ func _ready() -> void:
 		shop_margin.move_child(pop_bg, 0)
 		pop_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		
-		# Add more padding to Margin
-		shop_margin.add_theme_constant_override("margin_left", 30)
-		shop_margin.add_theme_constant_override("margin_right", 30)
-		shop_margin.add_theme_constant_override("margin_top", 30)
-		shop_margin.add_theme_constant_override("margin_bottom", 30)
+	# HUD Styling
+	var hud_margin = hud.get_node_or_null("HUD/HUDMargin")
+	if hud_margin:
+		hud_margin.add_theme_constant_override("margin_top", 80)
+	
+	# XP Bar color (Blue)
+	var bar_style = StyleBoxFlat.new()
+	bar_style.bg_color = Color(0.1, 0.5, 1.0, 1.0) # Vibrant Blue
+	bar_style.corner_radius_top_left = 4
+	bar_style.corner_radius_top_right = 4
+	bar_style.corner_radius_bottom_left = 4
+	bar_style.corner_radius_bottom_right = 4
+	xp_bar.add_theme_stylebox_override("fill", bar_style)
+	
+	var bar_bg = StyleBoxFlat.new()
+	bar_bg.bg_color = Color(0.1, 0.1, 0.15, 0.8)
+	bar_bg.corner_radius_top_left = 4
+	bar_bg.corner_radius_top_right = 4
+	bar_bg.corner_radius_bottom_left = 4
+	bar_bg.corner_radius_bottom_right = 4
+	xp_bar.add_theme_stylebox_override("background", bar_bg)
 	
 	# Capacity Label
 	shop_capacity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -120,8 +135,8 @@ func _ready() -> void:
 func _on_level_up(new_level: int) -> void:
 	_generate_shop_options()
 	if current_shop_options.is_empty():
-		# Optional: Heal player or give gems if maxed? 
-		# But user asked to skip screen.
+		# Maxed out abilities! Reward with a free item from chests instead.
+		show_item_window()
 		return
 	open_shop(new_level)
 
@@ -194,7 +209,7 @@ func _setup_arena() -> void:
 		player.set_camera_limits(arena_rect)
 
 func _process(_delta: float) -> void:
-	lvl_xp_label.text = "Lv. %d" % GameState.run_level
+	lvl_xp_label.text = "Level: %d" % GameState.run_level
 	xp_bar.max_value = GameState.run_xp_to_next_level
 	xp_bar.value = GameState.run_xp
 	
@@ -203,7 +218,7 @@ func _process(_delta: float) -> void:
 		lbl_hp.text = "HP: %d" % player.health
 
 func on_wave_started(w: int) -> void:
-	lbl_wave.text = "%s — Wave: %d / 10" % [GameState.run_level_name, w]
+	lbl_wave.text = "Wave: %d / 10" % w
 	# No longer reset player to center for continuous play
 
 func on_wave_time(t: float) -> void:
@@ -266,9 +281,11 @@ func _refresh_shop_ui() -> void:
 	h_owned.text = "--- YOUR LOADOUT ---"
 	h_owned.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	h_owned.modulate = Color.CYAN
-	shop_grid.add_child(h_owned)
-	shop_grid.add_child(Control.new())
-	shop_grid.add_child(Control.new())
+	h_owned.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	shop_grid.add_child(Control.new()) # Empty 1
+	shop_grid.add_child(h_owned)       # Centered Header
+	shop_grid.add_child(Control.new()) # Empty 3
 	
 	# Show currently owned abilities
 	for abi_id in GameState.run_abilities.keys():
@@ -314,9 +331,11 @@ func _refresh_shop_ui() -> void:
 	h_shop.text = "--- SELECT UPGRADE ---"
 	h_shop.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	h_shop.modulate = Color.GOLD
-	shop_grid.add_child(h_shop)
-	shop_grid.add_child(Control.new())
-	shop_grid.add_child(Control.new())
+	h_shop.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	shop_grid.add_child(Control.new()) # Empty 1
+	shop_grid.add_child(h_shop)        # Centered Header
+	shop_grid.add_child(Control.new()) # Empty 3
 
 	# Now show shop options
 	for abi in current_shop_options:
@@ -645,7 +664,7 @@ func _ensure_item_popup_exists() -> void:
 	vbox.add_child(skip_box)
 	
 	var skip_btn = Button.new()
-	skip_btn.text = "Skip Treasure (No Item)"
+	skip_btn.text = "Skip (No Item)"
 	skip_btn.custom_minimum_size = Vector2(300, 40)
 	skip_btn.pressed.connect(_on_item_chosen.bind("skip"))
 	skip_box.add_child(skip_btn)
