@@ -52,6 +52,12 @@ func _ready() -> void:
 	# Shop Panel Styling
 	shop_continue.visible = false
 	shop_grid.columns = 1 # We will use HBoxContainers inside for true horizontal centering
+	shop_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shop_grid.custom_minimum_size = Vector2(850, 0) # Force wide enough inside ScrollContainer
+	
+	var shop_scroll = shop_panel.get_node_or_null("Margin/VBox/Scroll")
+	if shop_scroll:
+		shop_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	
 	# Make shop a popup overlay
 	var overlay = shop_panel.get_node_or_null("ColorRect")
@@ -289,6 +295,7 @@ func _refresh_shop_ui() -> void:
 	# Create centered HBoxContainer for loadout items
 	var loadout_box = HBoxContainer.new()
 	loadout_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	loadout_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	loadout_box.add_theme_constant_override("separation", 20)
 	shop_grid.add_child(loadout_box)
 	
@@ -339,6 +346,7 @@ func _refresh_shop_ui() -> void:
 	# Create centered HBoxContainer for shop options
 	var upgrades_box = HBoxContainer.new()
 	upgrades_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	upgrades_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	upgrades_box.add_theme_constant_override("separation", 20)
 	shop_grid.add_child(upgrades_box)
 
