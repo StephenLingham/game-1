@@ -167,11 +167,24 @@ layout_mode = 2
 text = "Time: 30s"
 label_settings = SubResource("LabelSettings_shop_info")
 
-[node name="GoldLabel" type="Label" parent="UI/HUD/HUDMargin/HUDVBox"]
+[node name="LevelXPLabel" type="Label" parent="UI/HUD/HUDMargin/HUDVBox"]
 layout_mode = 2
-text = "Gold: 0"
+text = "Lv. 1"
 label_settings = SubResource("LabelSettings_shop_info")
-theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+
+[node name="XPBar" type="ProgressBar" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+custom_minimum_size = Vector2(0, 24)
+offset_left = 64.0
+offset_top = 16.0
+offset_right = -64.0
+offset_bottom = 40.0
+value = 0.0
+show_percentage = false
 
 [node name="GemsLabel" type="Label" parent="UI/HUD/HUDMargin/HUDVBox"]
 layout_mode = 2
@@ -230,17 +243,11 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 60
 
-[node name="GoldLabel" type="Label" parent="UI/ShopPanel/Margin/VBox/InfoRow"]
+[node name="LevelLabel" type="Label" parent="UI/ShopPanel/Margin/VBox/InfoRow"]
 layout_mode = 2
-text = "Gold: 0"
+text = "Level Up!"
 label_settings = SubResource("LabelSettings_shop_info")
-theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-
-[node name="GemsLabel" type="Label" parent="UI/ShopPanel/Margin/VBox/InfoRow"]
-layout_mode = 2
-text = "Gems: 0"
-label_settings = SubResource("LabelSettings_shop_info")
-theme_override_colors/font_color = Color(0.8, 0.4, 1, 1)
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 
 [node name="Scroll" type="ScrollContainer" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2

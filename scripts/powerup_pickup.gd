@@ -70,13 +70,12 @@ func collect(player: Node) -> void:
 	queue_free()
 
 func _apply_magnet(player: Node) -> void:
-	var gold_pickups = get_tree().get_nodes_in_group("gold_pickups")
-	for gold in gold_pickups:
-		if is_instance_valid(gold) and gold.has_method("collect"):
-			# In gold_pickup.gd, magnetizing is done by setting is_magnetized = true
-			if "is_magnetized" in gold:
-				gold.is_magnetized = true
-				gold.player = player
+	var xp_drops = get_tree().get_nodes_in_group("xp_drops")
+	for xp in xp_drops:
+		if is_instance_valid(xp):
+			if "is_magnetized" in xp:
+				xp.is_magnetized = true
+				xp.player = player
 
 func _spawn_collect_effect() -> void:
 	var particles = CPUParticles2D.new()

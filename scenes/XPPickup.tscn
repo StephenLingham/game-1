@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3]
 
-[ext_resource type="Script" path="res://scripts/gold_pickup.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/xp_drop.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/gold_pickup.svg" id="2_texture"]
 
 [sub_resource type="CircleShape2D" id="1"]

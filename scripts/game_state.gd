@@ -31,12 +31,16 @@ var perm_spawn_rate_level: int = 0
 var perm_crit_damage_level: int = 0
 
 # Run-time values (reset per run)
-var run_gold: int = 0
+var run_xp: int = 0
+var run_level: int = 1
+var run_xp_to_next_level: int = 100
 var run_abilities: Dictionary = {} # ability_id -> level
 var run_reroll_cost: int = 2
 var run_banished_abilities: Array = []
 var run_banish_count: int = 2
 var run_items: Array = [] # [item_id, item_id, ...]
+
+signal level_up(new_level: int)
 
 
 # Level / Difficulty Stats
@@ -47,8 +51,7 @@ var run_level_name: String = "Level 1"
 
 # Run statistics (reset per run)
 var run_enemies_killed: int = 0
-var run_gold_collected: int = 0
-var run_gold_spent: int = 0
+var run_xp_collected: int = 0
 var run_damage_stats: Dictionary = {} # ability_id -> damage
 
 func _ready() -> void:
@@ -125,18 +128,32 @@ func _reset_all_perm_levels() -> void:
 	perm_crit_damage_level = 0
 
 func reset_run() -> void:
-	run_gold = 10 + perm_start_gold_level * 5 # Base gold + bonus
+	run_xp = 0
+	run_level = 1
+	run_xp_to_next_level = GameConstants.XP_BASE_LEVEL
 	run_abilities = {"handgun": 1}
 	run_reroll_cost = GameConstants.SHOP_REROLL_BASE_COST
 	run_banished_abilities = []
 	run_banish_count = GameConstants.SHOP_BANISH_COUNT
 	
 	run_enemies_killed = 0
-	run_gold_collected = 0
-	run_gold_spent = 0
+	run_xp_collected = 0
 	run_damage_stats = {}
 	run_unlocked_items = []
 	run_items = []
+
+func add_xp(amount: int) -> void:
+	# Gold multiplier still applies to XP collection if we want, or we can just call it XP multiplier
+	var actual_amount = int(amount * get_xp_drop_multiplier())
+	run_xp += actual_amount
+	run_xp_collected += actual_amount
+	
+	while run_xp >= run_xp_to_next_level:
+		run_xp -= run_xp_to_next_level
+		run_level += 1
+		# Exponential/linear scaling
+		run_xp_to_next_level = int(run_xp_to_next_level * GameConstants.XP_SCALING) + GameConstants.XP_INCREMENT
+		level_up.emit(run_level)
 
 
 # --- HELPER GETTERS (Backward Compatibility) ---
@@ -329,13 +346,14 @@ func get_spawn_rate_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_spawn_rate_level
 	return 1.0 + float(lvl) * 0.1 # +10% spawn rate per level
 
-func get_gold_drop_multiplier() -> float:
+func get_xp_drop_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gold_drop_level
 	var base = 1.0 + float(lvl) * 0.1
+	# Any item bonuses too
 	var bonus = 0.0
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
-		bonus += stats.get("gold_drop_multiplier", 0.0)
+		bonus += stats.get("xp_drop_multiplier", 0.0)
 	return base + bonus
 
 

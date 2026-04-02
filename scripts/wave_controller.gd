@@ -90,29 +90,14 @@ func _end_wave() -> void:
 	spawning = false
 	spawn_timer.stop()
 	
-	# Clear uncollected gold at the end of the wave
-	for g in get_tree().get_nodes_in_group("gold_pickups"):
-		if is_instance_valid(g):
-			g.queue_free()
-	
-	# Clear uncollected powerups at the end of the wave
-	for p in get_tree().get_nodes_in_group("powerups"):
-		if is_instance_valid(p):
-			p.queue_free()
-	
-	for proj in get_tree().get_nodes_in_group("projectiles"):
-		if is_instance_valid(proj):
-			proj.queue_free()
-	
-	# Reset player powerups
-	var player = get_tree().get_first_node_in_group("player")
-	if player and player.has_method("reset_powerups"):
-		player.reset_powerups()
+	# We no longer clear XP, projectiles, or reset anything for a "continuous" feel.
 	
 	if wave < GameConstants.TOTAL_WAVES:
-		game.call_deferred("open_shop", wave)
+		# small delay between waves before spawning resumes
+		var timer = get_tree().create_timer(2.0)
+		timer.timeout.connect(_next_wave)
 	else:
-		# Final wave completed! Trigger victory immediately.
+		# Final wave completed! Trigger victory.
 		game.call_deferred("end_run", true, wave)
 
 func resume_after_shop() -> void:

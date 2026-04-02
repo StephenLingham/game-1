@@ -13,6 +13,11 @@ const PLAYER_FIRE_RATE: float = 0.50
 const PLAYER_MAX_HEALTH: int = 100
 const PLAYER_BASE_DAMAGE: int = 50
 
+# --- XP SETTINGS ---
+const XP_BASE_LEVEL: int = 100
+const XP_SCALING: float = 1.1 # Multiplier for next level
+const XP_INCREMENT: int = 50 # Additive for next level
+
 # --- PERMANENT UPGRADES ---
 const PERM_LEVEL_COST: int = 10
 const PERM_COST_INCREMENT: int = 10
@@ -46,22 +51,22 @@ const ENEMY_NORMAL_SPEED: float = 80.0
 const ENEMY_NORMAL_HEALTH: int = 100
 const ENEMY_NORMAL_DAMAGE: int = 20
 const ENEMY_NORMAL_ATTACK_COOLDOWN: float = 1.0
-const ENEMY_NORMAL_GOLD_MIN: int = 1
-const ENEMY_NORMAL_GOLD_MAX: int = 3
+const ENEMY_NORMAL_XP_MIN: int = 10
+const ENEMY_NORMAL_XP_MAX: int = 15
 
 const ENEMY_FAST_SPEED: float = 160.0
 const ENEMY_FAST_HEALTH: int = 50
 const ENEMY_FAST_DAMAGE: int = 20
 const ENEMY_FAST_ATTACK_COOLDOWN: float = 1.0
-const ENEMY_FAST_GOLD_MIN: int = 1
-const ENEMY_FAST_GOLD_MAX: int = 2
+const ENEMY_FAST_XP_MIN: int = 8
+const ENEMY_FAST_XP_MAX: int = 12
 
 const ENEMY_BIG_SPEED: float = 80.0
 const ENEMY_BIG_HEALTH: int = 400
 const ENEMY_BIG_DAMAGE: int = 40
 const ENEMY_BIG_ATTACK_COOLDOWN: float = 1.5
-const ENEMY_BIG_GOLD_MIN: int = 4
-const ENEMY_BIG_GOLD_MAX: int = 8
+const ENEMY_BIG_XP_MIN: int = 40
+const ENEMY_BIG_XP_MAX: int = 60
 
 # --- COLLECTION SETTINGS ---
 const BASE_COLLECTION_RADIUS: float = 50.0
@@ -264,7 +269,7 @@ const ITEMS: Dictionary = {
 	},
 	"pinata_buddy": {
 		"name": "Sentient Piñata Buddy",
-		"stats": {"gold_drop_multiplier": 0.5, "gem_drop_chance_bonus": 0.05}
+		"stats": {"xp_drop_multiplier": 0.5, "gem_drop_chance_bonus": 0.05}
 	},
 	"cosmic_sausage": {
 		"name": "Cosmic Sausage",

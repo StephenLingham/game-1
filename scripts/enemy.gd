@@ -8,8 +8,8 @@ var speed: float
 var health: int
 var damage: int
 var attack_cooldown: float
-var gold_drop_min: int
-var gold_drop_max: int
+var xp_drop_min: int
+var xp_drop_max: int
 
 var target: Node2D = null
 var can_attack: bool = true
@@ -28,22 +28,22 @@ func _ready() -> void:
 			health = GameConstants.ENEMY_FAST_HEALTH
 			damage = GameConstants.ENEMY_FAST_DAMAGE
 			attack_cooldown = GameConstants.ENEMY_FAST_ATTACK_COOLDOWN
-			gold_drop_min = GameConstants.ENEMY_FAST_GOLD_MIN
-			gold_drop_max = GameConstants.ENEMY_FAST_GOLD_MAX
+			xp_drop_min = GameConstants.ENEMY_FAST_XP_MIN
+			xp_drop_max = GameConstants.ENEMY_FAST_XP_MAX
 		"Big":
 			speed = GameConstants.ENEMY_BIG_SPEED
 			health = GameConstants.ENEMY_BIG_HEALTH
 			damage = GameConstants.ENEMY_BIG_DAMAGE
 			attack_cooldown = GameConstants.ENEMY_BIG_ATTACK_COOLDOWN
-			gold_drop_min = GameConstants.ENEMY_BIG_GOLD_MIN
-			gold_drop_max = GameConstants.ENEMY_BIG_GOLD_MAX
+			xp_drop_min = GameConstants.ENEMY_BIG_XP_MIN
+			xp_drop_max = GameConstants.ENEMY_BIG_XP_MAX
 		_, "Normal":
 			speed = GameConstants.ENEMY_NORMAL_SPEED
 			health = int(GameConstants.ENEMY_NORMAL_HEALTH * GameState.run_difficulty_health_mult)
 			damage = int(GameConstants.ENEMY_NORMAL_DAMAGE * GameState.run_difficulty_damage_mult)
 			attack_cooldown = GameConstants.ENEMY_NORMAL_ATTACK_COOLDOWN
-			gold_drop_min = GameConstants.ENEMY_NORMAL_GOLD_MIN
-			gold_drop_max = GameConstants.ENEMY_NORMAL_GOLD_MAX
+			xp_drop_min = GameConstants.ENEMY_NORMAL_XP_MIN
+			xp_drop_max = GameConstants.ENEMY_NORMAL_XP_MAX
 	
 	# Apply multipliers to already set values for other types if they were set in match
 	if enemy_type == "Fast":
@@ -86,7 +86,7 @@ func take_damage(amount: int = 1, source: String = "") -> int:
 		if source != "":
 			GameState.record_kill(source)
 		enemy_killed.emit()
-		_drop_gold()
+		_drop_xp()
 		queue_free()
 	
 	return actual_damage
@@ -97,14 +97,14 @@ func freeze(duration: float) -> void:
 	var tween = create_tween()
 	tween.tween_property(sprite, "modulate", Color.WHITE, duration)
 
-func _drop_gold() -> void:
-	call_deferred("_spawn_gold_pickup")
+func _drop_xp() -> void:
+	call_deferred("_spawn_xp_drop")
 
-func _spawn_gold_pickup() -> void:
-	var pickup: Area2D = preload("res://scenes/GoldPickup.tscn").instantiate()
+func _spawn_xp_drop() -> void:
+	var pickup: Area2D = preload("res://scenes/XPPickup.tscn").instantiate()
 	pickup.global_position = global_position
-	var base_gold = randi_range(gold_drop_min, gold_drop_max)
-	pickup.value = int(base_gold * GameState.get_gold_drop_multiplier())
+	var base_xp = randi_range(xp_drop_min, xp_drop_max)
+	pickup.value = base_xp # Multipliers handled in GameState.add_xp
 	get_tree().current_scene.get_node("PickupContainer").add_child(pickup)
 
 func _on_hitbox_body_entered(body: Node2D) -> void:

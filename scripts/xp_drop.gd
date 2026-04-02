@@ -5,15 +5,18 @@ var is_magnetized: bool = false
 var player: Node2D = null
 
 func _ready() -> void:
-	add_to_group("gold_pickups")
+	add_to_group("xp_drops")
 	set_deferred("monitoring", true)
 	set_deferred("monitorable", true)
 	body_entered.connect(_on_body_entered)
 	
-	# Scale based on value
-	# Base scale is 1.0 for 1 gold, grows slightly for more.
-	var s := 1.0 + (value - 1) * 0.2
+	# Scale slightly based on value
+	var s := 0.8 + (float(value) / 100.0)
 	scale = Vector2(s, s)
+	
+	modulate = Color(0.1, 0.4, 1.0) # Deep vibrant blue
+	if has_node("CoinVisual"):
+		$CoinVisual.modulate = Color(1.2, 1.4, 3.0) # Boost brightness for a glow effect
 
 func _process(delta: float) -> void:
 	if not is_magnetized:
@@ -30,7 +33,7 @@ func _process(delta: float) -> void:
 		global_position += direction * GameConstants.MAGNET_SPEED * delta
 		
 		# If somehow missed or passed through, check distance again
-		if global_position.distance_to(player.global_position) < 10.0:
+		if global_position.distance_to(player.global_position) < 15.0:
 			collect(player)
 
 func _on_body_entered(body: Node) -> void:
@@ -38,7 +41,6 @@ func _on_body_entered(body: Node) -> void:
 		collect(body)
 
 func collect(_player: Node) -> void:
-	GameState.run_gold_collected += value
-	GameState.run_gold += value
+	GameState.add_xp(value)
 	queue_free()
 

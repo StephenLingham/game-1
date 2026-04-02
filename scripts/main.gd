@@ -11,10 +11,11 @@ var item_popup_panel: Control
 
 
 @onready var shop_grid: GridContainer = $UI/ShopPanel/Margin/VBox/Scroll/Grid
-@onready var shop_gold_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/GoldLabel
-@onready var shop_gems_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/GemsLabel
+@onready var shop_lvl_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/LevelLabel
 @onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
 @onready var shop_capacity_label: Label = Label.new() # Will add to UI
+@onready var xp_bar: ProgressBar = $UI/HUD/XPBar
+@onready var lvl_xp_label: Label = $UI/HUD/HUDMargin/HUDVBox/LevelXPLabel
 var current_chest_options: Array = []
 
 
@@ -39,26 +40,17 @@ const ALL_ABILITIES = [
 
 @onready var lbl_wave: Label = $UI/HUD/HUDMargin/HUDVBox/WaveLabel
 @onready var lbl_time: Label = $UI/HUD/HUDMargin/HUDVBox/TimeLabel
-@onready var lbl_gold: Label = $UI/HUD/HUDMargin/HUDVBox/GoldLabel
 @onready var lbl_gems: Label = $UI/HUD/HUDMargin/HUDVBox/GemsLabel
 @onready var lbl_hp: Label = $UI/HUD/HUDMargin/HUDVBox/HPLabel
 
 func _ready() -> void:
 	player.player_died.connect(_on_player_died)
+	GameState.level_up.connect(_on_level_up)
 	
 	_ensure_item_popup_exists()
 
-
-	# Shop is now dynamic, no need to wire hardcoded buttons
-	
-	shop_continue.pressed.connect(_close_shop)
-	
-	# Setup Reroll button
-	reroll_btn = Button.new()
-	reroll_btn.custom_minimum_size = Vector2(200, 50)
-	$UI/ShopPanel/Margin/VBox.add_child(reroll_btn)
-	$UI/ShopPanel/Margin/VBox.move_child(reroll_btn, $UI/ShopPanel/Margin/VBox/Continue.get_index())
-	reroll_btn.pressed.connect(_reroll_shop)
+	# Shop Panel is now Level-Up Panel
+	shop_continue.visible = false
 	
 	# Capacity Label
 	shop_capacity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -75,28 +67,20 @@ func _ready() -> void:
 	$UI/PausePanel/VBox/Abandon.pressed.connect(_abandon_run)
 
 	shop_panel.visible = false
-	# Make shop full screen
 	shop_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	
 	game_over_panel.visible = false
 	pause_panel.visible = false
-	if item_popup_panel:
-		item_popup_panel.visible = false
 	
-	# Setup Item Popup Close Button
-	var item_ok_btn = item_popup_panel.get_node_or_null("Margin/VBox/CloseButton") as Button
-	if item_ok_btn:
-		item_ok_btn.pressed.connect(_close_item_window)
-
-
-
 	# Position player at center of viewport dynamically first
 	var screen_center := get_viewport().get_visible_rect().size / 2.0
 	player.position = screen_center
 
 	_setup_arena()
-
 	wave_controller.start_run()
+
+func _on_level_up(new_level: int) -> void:
+	open_shop(new_level)
 
 func _setup_arena() -> void:
 	var screen_size := get_viewport().get_visible_rect().size
@@ -167,36 +151,35 @@ func _setup_arena() -> void:
 		player.set_camera_limits(arena_rect)
 
 func _process(_delta: float) -> void:
-	lbl_gold.text = "Gold: %d" % GameState.run_gold
+	lvl_xp_label.text = "Lv. %d" % GameState.run_level
+	xp_bar.max_value = GameState.run_xp_to_next_level
+	xp_bar.value = GameState.run_xp
+	
 	lbl_gems.text = "Gems: %d" % GameState.gems
 	if is_instance_valid(player) and "health" in player:
 		lbl_hp.text = "HP: %d" % player.health
 
 func on_wave_started(w: int) -> void:
 	lbl_wave.text = "%s — Wave: %d / 10" % [GameState.run_level_name, w]
-	
-	# Reset player to center and clear movement
-	var screen_center := get_viewport().get_visible_rect().size / 2.0
-	player.reset_state(screen_center)
+	# No longer reset player to center for continuous play
 
 func on_wave_time(t: float) -> void:
 	lbl_time.text = "Time: %.0fs" % t
 
-func open_shop(w: int) -> void:
+func open_shop(lvl: int) -> void:
 	get_tree().paused = true
 	shop_panel.visible = true
 	shop_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	$UI/ShopPanel/Margin/VBox/Title.text = "Armory — Wave %d Completed" % w
+	$UI/ShopPanel/Margin/VBox/Title.text = "Level Up! — Choose a Weapon"
+	shop_lvl_label.text = "Level: %d" % lvl
 	
-	GameState.run_reroll_cost = GameConstants.SHOP_REROLL_BASE_COST
 	_generate_shop_options()
 	_refresh_shop_ui()
 
 func _close_shop() -> void:
 	shop_panel.visible = false
 	get_tree().paused = false
-	wave_controller.resume_after_shop()
 func _generate_shop_options() -> void:
 	current_shop_options.clear()
 	var pool = []
@@ -218,12 +201,6 @@ func _generate_shop_options() -> void:
 		current_shop_options.append(pool[i])
 
 func _refresh_shop_ui() -> void:
-	shop_gold_label.text = "Gold: %d" % GameState.run_gold
-	shop_gems_label.text = "Gems: %d" % GameState.gems
-	
-	reroll_btn.text = "Reroll (%d Gold)" % GameState.run_reroll_cost
-	reroll_btn.disabled = GameState.run_gold < GameState.run_reroll_cost
-	
 	var abi_count = GameState.run_abilities.size()
 	shop_capacity_label.text = "Abilities: %d / %d" % [abi_count, GameConstants.SHOP_MAX_ABILITIES]
 	if abi_count >= GameConstants.SHOP_MAX_ABILITIES:
@@ -255,7 +232,6 @@ func _refresh_shop_ui() -> void:
 		if not abi_data: continue
 		
 		var level = GameState.run_abilities[abi_id]
-		var cost = _get_ability_cost(abi_id, level)
 		var max_lvl = _get_max_level(abi_id)
 		
 		var panel = PanelContainer.new()
@@ -273,43 +249,29 @@ func _refresh_shop_ui() -> void:
 		lbl.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(lbl)
 		
-		# Upgrade button (if in shop it's already there? No, shop options might not include this.)
-		# Actually, if it's already owned, it should show its level clearly.
-		# The shop options below will show UPGRADE for these.
-		# Maybe we only show SELL buttons here for ALREADY OWNED things.
+		# No sell button in levelup screen usually
 		
-		var sell_btn = Button.new()
-		var sell_val = int(cost * 0.5)
-		sell_btn.text = "Sell for %d Gold" % sell_val
-		sell_btn.pressed.connect(_sell_ability.bind(abi_id, sell_val))
-		vbox.add_child(sell_btn)
-		
-		# Highlight owned abilities slightly
 		panel.self_modulate = Color(0.8, 1.0, 0.8, 0.5)
-		
 		shop_grid.add_child(panel)
 
 	# Separator / Header for Shop
-	# Fill current row first after owned items
-	var total_nodes_so_far = 3 + GameState.run_abilities.size() # 3 for header row
+	var total_nodes_so_far = 3 + GameState.run_abilities.size()
 	var remainder = total_nodes_so_far % shop_grid.columns
 	if remainder > 0:
 		for i in range(shop_grid.columns - remainder):
 			shop_grid.add_child(Control.new())
 	
 	var h_shop = Label.new()
-	h_shop.text = "--- SHOP OPTIONS ---"
+	h_shop.text = "--- SELECT UPGRADE ---"
 	h_shop.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	h_shop.modulate = Color.GOLD
 	shop_grid.add_child(h_shop)
-	# Add padding to make header take a whole row
 	shop_grid.add_child(Control.new())
 	shop_grid.add_child(Control.new())
 
 	# Now show shop options
 	for abi in current_shop_options:
 		var level = GameState.run_abilities.get(abi.id, 0)
-		var cost = _get_ability_cost(abi.id, level)
 		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
@@ -334,17 +296,10 @@ func _refresh_shop_ui() -> void:
 			buy_btn.text = "Limit Reached"
 			buy_btn.disabled = true
 		else:
-			var prefix = "Buy" if level == 0 else "Upgrade"
-			buy_btn.text = "%s: %d Gold" % [prefix, cost]
-			buy_btn.disabled = GameState.run_gold < cost
+			var prefix = "Select" if level == 0 else "Upgrade"
+			buy_btn.text = "%s" % prefix
 			buy_btn.pressed.connect(_buy_ability.bind(abi.id))
 		vbox.add_child(buy_btn)
-		
-		if GameState.run_banish_count > 0:
-			var ban_btn = Button.new()
-			ban_btn.text = "Banish (%d left)" % GameState.run_banish_count
-			ban_btn.pressed.connect(_banish_ability.bind(abi.id))
-			vbox.add_child(ban_btn)
 		
 		shop_grid.add_child(panel)
 
@@ -380,21 +335,11 @@ func _get_ability_cost(id: String, level: int) -> int:
 
 func _buy_ability(id: String) -> void:
 	var level = GameState.run_abilities.get(id, 0)
-	var cost = _get_ability_cost(id, level)
 	
-	if GameState.run_gold >= cost and level < _get_max_level(id):
-		GameState.run_gold -= cost
-		GameState.run_gold_spent += cost
+	if level < _get_max_level(id):
 		GameState.run_abilities[id] = level + 1
 		GameState.record_ability_upgrade(id, level + 1)
-		
-		# Remove from current options until next reroll
-		for i in range(current_shop_options.size()):
-			if current_shop_options[i].id == id:
-				current_shop_options.remove_at(i)
-				break
-		
-		_refresh_shop_ui()
+		_close_shop()
 
 func _sell_ability(id: String, value: int) -> void:
 	if GameState.run_abilities.has(id):
@@ -483,10 +428,12 @@ func end_run(won: bool, waves_completed: int) -> void:
 				lbl_node.visible = false
 				val_node.visible = false
 
-	# Gold stats
+	# XP stats
 	var gold_grid = stats_vbox.get_node("GoldGrid")
-	gold_grid.get_node("GoldCollectedValue").text = "%d" % GameState.run_gold_collected
-	gold_grid.get_node("GoldSpentValue").text = "%d" % GameState.run_gold_spent
+	gold_grid.get_node("GoldCollectedLabel").text = "XP Collected:"
+	gold_grid.get_node("GoldCollectedValue").text = "%d" % GameState.run_xp_collected
+	gold_grid.get_node("GoldSpentLabel").visible = false
+	gold_grid.get_node("GoldSpentValue").visible = false
 
 	# Gems
 	stats_vbox.get_node("GemsLabel").text = "Gems earned: %d  |  Total gems: %d" % [gems, GameState.gems]
@@ -554,6 +501,8 @@ func show_item_window(_deprecated_item_id: String = "") -> void:
 		child.queue_free()
 	
 	for item_id in current_chest_options:
+		if not GameConstants.ITEMS.has(item_id):
+			continue
 		var item_data = GameConstants.ITEMS[item_id]
 		var btn = Button.new()
 		btn.custom_minimum_size = Vector2(250, 180)
