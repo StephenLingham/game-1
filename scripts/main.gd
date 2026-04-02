@@ -51,7 +51,7 @@ func _ready() -> void:
 
 	# Shop Panel Styling
 	shop_continue.visible = false
-	shop_grid.columns = 3 # Horizontal layout as requested
+	shop_grid.columns = 1 # We will use HBoxContainers inside for true horizontal centering
 	
 	# Make shop a popup overlay
 	var overlay = shop_panel.get_node_or_null("ColorRect")
@@ -62,7 +62,9 @@ func _ready() -> void:
 	var shop_margin = shop_panel.get_node_or_null("Margin")
 	if shop_margin:
 		shop_margin.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-		shop_margin.custom_minimum_size = Vector2(1000, 600) # Wider popup
+		shop_margin.custom_minimum_size = Vector2(1000, 600)
+		shop_margin.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		shop_margin.grow_vertical = Control.GROW_DIRECTION_BOTH
 		# Add a background panel style to the margin
 		var sb = StyleBoxFlat.new()
 		sb.bg_color = Color(0.1, 0.1, 0.12, 1.0)
@@ -281,20 +283,23 @@ func _refresh_shop_ui() -> void:
 	h_owned.text = "--- YOUR LOADOUT ---"
 	h_owned.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	h_owned.modulate = Color.CYAN
-	h_owned.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
-	shop_grid.add_child(Control.new()) # Empty 1
-	shop_grid.add_child(h_owned)       # Centered Header
-	shop_grid.add_child(Control.new()) # Empty 3
+	shop_grid.add_child(h_owned)
+	
+	# Create centered HBoxContainer for loadout items
+	var loadout_box = HBoxContainer.new()
+	loadout_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	loadout_box.add_theme_constant_override("separation", 20)
+	shop_grid.add_child(loadout_box)
 	
 	# Show currently owned abilities
-	for abi_id in GameState.run_abilities.keys():
+	var owned_ids = GameState.run_abilities.keys()
+	for abi_id in owned_ids:
 		var abi_data = null
 		for a in ALL_ABILITIES:
 			if a.id == abi_id:
 				abi_data = a
 				break
-		
 		if not abi_data: continue
 		
 		var level = GameState.run_abilities[abi_id]
@@ -302,49 +307,48 @@ func _refresh_shop_ui() -> void:
 		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
+		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 		vbox.add_theme_constant_override("separation", 10)
-		vbox.custom_minimum_size = Vector2(240, 0)
+		vbox.custom_minimum_size = Vector2(200, 100) # Give fixed height for perfect alignment
 		panel.add_child(vbox)
 		
 		var lbl = Label.new()
 		var level_text = "(Lv. %d)" % level
-		if level >= max_lvl:
-			level_text = "(MAX)"
+		if level >= max_lvl: level_text = "(MAX)"
 		lbl.text = abi_data.name + "\n" + level_text
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(lbl)
 		
-		# No sell button in levelup screen usually
-		
 		panel.self_modulate = Color(0.8, 1.0, 0.8, 0.5)
-		shop_grid.add_child(panel)
+		loadout_box.add_child(panel)
 
-	# Separator / Header for Shop
-	var total_nodes_so_far = 3 + GameState.run_abilities.size()
-	var remainder = total_nodes_so_far % shop_grid.columns
-	if remainder > 0:
-		for i in range(shop_grid.columns - remainder):
-			shop_grid.add_child(Control.new())
-	
+	# Optional vertical space
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 30)
+	shop_grid.add_child(spacer)
+
+	# --- SELECT UPGRADE ---
 	var h_shop = Label.new()
 	h_shop.text = "--- SELECT UPGRADE ---"
 	h_shop.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	h_shop.modulate = Color.GOLD
-	h_shop.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
-	shop_grid.add_child(Control.new()) # Empty 1
-	shop_grid.add_child(h_shop)        # Centered Header
-	shop_grid.add_child(Control.new()) # Empty 3
+	shop_grid.add_child(h_shop)
+	
+	# Create centered HBoxContainer for shop options
+	var upgrades_box = HBoxContainer.new()
+	upgrades_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	upgrades_box.add_theme_constant_override("separation", 20)
+	shop_grid.add_child(upgrades_box)
 
-	# Now show shop options
 	for abi in current_shop_options:
 		var level = GameState.run_abilities.get(abi.id, 0)
-		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
+		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 		vbox.add_theme_constant_override("separation", 10)
-		vbox.custom_minimum_size = Vector2(240, 0)
+		vbox.custom_minimum_size = Vector2(240, 140) # Ensure fixed height so buttons align
 		panel.add_child(vbox)
 		
 		var lbl = Label.new()
@@ -367,9 +371,10 @@ func _refresh_shop_ui() -> void:
 			var prefix = "Select" if level == 0 else "Upgrade"
 			buy_btn.text = "%s" % prefix
 			buy_btn.pressed.connect(_buy_ability.bind(abi.id))
+			
+		buy_btn.custom_minimum_size = Vector2(180, 40)
 		vbox.add_child(buy_btn)
-		
-		shop_grid.add_child(panel)
+		upgrades_box.add_child(panel)
 
 func _get_max_level(id: String) -> int:
 	match id:
