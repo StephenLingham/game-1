@@ -509,20 +509,20 @@ func _check_unlocks() -> void:
 			if not unlocked_items.has(next) and not run_unlocked_items.has(next):
 				run_unlocked_items.append(next)
 	
-	# Treasure items: Unlock 1 every 5 chests (5th, 10th, 15th, etc.)
+	# Treasure items: 5 unlocked by default, then 1 every 5 chests (5 chests -> 6th, 10 chests -> 7th, etc.)
 	var total_items = GameConstants.ITEMS.size()
-	var should_have_unlocked = floor(float(lifetime_chests_opened) / 5.0)
-	should_have_unlocked = min(should_have_unlocked, total_items)
+	var should_have_total = 5 + floor(float(lifetime_chests_opened) / 5.0)
+	should_have_total = min(should_have_total, total_items)
 	
-	if unlocked_treasure_items.size() < should_have_unlocked:
+	var current_total = unlocked_treasure_items.size() + run_unlocked_items.filter(func(id): return id in GameConstants.ITEMS).size()
+	
+	if current_total < should_have_total:
 		var all_item_keys = GameConstants.ITEMS.keys()
-		# Find an item that isn't unlocked yet
 		for id in all_item_keys:
 			if not unlocked_treasure_items.has(id) and not run_unlocked_items.has(id):
 				run_unlocked_items.append(id)
-				# Break if we just need one? Or should we fill all missing ones?
-				# The wording "every time you open 5 treasure chests" implies one by one.
-				if (unlocked_treasure_items.size() + run_unlocked_items.size()) >= should_have_unlocked:
+				current_total += 1
+				if current_total >= should_have_total:
 					break
 
 func save() -> void:

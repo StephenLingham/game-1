@@ -116,31 +116,10 @@ func _show_items() -> void:
 	var items = GameConstants.ITEMS
 	var unlocked = GameState.unlocked_treasure_items
 	
-	# Show overall progress header
-	var progress_panel = PanelContainer.new()
-	var progress_vbox = VBoxContainer.new()
-	progress_panel.add_child(progress_vbox)
-	
-	var chests = GameState.lifetime_chests_opened
-	var next_goal = (floor(chests / 5.0) + 1) * 5
-	if unlocked.size() >= items.size():
-		next_goal = -1 # All unlocked
-		
-	var progress_lbl = Label.new()
-	progress_lbl.text = "Total Chests Opened: %d" % chests
-	if next_goal != -1:
-		progress_lbl.text += "\nNext Item Unlock at %d Chests (Progress: %d/5)" % [next_goal, chests % 5]
-	else:
-		progress_lbl.text += "\nAll Items Unlocked!"
-	
-	progress_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	progress_lbl.modulate = Color.GOLD
-	progress_vbox.add_child(progress_lbl)
-	
-	grid.add_child(progress_panel)
-	# Pad the row if needed, but GridContainer handles it
-	
-	for id in items:
+
+	var item_ids = items.keys()
+	for i in range(item_ids.size()):
+		var id = item_ids[i]
 		var item_data = items[id]
 		var is_unlocked = unlocked.has(id)
 		
@@ -151,7 +130,8 @@ func _show_items() -> void:
 		panel.add_child(vbox)
 		
 		var title = Label.new()
-		title.text = item_data.name if is_unlocked else "???"
+		# Friendly names for all, including locked
+		title.text = item_data.name 
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		title.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(title)
@@ -187,11 +167,18 @@ func _show_items() -> void:
 			stats_lbl.add_theme_font_size_override("font_size", 14)
 			vbox.add_child(stats_lbl)
 		else:
+			var chests_needed = (i - 4) * 5
+			var chests_left = max(0, chests_needed - GameState.lifetime_chests_opened)
+			
 			var lock_info = Label.new()
-			lock_info.text = "Open more treasure chests to unlock this item"
+			if chests_left > 0:
+				lock_info.text = "Unlocks at %d total chests (%d more to go!)" % [chests_needed, chests_left]
+			else:
+				lock_info.text = "Locked - Open more chests to unlock!"
+			
 			lock_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			lock_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			lock_info.modulate = Color(0.5, 0.5, 0.5)
+			lock_info.modulate = Color(0.7, 0.7, 0.7)
 			vbox.add_child(lock_info)
 		
 		grid.add_child(panel)

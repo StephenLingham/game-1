@@ -529,10 +529,17 @@ func end_run(won: bool, waves_completed: int) -> void:
 		
 		for id in newly_unlocked:
 			var item_name = id
+			# Check abilities first
+			var found = false
 			for abi in ALL_ABILITIES:
 				if abi.id == id:
 					item_name = abi.name
+					found = true
 					break
+			
+			# If not an ability, check treasure items
+			if not found and GameConstants.ITEMS.has(id):
+				item_name = GameConstants.ITEMS[id].name
 			
 			var l = Label.new()
 			l.text = "★ %s" % item_name
