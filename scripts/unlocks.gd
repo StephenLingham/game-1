@@ -74,6 +74,7 @@ func _show_weapons() -> void:
 		var needed = GameConstants.UNLOCK_KILLS_NEEDED
 		
 		var panel = PanelContainer.new()
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var vbox = VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 10)
 		vbox.custom_minimum_size = Vector2(280, 0)
@@ -124,6 +125,7 @@ func _show_items() -> void:
 		var is_unlocked = unlocked.has(id)
 		
 		var panel = PanelContainer.new()
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var vbox = VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 10)
 		vbox.custom_minimum_size = Vector2(280, 0)
@@ -168,14 +170,10 @@ func _show_items() -> void:
 			vbox.add_child(stats_lbl)
 		else:
 			var chests_needed = (i - 4) * 5
-			var chests_left = max(0, chests_needed - GameState.lifetime_chests_opened)
+			var current_chests = GameState.lifetime_chests_opened
 			
 			var lock_info = Label.new()
-			if chests_left > 0:
-				lock_info.text = "Unlocks at %d total chests (%d more to go!)" % [chests_needed, chests_left]
-			else:
-				lock_info.text = "Locked - Open more chests to unlock!"
-			
+			lock_info.text = "Open %d chests to unlock (%d / %d)" % [chests_needed, current_chests, chests_needed]
 			lock_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			lock_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			lock_info.modulate = Color(0.7, 0.7, 0.7)
