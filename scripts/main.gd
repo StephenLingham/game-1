@@ -40,7 +40,6 @@ const ALL_ABILITIES = [
 
 @onready var lbl_wave: Label = $UI/HUD/HUDMargin/HUDVBox/WaveLabel
 @onready var lbl_time: Label = $UI/HUD/HUDMargin/HUDVBox/TimeLabel
-@onready var lbl_gems: Label = $UI/HUD/HUDMargin/HUDVBox/GemsLabel
 @onready var lbl_hp: Label = $UI/HUD/HUDMargin/HUDVBox/HPLabel
 
 func _ready() -> void:
@@ -138,6 +137,7 @@ func _ready() -> void:
 	player.position = screen_center
 
 	_setup_arena()
+	$UI/HUD/HUDMargin/HUDVBox/GemsLabel.hide()
 	wave_controller.start_run()
 
 func _on_level_up(new_level: int) -> void:
@@ -150,7 +150,9 @@ func _on_level_up(new_level: int) -> void:
 
 func _setup_arena() -> void:
 	var screen_size := get_viewport().get_visible_rect().size
-	var arena_size := Vector2(screen_size.x * GameConstants.ARENA_WIDTH_MULTIPLIER, screen_size.y * GameConstants.ARENA_HEIGHT_MULTIPLIER)
+	var max_dim: float = max(screen_size.x, screen_size.y)
+	var square_dim: float = max_dim * GameConstants.ARENA_SIZE_MULTIPLIER
+	var arena_size := Vector2(square_dim, square_dim)
 	var center := screen_size / 2.0
 	
 	var floor_rect := $ArenaFloor
@@ -221,7 +223,6 @@ func _process(_delta: float) -> void:
 	xp_bar.max_value = GameState.run_xp_to_next_level
 	xp_bar.value = GameState.run_xp
 	
-	lbl_gems.text = "Gems: %d" % GameState.gems
 	if is_instance_valid(player) and "health" in player:
 		lbl_hp.text = "HP: %d" % player.health
 
