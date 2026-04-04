@@ -55,7 +55,7 @@ func _next_wave() -> void:
 
 
 	powerup_spawn_timer = randf_range(GameConstants.POWERUP_SPAWN_INTERVAL_MIN, GameConstants.POWERUP_SPAWN_INTERVAL_MAX)
-	chest_spawn_timer = randf_range(10.0, 15.0) # Start first chest early
+	chest_spawn_timer = randf_range(GameConstants.CHEST_SPAWN_INTERVAL_MIN, GameConstants.CHEST_SPAWN_INTERVAL_MAX)
 
 
 	game.on_wave_started(wave)
@@ -83,7 +83,7 @@ func _process(delta: float) -> void:
 		if chest_spawn_timer <= 0:
 			_spawn_chest()
 			# Spawn every 8-12 seconds ensures a few per 30s wave
-			chest_spawn_timer = randf_range(8.0, 12.0)
+			chest_spawn_timer = randf_range(GameConstants.CHEST_SPAWN_INTERVAL_MIN, GameConstants.CHEST_SPAWN_INTERVAL_MAX)
 
 
 func _end_wave() -> void:
@@ -124,25 +124,42 @@ func _spawn_tick() -> void:
 			
 		var e := scene_to_spawn.instantiate()
 
-		# Spawn just inside the arena walls instead of outside
-		var inner_left := arena_rect.position.x + 35.0
-		var inner_right := arena_rect.position.x + arena_rect.size.x - 35.0
-		var inner_top := arena_rect.position.y + 35.0
-		var inner_bottom := arena_rect.position.y + arena_rect.size.y - 35.0
-		var edge_margin := 40.0  # How close to the wall they spawn
-
+		# Get the current screen center and dimensions
+		var cam := get_viewport().get_camera_2d()
+		var center := cam.get_screen_center_position() if cam else game.player.global_position
+		var viewport_size := get_viewport().get_visible_rect().size
+		
+		# Define spawn margin just off-screen
+		var margin := 100.0
 		var spawn_pos := Vector2.ZERO
 		var side := randi() % 4
 
 		match side:
-			0: # Top edge (inside)
-				spawn_pos = Vector2(randf_range(inner_left + edge_margin, inner_right - edge_margin), inner_top + 5.0)
-			1: # Bottom edge (inside)
-				spawn_pos = Vector2(randf_range(inner_left + edge_margin, inner_right - edge_margin), inner_bottom - 5.0)
-			2: # Left edge (inside)
-				spawn_pos = Vector2(inner_left + 5.0, randf_range(inner_top + edge_margin, inner_bottom - edge_margin))
-			3: # Right edge (inside)
-				spawn_pos = Vector2(inner_right - 5.0, randf_range(inner_top + edge_margin, inner_bottom - edge_margin))
+			0: # Above screen
+				spawn_pos = Vector2(
+					randf_range(center.x - viewport_size.x / 2.0, center.x + viewport_size.x / 2.0),
+					center.y - viewport_size.y / 2.0 - margin
+				)
+			1: # Below screen
+				spawn_pos = Vector2(
+					randf_range(center.x - viewport_size.x / 2.0, center.x + viewport_size.x / 2.0),
+					center.y + viewport_size.y / 2.0 + margin
+				)
+			2: # Left of screen
+				spawn_pos = Vector2(
+					center.x - viewport_size.x / 2.0 - margin,
+					randf_range(center.y - viewport_size.y / 2.0, center.y + viewport_size.y / 2.0)
+				)
+			3: # Right of screen
+				spawn_pos = Vector2(
+					center.x + viewport_size.x / 2.0 + margin,
+					randf_range(center.y - viewport_size.y / 2.0, center.y + viewport_size.y / 2.0)
+				)
+
+		# Clamp spawn position to stay within arena walls (with safety margin)
+		var safety := 45.0
+		spawn_pos.x = clamp(spawn_pos.x, arena_rect.position.x + safety, arena_rect.position.x + arena_rect.size.x - safety)
+		spawn_pos.y = clamp(spawn_pos.y, arena_rect.position.y + safety, arena_rect.position.y + arena_rect.size.y - safety)
 
 		e.global_position = spawn_pos
 		game.get_node("EnemyContainer").add_child(e)

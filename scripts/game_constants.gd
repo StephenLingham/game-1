@@ -178,6 +178,8 @@ const POWERUP_ATK_SPEED_BOOST_MULTIPLIER: float = 10.0
 const POWERUP_ATK_SPEED_BOOST_DURATION: float = 3.0
 const POWERUP_GEM_AWARD_AMOUNT: int = 1
 const POWERUP_ICON_SCALE: float = 0.07
+const CHEST_SPAWN_INTERVAL_MIN: float = 10.0
+const CHEST_SPAWN_INTERVAL_MAX: float = 15.0
 
 # --- UNLOCKS ---
 const UNLOCK_KILLS_NEEDED: int = 50
@@ -192,83 +194,83 @@ const DEBUG_RESET_ALL_DATA: bool = false
 const ITEMS: Dictionary = {
 	"nuclear_giraffe": {
 		"name": "Nuclear Giraffe",
-		"stats": {"crit_multiplier": 1.0, "crit_chance": 0.05}
+		"stats": {"crit_multiplier": 0.1, "crit_chance": 0.05}
 	},
 	"wholemeal_sandwich": {
 		"name": "Wholemeal Sandwich",
-		"stats": {"atkspd_multiplier": 0.3, "armor": 10}
+		"stats": {"atkspd_multiplier": 0.1, "armor": 5}
 	},
 	"banana_peel": {
 		"name": "Slippery Banana Peel Dispenser",
-		"stats": {"speed_multiplier": 0.2, "armor_percent": 0.1}
+		"stats": {"speed_multiplier": 0.05, "armor_percent": 0.05}
 	},
 	"meatloaf": {
 		"name": "Grandma’s Hearty Meatloaf",
-		"stats": {"max_health": 50, "health_regen": 1.0}
+		"stats": {"max_health": 10, "health_regen": 0.1}
 	},
 	"quantum_socks": {
 		"name": "Quantum Socks",
-		"stats": {"pickup_radius": 50.0, "speed_multiplier": 0.1}
+		"stats": {"pickup_radius": 5.0, "speed_multiplier": 0.1}
 	},
 	"pirate_rum": {
 		"name": "Drunken Pirate’s Bottomless Rum",
-		"stats": {"damage_multiplier": 0.5, "speed_multiplier": 0.2}
+		"stats": {"damage_multiplier": 0.1, "speed_multiplier": 0.05}
 	},
 	"friendly_spoon": {
 		"name": "Friendly Spoon",
-		"stats": {"armor": 20, "atkspd_multiplier": 0.1}
+		"stats": {"armor": 10, "atkspd_multiplier": 0.05}
 	},
 	"bouncy_armor": {
 		"name": "Inflatable Bouncy Castle Armor",
-		"stats": {"armor": 10, "armor_percent": 0.2, "damage_multiplier": 0.15}
+		"stats": {"armor": 5, "armor_percent": 0.1, "damage_multiplier": 0.05}
 	},
 	"coffee_thermos": {
 		"name": "Bottomless Coffee Thermos",
-		"stats": {"atkspd_multiplier": 0.25, "speed_multiplier": 0.15}
+		"stats": {"atkspd_multiplier": 0.1, "speed_multiplier": 0.05}
 	},
 	"pet_rock": {
 		"name": "Loyal Pet Rock",
-		"stats": {"armor": 15, "thorns_percentage": 0.25}
+		"stats": {"armor": 10, "thorns_percentage": 0.1}
 	},
 	"disco_ball": {
 		"name": "Laser Disco Ball",
-		"stats": {"crit_chance": 0.15, "pickup_radius": 30.0}
+		"stats": {"crit_chance": 0.1, "pickup_radius": 5.0}
 	},
 	"clown_horn": {
 		"name": "The Over-Enthusiastic Megaphone",
-		"stats": {"damage_multiplier": 0.3, "atkspd_multiplier": 0.2}
+		"stats": {"damage_multiplier": 0.1, "atkspd_multiplier": 0.1}
 	},
 	"hamster_wheel": {
 		"name": "Unstable Hamster Wheel",
-		"stats": {"speed_multiplier": 0.5, "max_health": 30}
+		"stats": {"speed_multiplier": 0.1, "max_health": 5}
 	},
 	"toaster": {
 		"name": "Fiery Toaster Attachment",
-		"stats": {"damage_multiplier": 0.4, "thorns_percentage": 0.3}
+		"stats": {"damage_multiplier": 0.1, "thorns_percentage": 0.1}
 	},
 	"boomerang": {
 		"name": "Sentient Boomerang",
-		"stats": {"crit_chance": 0.1, "crit_multiplier": 0.5}
+		"stats": {"crit_chance": 0.05, "crit_multiplier": 0.1}
 	},
 	"lunchbox": {
 		"name": "Lunchbox of Plenty",
-		"stats": {"thorns_percentage": 0.5, "armor": 5}
+		"stats": {"thorns_percentage": 0.1, "armor": 5}
 	},
 	"eight_ball": {
 		"name": "Magic 8-Ball of Chaos",
-		"stats": {"damage_multiplier": 0.2, "crit_multiplier": 0.3, "crit_chance": 0.05}
+		"stats": {"damage_multiplier": 0.05, "crit_multiplier": 0.05, "crit_chance": 0.05}
 	},
 	"squirrel_launcher": {
 		"name": "Hyperactive Squirrel Acorn Launcher",
-		"stats": {"atkspd_multiplier": 0.6, "damage_multiplier": 0.25}
+		"stats": {"atkspd_multiplier": 0.1, "damage_multiplier": 0.05}
 	},
 	"springy_shoes": {
 		"name": "Springy Shoes",
-		"stats": {"health_regen": 3.0, "speed_multiplier": 0.15}
+		"stats": {"health_regen": 0.1, "speed_multiplier": 0.1}
 	},
 	"pinata_buddy": {
 		"name": "Sentient Piñata Buddy",
-		"stats": {"xp_drop_multiplier": 0.5, "gem_drop_chance_bonus": 0.05}
+		"stats": {"xp_drop_multiplier": 0.1, "gem_drop_chance_bonus": 0.05}
 	},
 	"cosmic_sausage": {
 		"name": "Cosmic Sausage",
