@@ -1,7 +1,7 @@
 extends Node2D
 
-@onready var player: Node2D = $Player
-@onready var wave_controller: Node = $WaveController
+@onready var player = $Player
+@onready var wave_controller = $WaveController
 @onready var hud: CanvasLayer = $UI
 @onready var shop_panel: Control = $UI/ShopPanel
 @onready var game_over_panel: Control = $UI/GameOverPanel
@@ -153,7 +153,7 @@ func _setup_arena() -> void:
 	var max_dim: float = max(screen_size.x, screen_size.y)
 	var square_dim: float = max_dim * GameConstants.ARENA_SIZE_MULTIPLIER
 	var arena_size := Vector2(square_dim, square_dim)
-	var center := screen_size / 2.0
+	var center: Vector2 = screen_size / 2.0
 	
 	var floor_rect := $ArenaFloor
 	floor_rect.size = arena_size
@@ -217,6 +217,13 @@ func _setup_arena() -> void:
 	wave_controller.arena_radius = max(arena_size.x, arena_size.y) / 2.0
 	if player.has_method("set_camera_limits"):
 		player.set_camera_limits(arena_rect)
+	
+	# Force player and camera to the exact center of the arena instantly
+	player.global_position = center
+	if player.has_node("Camera2D"):
+		var cam = player.get_node("Camera2D") as Camera2D
+		cam.reset_smoothing() # Snap instantly
+		cam.force_update_scroll()
 
 func _process(_delta: float) -> void:
 	lvl_xp_label.text = "Level: %d" % GameState.run_level

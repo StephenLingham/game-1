@@ -1,4 +1,5 @@
 extends Node
+class_name WaveController
 
 @export var enemy_scene: PackedScene
 @export var arena_radius: float = 420.0
@@ -126,7 +127,7 @@ func _spawn_tick() -> void:
 
 		# Get the current screen center and dimensions
 		var cam := get_viewport().get_camera_2d()
-		var center := cam.get_screen_center_position() if cam else game.player.global_position
+		var center: Vector2 = cam.get_screen_center_position() if cam else game.player.global_position
 		var viewport_size := get_viewport().get_visible_rect().size
 		
 		# Define spawn margin just off-screen

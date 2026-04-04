@@ -17,6 +17,7 @@ var _speed_boost_duration: float = 0.0
 var _atk_speed_boost_multiplier: float = 1.0
 var _atk_speed_boost_duration: float = 0.0
 var _regen_timer: float = 0.0
+var _regen_accumulator: float = 0.0
 
 # Click / tap-to-move support
 var _click_target: Vector2 = Vector2.ZERO
@@ -128,7 +129,12 @@ func _physics_process(delta: float) -> void:
 		_regen_timer += delta
 		if _regen_timer >= 1.0:
 			_regen_timer = 0.0
-			health = min(health + int(regen), max_health)
+			# Add regen to an accumulator to allow fractional health to build up
+			_regen_accumulator += regen
+			if _regen_accumulator >= 1.0:
+				var amount := int(floor(_regen_accumulator))
+				health = min(health + amount, max_health)
+				_regen_accumulator -= float(amount)
 
 	# Movement
 	var input_dir := Vector2.ZERO
