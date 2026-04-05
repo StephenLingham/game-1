@@ -552,14 +552,22 @@ func _fire_machine_gun(target: Node2D) -> void:
 
 func trigger_rocket_blast() -> void:
 	var blast_pos = global_position
-	var radius = GameConstants.ROCKET_BASE_BLAST_RADIUS + (GameConstants.ROCKET_MAX_LEVEL - 1) * GameConstants.ROCKET_BLAST_RADIUS_PER_LEVEL
+	
+	# Calculate radius based on largest screen dimension
+	var viewport_size = get_viewport_rect().size
+	var largest_dim = max(viewport_size.x, viewport_size.y)
+	var radius = largest_dim * GameConstants.PICKUP_EXPLOSION_RADIUS_MULTIPLIER
+	
 	var final_res = _get_final_damage(GameConstants.ROCKET_DAMAGE)
 	var damage = final_res.damage
 	
+	var rocket_script = null
 	if ResourceLoader.exists("res://scripts/rocket.gd"):
-		var script = load("res://scripts/rocket.gd")
-		if script.has_method("spawn_explosion"):
-			script.spawn_explosion(get_tree().current_scene, blast_pos, radius)
+		rocket_script = load("res://scripts/rocket.gd")
+	
+	# Spawn visual circle at pickup position (no particles at pickup pos)
+	if rocket_script and rocket_script.has_method("spawn_explosion"):
+		rocket_script.spawn_explosion(get_tree().current_scene, blast_pos, radius, false, true)
 	
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	for enemy in enemies:
@@ -567,4 +575,11 @@ func trigger_rocket_blast() -> void:
 			var dist = blast_pos.distance_to(enemy.global_position)
 			if dist <= radius:
 				if enemy.has_method("take_damage"):
-					GameState.run_damage_stats["explosion_pickup"] = GameState.run_damage_stats.get("explosion_pickup", 0) + enemy.take_damage(damage)
+					var before_health = enemy.health
+					var actual_dmg = enemy.take_damage(damage, "explosion_pickup")
+					GameState.run_damage_stats["explosion_pickup"] = GameState.run_damage_stats.get("explosion_pickup", 0) + actual_dmg
+					
+					# Particle effect only on position of enemy that explosion kills
+					if enemy.health <= 0 and before_health > 0:
+						if rocket_script and rocket_script.has_method("spawn_explosion"):
+							rocket_script.spawn_explosion(get_tree().current_scene, enemy.global_position, 0, true, false)

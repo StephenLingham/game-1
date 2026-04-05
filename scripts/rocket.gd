@@ -74,40 +74,41 @@ func _do_aoe_damage() -> void:
 					if enemy.health <= 0:
 						spawn_explosion(get_tree().current_scene, enemy.global_position, 0)
 
-static func spawn_explosion(parent: Node, pos: Vector2, radius: float = 0.0) -> void:
+static func spawn_explosion(parent: Node, pos: Vector2, radius: float = 0.0, spawn_particles: bool = true, spawn_circle: bool = true) -> void:
 	# 1. Main Explosion Particles
-	var particles = CPUParticles2D.new()
-	particles.global_position = pos
-	particles.emitting = true
-	particles.one_shot = true
-	particles.explosiveness = 1.0
-	particles.amount = 60
-	particles.lifetime = 0.8
-	particles.spread = 180.0
-	particles.gravity = Vector2.ZERO
-	particles.initial_velocity_min = 100.0
-	particles.initial_velocity_max = 300.0
-	particles.scale_amount_min = 4.0
-	particles.scale_amount_max = 10.0
-	
-	var color_ramp = Gradient.new()
-	var colors = PackedColorArray([
-		Color(1, 1, 0.6), # Yellow
-		Color(1, 0.5, 0), # Orange
-		Color(0.8, 0.2, 0), # Red
-		Color(0.2, 0.2, 0.2, 0) # Fade
-	])
-	var offsets = PackedFloat32Array([0.0, 0.2, 0.5, 1.0])
-	color_ramp.colors = colors
-	color_ramp.offsets = offsets
-	particles.color_ramp = color_ramp
-	
-	particles.add_to_group("projectiles")
-	parent.add_child(particles)
-	parent.get_tree().create_timer(1.0).timeout.connect(particles.queue_free)
+	if spawn_particles:
+		var particles = CPUParticles2D.new()
+		particles.global_position = pos
+		particles.emitting = true
+		particles.one_shot = true
+		particles.explosiveness = 1.0
+		particles.amount = 60
+		particles.lifetime = 0.8
+		particles.spread = 180.0
+		particles.gravity = Vector2.ZERO
+		particles.initial_velocity_min = 100.0
+		particles.initial_velocity_max = 300.0
+		particles.scale_amount_min = 4.0
+		particles.scale_amount_max = 10.0
+		
+		var color_ramp = Gradient.new()
+		var colors = PackedColorArray([
+			Color(1, 1, 0.6), # Yellow
+			Color(1, 0.5, 0), # Orange
+			Color(0.8, 0.2, 0), # Red
+			Color(0.2, 0.2, 0.2, 0) # Fade
+		])
+		var offsets = PackedFloat32Array([0.0, 0.2, 0.5, 1.0])
+		color_ramp.colors = colors
+		color_ramp.offsets = offsets
+		particles.color_ramp = color_ramp
+		
+		particles.add_to_group("projectiles")
+		parent.add_child(particles)
+		parent.get_tree().create_timer(1.0).timeout.connect(particles.queue_free)
 
 	# 2. Fiery Blast Circle (only if radius > 0)
-	if radius > 0:
+	if radius > 0 and spawn_circle:
 		var circle = Polygon2D.new()
 		circle.global_position = pos
 		var pts = []
