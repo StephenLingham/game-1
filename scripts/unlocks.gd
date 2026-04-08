@@ -19,6 +19,7 @@ const WEAPONS = {
 
 var current_view: String = "weapons"
 var weapon_tab: Button
+var aura_tab: Button
 var item_tab: Button
 
 func _ready() -> void:
@@ -32,13 +33,19 @@ func _ready() -> void:
 	
 	weapon_tab = Button.new()
 	weapon_tab.text = "Weapons"
-	weapon_tab.custom_minimum_size = Vector2(250, 40)
+	weapon_tab.custom_minimum_size = Vector2(180, 40)
 	weapon_tab.pressed.connect(_on_view_changed.bind("weapons"))
 	hbox.add_child(weapon_tab)
 	
+	aura_tab = Button.new()
+	aura_tab.text = "Auras"
+	aura_tab.custom_minimum_size = Vector2(180, 40)
+	aura_tab.pressed.connect(_on_view_changed.bind("auras"))
+	hbox.add_child(aura_tab)
+	
 	item_tab = Button.new()
 	item_tab.text = "Items"
-	item_tab.custom_minimum_size = Vector2(250, 40)
+	item_tab.custom_minimum_size = Vector2(180, 40)
 	item_tab.pressed.connect(_on_view_changed.bind("items"))
 	hbox.add_child(item_tab)
 	
@@ -53,14 +60,17 @@ func _refresh_ui() -> void:
 		child.queue_free()
 	
 	# Update title
-	$VBox/Header/Title.text = "Weapons" if current_view == "weapons" else "Items"
+	$VBox/Header/Title.text = current_view.capitalize()
 	
 	# Update tab visual focus
 	weapon_tab.modulate = Color.WHITE if current_view == "weapons" else Color(0.6, 0.6, 0.6)
+	aura_tab.modulate = Color.WHITE if current_view == "auras" else Color(0.6, 0.6, 0.6)
 	item_tab.modulate = Color.WHITE if current_view == "items" else Color(0.6, 0.6, 0.6)
 	
 	if current_view == "weapons":
 		_show_weapons()
+	elif current_view == "auras":
+		_show_auras()
 	else:
 		_show_items()
 
@@ -180,6 +190,75 @@ func _show_items() -> void:
 			vbox.add_child(lock_info)
 		
 		grid.add_child(panel)
+
+func _show_auras() -> void:
+	var auras = GameConstants.AURAS
+	var aura_ids = auras.keys()
+	
+	for i in range(aura_ids.size()):
+		var id = aura_ids[i]
+		var aura_data = auras[id]
+		var is_unlocked = GameState.is_item_unlocked(id)
+		
+		var panel = PanelContainer.new()
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var vbox = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 10)
+		vbox.custom_minimum_size = Vector2(280, 0)
+		panel.add_child(vbox)
+		
+		var title = Label.new()
+		title.text = aura_data.name
+		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		title.add_theme_font_size_override("font_size", 22)
+		vbox.add_child(title)
+		
+		var status = Label.new()
+		status.text = "Unlocked" if is_unlocked else "Locked"
+		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		status.modulate = Color.SPRING_GREEN if is_unlocked else Color.TOMATO
+		status.add_theme_font_size_override("font_size", 18)
+		vbox.add_child(status)
+		
+		var desc = Label.new()
+		if is_unlocked:
+			var val = aura_data.value
+			if aura_data.stat.ends_with("_multiplier") or aura_data.stat.ends_with("_percent") or aura_data.stat.ends_with("_chance") or aura_data.stat == "thorns_percentage" or aura_data.stat == "gem_drop_chance_bonus" or aura_data.stat == "spawn_rate_multiplier":
+				desc.text = aura_data.desc % int(val * 100)
+			else:
+				desc.text = aura_data.desc % val
+		else:
+			# Get precursor
+			var precursor = _get_aura_precursor(id)
+			if precursor != "":
+				var prec_name = auras[precursor].name
+				desc.text = "Unlock by reaching Max Level with %s" % prec_name
+			else:
+				desc.text = "Unlocked by default"
+				
+		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc.modulate = Color(0.8, 0.8, 0.9)
+		vbox.add_child(desc)
+		
+		if not is_unlocked:
+			var precursor = _get_aura_precursor(id)
+			if precursor != "":
+				var max_reached = GameState.aura_max_levels_reached.get(precursor, 0)
+				var progress = Label.new()
+				progress.text = "Max Level Progress: %d / %d" % [max_reached, GameConstants.AURA_MAX_LEVEL]
+				progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				progress.modulate = Color.CYAN
+				vbox.add_child(progress)
+		
+		grid.add_child(panel)
+
+func _get_aura_precursor(id: String) -> String:
+	var aura_chain = GameConstants.AURAS.keys()
+	var idx = aura_chain.find(id)
+	if idx > 0:
+		return aura_chain[idx-1]
+	return ""
 
 func _get_precursor(id: String) -> String:
 	var weapon_chain = [

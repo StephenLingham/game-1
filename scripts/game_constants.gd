@@ -162,6 +162,28 @@ const ICE_BASE_COST: int = 15
 const ICE_COST_INCREMENT: int = 10
 const ICE_FREEZE_DURATION: float = 2.0
 
+# --- AURA SETTINGS ---
+const AURA_MAX_LEVEL: int = 5
+const AURA_MAX_COUNT: int = 6
+const AURA_BASE_COST: int = 20
+const AURA_COST_INCREMENT: int = 15
+
+# Aura Stat Values (per level)
+const AURA_DAMAGE_BOOST: float = 0.15 # +15%
+const AURA_ATKSPD_BOOST: float = 0.15 # +15%
+const AURA_PICKUP_BOOST: float = 15.0 # +15 collection radius
+const AURA_HEALTH_BOOST: int = 25     # +25 max health
+const AURA_REGEN_BOOST: float = 0.5   # +0.5 HP/sec
+const AURA_CRIT_BOOST: float = 0.05   # +5% crit chance
+const AURA_CRIT_DMG_BOOST: float = 0.25 # +0.25x crit multiplier
+const AURA_ARMOR_BOOST: int = 3      # +3 flat armor
+const AURA_ARMOR_PCT_BOOST: float = 0.05 # +5% armor
+const AURA_THORNS_BOOST: float = 0.15 # +15% thorns
+const AURA_SPAWN_BOOST: float = 0.15  # +15% spawn rate
+const AURA_XP_BOOST: float = 0.15    # +15% XP drop
+const AURA_GEM_BOOST: float = 0.03   # +3% gem drop chance
+const AURA_SPEED_BOOST: float = 0.10  # +10% movement speed
+
 # --- SHOP SETTINGS ---
 const SHOP_OPTIONS_COUNT: int = 3
 const SHOP_MAX_ABILITIES: int = 6
@@ -276,5 +298,92 @@ const ITEMS: Dictionary = {
 	"cosmic_sausage": {
 		"name": "Cosmic Sausage",
 		"stats": {"max_health": -5, "damage": 5}
+	}
+}
+
+const AURAS: Dictionary = {
+	"aura_damage": {
+		"name": "Power Aura",
+		"stat": "damage_multiplier",
+		"value": AURA_DAMAGE_BOOST,
+		"desc": "Increases overall damage bonus by %d%% per level."
+	},
+	"aura_atkspd": {
+		"name": "Swiftness Aura",
+		"stat": "atkspd_multiplier",
+		"value": AURA_ATKSPD_BOOST,
+		"desc": "Increases attack speed by %d%% per level."
+	},
+	"aura_pickup_radius": {
+		"name": "Magnet Aura",
+		"stat": "pickup_radius",
+		"value": AURA_PICKUP_BOOST,
+		"desc": "Increases collection radius by %d per level."
+	},
+	"aura_max_health": {
+		"name": "Vitality Aura",
+		"stat": "max_health",
+		"value": AURA_HEALTH_BOOST,
+		"desc": "Increases max health by %d per level."
+	},
+	"aura_regen": {
+		"name": "Recovery Aura",
+		"stat": "health_regen",
+		"value": AURA_REGEN_BOOST,
+		"desc": "Increases health regeneration by %.1f HP/sec per level."
+	},
+	"aura_crit": {
+		"name": "Precision Aura",
+		"stat": "crit_chance",
+		"value": AURA_CRIT_BOOST,
+		"desc": "Increases critical hit chance by %d%% per level."
+	},
+	"aura_crit_damage": {
+		"name": "Ferocity Aura",
+		"stat": "crit_multiplier",
+		"value": AURA_CRIT_DMG_BOOST,
+		"desc": "Increases critical damage multiplier by %.2fx per level."
+	},
+	"aura_armor": {
+		"name": "Sentinel Aura",
+		"stat": "armor",
+		"value": AURA_ARMOR_BOOST,
+		"desc": "Increases flat armor reduction by %d per level."
+	},
+	"aura_armor_percent": {
+		"name": "Guardian Aura",
+		"stat": "armor_percent",
+		"value": AURA_ARMOR_PCT_BOOST,
+		"desc": "Increases percentage damage reduction by %d%% per level."
+	},
+	"aura_thorns": {
+		"name": "Spike Aura",
+		"stat": "thorns_percentage",
+		"value": AURA_THORNS_BOOST,
+		"desc": "Reflects %d%% of incoming damage back to attackers per level."
+	},
+	"aura_speed": {
+		"name": "Haste Aura",
+		"stat": "speed_multiplier",
+		"value": AURA_SPEED_BOOST,
+		"desc": "Increases movement speed by %d%% per level."
+	},
+	"aura_xp_drop": {
+		"name": "Learning Aura",
+		"stat": "xp_drop_multiplier",
+		"value": AURA_XP_BOOST,
+		"desc": "Increases XP gained from drops by %d%% per level."
+	},
+	"aura_gem_drop": {
+		"name": "Fortune Aura",
+		"stat": "gem_drop_chance_bonus",
+		"value": AURA_GEM_BOOST,
+		"desc": "Increases gem drop chance by %d%% per level."
+	},
+	"aura_spawn_rate": {
+		"name": "Chaos Aura",
+		"stat": "spawn_rate_multiplier",
+		"value": AURA_SPAWN_BOOST,
+		"desc": "Increases enemy spawn rate by %d%% per level (more XP!)."
 	}
 }

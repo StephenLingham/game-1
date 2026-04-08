@@ -7,6 +7,7 @@ var gems: int = 0
 
 # Unlocks
 var unlocked_items: Array = ["handgun"] # Abilities the player CAN see in shop
+var unlocked_auras: Array = [] # Auras the player CAN see in shop
 var unlocked_treasure_items: Array = [] # Items the player CAN see in chests
 var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed until end)
 var completed_levels: Array = []
@@ -29,6 +30,8 @@ var perm_speed_level: int = 0
 var perm_thorns_level: int = 0
 var perm_spawn_rate_level: int = 0
 var perm_crit_damage_level: int = 0
+
+var aura_max_levels_reached: Dictionary = {} # aura_id -> max_level
 
 # Run-time values (reset per run)
 var run_xp: int = 0
@@ -63,22 +66,34 @@ func _ready() -> void:
 		# Reset EVERYTHING
 		gems = 0
 		unlocked_items = ["handgun"]
+		unlocked_auras = []
 		unlocked_treasure_items = []
 		lifetime_kills = {"handgun": 0}
 		lifetime_chests_opened = 0
 		completed_levels = []
+		aura_max_levels_reached = {}
 		_reset_all_perm_levels()
 		changed = true
 		print("DEBUG: All data reset.")
 	else:
 		if GameConstants.DEBUG_RESET_UNLOCKS:
 			unlocked_items = ["handgun"]
+			unlocked_auras = []
 			unlocked_treasure_items = []
 			lifetime_kills = {"handgun": 0}
 			lifetime_chests_opened = 0
 			completed_levels = []
 			changed = true
 			print("DEBUG: Unlocks reset.")
+	
+	# Start with 4 auras if none unlocked
+	if unlocked_auras.size() < 4:
+		var all_auras = GameConstants.AURAS.keys()
+		for i in range(min(4, all_auras.size())):
+			var id = all_auras[i]
+			if not unlocked_auras.has(id):
+				unlocked_auras.append(id)
+		changed = true
 	
 	if GameConstants.DEBUG_RESET_GEMS:
 		gems = 0
@@ -234,6 +249,7 @@ var run_damage_explosion_pickup: int:
 func get_damage_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_damage_level
 	var mult = 1.0 + 0.10 * float(lvl)
+	mult += _get_aura_bonus("damage_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		mult += stats.get("damage_multiplier", 0.0)
@@ -243,6 +259,7 @@ func get_damage_multiplier() -> float:
 func get_atkspd_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_atkspd_level
 	var mult = 1.0 + 0.10 * float(lvl)
+	mult += _get_aura_bonus("atkspd_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		mult += stats.get("atkspd_multiplier", 0.0)
@@ -253,7 +270,7 @@ func get_pickup_radius() -> float:
 	var base := GameConstants.BASE_COLLECTION_RADIUS
 	var plvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_pickup_radius_level
 	var perm := float(plvl) * GameConstants.PERM_COLLECTION_RADIUS_INCREMENT
-	var bonus := 0.0
+	var bonus := _get_aura_bonus("pickup_radius")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("pickup_radius", 0.0)
@@ -273,7 +290,7 @@ func get_total_damage(base: int) -> int:
 func get_max_health() -> int:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_max_health_level
 	var base = GameConstants.PLAYER_MAX_HEALTH + lvl * 20
-	var bonus = 0
+	var bonus = int(_get_aura_bonus("max_health"))
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("max_health", 0)
@@ -283,7 +300,7 @@ func get_max_health() -> int:
 func get_health_regen() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_regen_level
 	var base = float(lvl) * 0.5 # 0.5 HP per second
-	var bonus = 0.0
+	var bonus = _get_aura_bonus("health_regen")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("health_regen", 0.0)
@@ -293,7 +310,7 @@ func get_health_regen() -> float:
 func get_crit_chance() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_crit_level
 	var base = float(lvl) * 0.05 # 5% per level
-	var bonus = 0.0
+	var bonus = _get_aura_bonus("crit_chance")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("crit_chance", 0.0)
@@ -303,7 +320,7 @@ func get_crit_chance() -> float:
 func get_crit_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_crit_damage_level
 	var base = 2.0 + float(lvl) * 0.2 # Base 2.0x, +0.2x per level
-	var bonus = 0.0
+	var bonus = _get_aura_bonus("crit_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("crit_multiplier", 0.0)
@@ -313,7 +330,7 @@ func get_crit_multiplier() -> float:
 func get_armor() -> int:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_armor_level
 	var base = lvl * 2 # Flat damage reduction
-	var bonus = 0
+	var bonus = int(_get_aura_bonus("armor"))
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("armor", 0)
@@ -323,7 +340,7 @@ func get_armor() -> int:
 func get_armor_percent() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_armor_percent_level
 	var base = float(lvl) * 0.05 # 5% reduction per level
-	var bonus = 0.0
+	var bonus = _get_aura_bonus("armor_percent")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("armor_percent", 0.0)
@@ -333,7 +350,7 @@ func get_armor_percent() -> float:
 func get_thorns_percentage() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_thorns_level
 	var base = float(lvl) * 0.1 # 10% thorns per level
-	var bonus = 0.0
+	var bonus = _get_aura_bonus("thorns_percentage")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("thorns_percentage", 0.0)
@@ -342,13 +359,13 @@ func get_thorns_percentage() -> float:
 
 func get_spawn_rate_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_spawn_rate_level
-	return 1.0 + float(lvl) * 0.1 # +10% spawn rate per level
+	return 1.0 + float(lvl) * 0.1 + _get_aura_bonus("spawn_rate_multiplier") # +10% spawn rate per level
 
 func get_xp_drop_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gold_drop_level
 	var base = 1.0 + float(lvl) * 0.1
 	# Any item bonuses too
-	var bonus = 0.0
+	var bonus = _get_aura_bonus("xp_drop_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("xp_drop_multiplier", 0.0)
@@ -358,7 +375,7 @@ func get_xp_drop_multiplier() -> float:
 func get_gem_drop_chance_bonus() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gem_drop_level
 	var base = float(lvl) * 0.02
-	var bonus = 0.0
+	var bonus = _get_aura_bonus("gem_drop_chance_bonus")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("gem_drop_chance_bonus", 0.0)
@@ -368,11 +385,21 @@ func get_gem_drop_chance_bonus() -> float:
 func get_speed_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_speed_level
 	var base = 1.0 + float(lvl) * 0.05
-	var bonus = 0.0
+	var bonus = _get_aura_bonus("speed_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("speed_multiplier", 0.0)
 	return base + bonus
+
+func _get_aura_bonus(stat_name: String) -> float:
+	var total = 0.0
+	for aura_id in GameConstants.AURAS:
+		var level = run_abilities.get(aura_id, 0)
+		if level > 0:
+			var aura_data = GameConstants.AURAS[aura_id]
+			if aura_data.stat == stat_name:
+				total += aura_data.value * level
+	return total
 
 func add_run_item(item_id: String) -> void:
 	run_items.append(item_id)
@@ -458,6 +485,10 @@ func record_chest_opened() -> void:
 	save()
 
 func record_ability_upgrade(id: String, level: int) -> void:
+	if id.begins_with("aura_"):
+		var current_max = aura_max_levels_reached.get(id, 0)
+		if level > current_max:
+			aura_max_levels_reached[id] = level
 	# No save() here to avoid mid-run permanent save of kills/unlocks if we want to be strict, 
 	# but kills are already being saved in record_kill. Let's be consistent.
 	save()
@@ -467,6 +498,8 @@ func is_item_unlocked(id: String) -> bool:
 		# Check if it's a weapon based on ALL_ABILITIES in Main.gd or just return true for everything?
 		# The request said "unlock all weapons", but unlocking everything is simpler and probably what's intended for debugging.
 		return true
+	if id.begins_with("aura_"):
+		return unlocked_auras.has(id)
 	return unlocked_items.has(id)
 
 func finalize_run_unlocks() -> void:
@@ -474,6 +507,9 @@ func finalize_run_unlocks() -> void:
 		if item in GameConstants.ITEMS:
 			if not unlocked_treasure_items.has(item):
 				unlocked_treasure_items.append(item)
+		elif item.begins_with("aura_"):
+			if not unlocked_auras.has(item):
+				unlocked_auras.append(item)
 		else:
 			if not unlocked_items.has(item):
 				unlocked_items.append(item)
@@ -524,6 +560,24 @@ func _check_unlocks() -> void:
 				current_total += 1
 				if current_total >= should_have_total:
 					break
+	
+	# Aura chain: starting with 4, then previous at max level unlocks next
+	# We check permanent ability upgrades recorded
+	var aura_chain = GameConstants.AURAS.keys()
+	for i in range(aura_chain.size() - 1):
+		var current = aura_chain[i]
+		var next = aura_chain[i+1]
+		if unlocked_auras.has(current):
+			# Use a separate tracking for max level achieved? 
+			# User says "get the previous one to max level in a chain".
+			# We can check lifetime_kills or a new lifetime_max_levels dict.
+			# But and easier way is to check if we ever reached max level in a run and recorded it.
+			# Let's add a lifetime_max_levels or just check record_ability_upgrade.
+			# Actually, the user says "you need to get the previous one to max level".
+			# I'll check a new dictionary `aura_max_levels_reached`.
+			if aura_max_levels_reached.get(current, 0) >= GameConstants.AURA_MAX_LEVEL:
+				if not unlocked_auras.has(next) and not run_unlocked_items.has(next):
+					run_unlocked_items.append(next)
 
 func save() -> void:
 	var data := {
@@ -544,10 +598,12 @@ func save() -> void:
 		"perm_spawn_rate_level": perm_spawn_rate_level,
 		"perm_crit_damage_level": perm_crit_damage_level,
 		"unlocked_items": unlocked_items,
+		"unlocked_auras": unlocked_auras,
 		"unlocked_treasure_items": unlocked_treasure_items,
 		"lifetime_kills": lifetime_kills,
 		"lifetime_chests_opened": lifetime_chests_opened,
-		"completed_levels": completed_levels
+		"completed_levels": completed_levels,
+		"aura_max_levels_reached": aura_max_levels_reached
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -582,7 +638,9 @@ func load_save() -> void:
 	perm_crit_damage_level = int(parsed.get("perm_crit_damage_level", 0))
 	
 	unlocked_items = parsed.get("unlocked_items", ["handgun"])
+	unlocked_auras = parsed.get("unlocked_auras", [])
 	unlocked_treasure_items = parsed.get("unlocked_treasure_items", [])
 	lifetime_kills = parsed.get("lifetime_kills", {"handgun": 0})
 	lifetime_chests_opened = int(parsed.get("lifetime_chests_opened", 0))
 	completed_levels = parsed.get("completed_levels", [])
+	aura_max_levels_reached = parsed.get("aura_max_levels_reached", {})

@@ -35,7 +35,23 @@ const ALL_ABILITIES = [
 	{"id": "bouncing_disk", "name": "Bouncing Disk", "weapon": false},
 	{"id": "floor_spikes", "name": "Floor Spikes", "weapon": false},
 	{"id": "turret", "name": "Turret", "weapon": false},
-	{"id": "ice_wave", "name": "Ice Wave", "weapon": false}
+	{"id": "ice_wave", "name": "Ice Wave", "weapon": false},
+	
+	# Auras
+	{"id": "aura_damage", "name": "Power Aura", "is_aura": true},
+	{"id": "aura_atkspd", "name": "Swiftness Aura", "is_aura": true},
+	{"id": "aura_pickup_radius", "name": "Magnet Aura", "is_aura": true},
+	{"id": "aura_max_health", "name": "Vitality Aura", "is_aura": true},
+	{"id": "aura_regen", "name": "Recovery Aura", "is_aura": true},
+	{"id": "aura_crit", "name": "Precision Aura", "is_aura": true},
+	{"id": "aura_crit_damage", "name": "Ferocity Aura", "is_aura": true},
+	{"id": "aura_armor", "name": "Sentinel Aura", "is_aura": true},
+	{"id": "aura_armor_percent", "name": "Guardian Aura", "is_aura": true},
+	{"id": "aura_thorns", "name": "Spike Aura", "is_aura": true},
+	{"id": "aura_speed", "name": "Haste Aura", "is_aura": true},
+	{"id": "aura_xp_drop", "name": "Learning Aura", "is_aura": true},
+	{"id": "aura_gem_drop", "name": "Fortune Aura", "is_aura": true},
+	{"id": "aura_spawn_rate", "name": "Chaos Aura", "is_aura": true}
 ]
 
 @onready var lbl_wave: Label = $UI/HUD/HUDMargin/HUDVBox/WaveLabel
@@ -258,8 +274,15 @@ func _generate_shop_options() -> void:
 	current_shop_options.clear()
 	var pool = []
 	
-	var current_abi_count = GameState.run_abilities.size()
-	var at_capacity = current_abi_count >= GameConstants.SHOP_MAX_ABILITIES
+	var current_abi_count = 0
+	var current_aura_count = 0
+	for abi_id in GameState.run_abilities:
+		var is_aura = abi_id.begins_with("aura_")
+		if is_aura: current_aura_count += 1
+		else: current_abi_count += 1
+	
+	var abi_at_capacity = current_abi_count >= GameConstants.SHOP_MAX_ABILITIES
+	var aura_at_capacity = current_aura_count >= GameConstants.AURA_MAX_COUNT
 
 	for abi in ALL_ABILITIES:
 		if not GameState.is_item_unlocked(abi.id): continue
@@ -271,8 +294,12 @@ func _generate_shop_options() -> void:
 		# Skip if maxed
 		if level >= max_level: continue
 		
-		# If at capacity, only show upgrades for things we already have
-		if at_capacity and level == 0: continue
+		# Capacity checks
+		if level == 0:
+			if abi.get("is_aura", false):
+				if aura_at_capacity: continue
+			else:
+				if abi_at_capacity: continue
 		
 		pool.append(abi)
 	
@@ -281,9 +308,15 @@ func _generate_shop_options() -> void:
 		current_shop_options.append(pool[i])
 
 func _refresh_shop_ui() -> void:
-	var abi_count = GameState.run_abilities.size()
-	shop_capacity_label.text = "Weapons: %d / %d" % [abi_count, GameConstants.SHOP_MAX_ABILITIES]
-	if abi_count >= GameConstants.SHOP_MAX_ABILITIES:
+	var abi_count = 0
+	var aura_count = 0
+	for id in GameState.run_abilities:
+		if id.begins_with("aura_"): aura_count += 1
+		else: abi_count += 1
+		
+	shop_capacity_label.text = "Weapons: %d/%d  |  Auras: %d/%d" % [abi_count, GameConstants.SHOP_MAX_ABILITIES, aura_count, GameConstants.AURA_MAX_COUNT]
+	
+	if abi_count >= GameConstants.SHOP_MAX_ABILITIES and aura_count >= GameConstants.AURA_MAX_COUNT:
 		shop_capacity_label.modulate = Color.VIOLET
 	else:
 		shop_capacity_label.modulate = Color.WHITE
@@ -292,20 +325,30 @@ func _refresh_shop_ui() -> void:
 	for child in shop_grid.get_children():
 		child.queue_free()
 	
-	# Header for owned
-	var h_owned = Label.new()
-	h_owned.text = "--- YOUR LOADOUT ---"
-	h_owned.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	h_owned.modulate = Color.CYAN
+	# Headers and Boxes for Loadout
+	var h_weapons = Label.new()
+	h_weapons.text = "--- WEAPONS (%d/%d) ---" % [abi_count, GameConstants.SHOP_MAX_ABILITIES]
+	h_weapons.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	h_weapons.modulate = Color.CYAN
+	shop_grid.add_child(h_weapons)
 	
-	shop_grid.add_child(h_owned)
+	var weapons_box = HBoxContainer.new()
+	weapons_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	weapons_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	weapons_box.add_theme_constant_override("separation", 20)
+	shop_grid.add_child(weapons_box)
+
+	var h_auras = Label.new()
+	h_auras.text = "--- AURAS (%d/%d) ---" % [aura_count, GameConstants.AURA_MAX_COUNT]
+	h_auras.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	h_auras.modulate = Color.MAGENTA
+	shop_grid.add_child(h_auras)
 	
-	# Create centered HBoxContainer for loadout items
-	var loadout_box = HBoxContainer.new()
-	loadout_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	loadout_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	loadout_box.add_theme_constant_override("separation", 20)
-	shop_grid.add_child(loadout_box)
+	var auras_box = HBoxContainer.new()
+	auras_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	auras_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	auras_box.add_theme_constant_override("separation", 20)
+	shop_grid.add_child(auras_box)
 	
 	# Show currently owned abilities
 	var owned_ids = GameState.run_abilities.keys()
@@ -324,7 +367,7 @@ func _refresh_shop_ui() -> void:
 		var vbox = VBoxContainer.new()
 		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 		vbox.add_theme_constant_override("separation", 10)
-		vbox.custom_minimum_size = Vector2(200, 100) # Give fixed height for perfect alignment
+		vbox.custom_minimum_size = Vector2(160, 80)
 		panel.add_child(vbox)
 		
 		var lbl = Label.new()
@@ -332,11 +375,15 @@ func _refresh_shop_ui() -> void:
 		if level >= max_lvl: level_text = "(MAX)"
 		lbl.text = abi_data.name + "\n" + level_text
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.add_theme_font_size_override("font_size", 22)
+		lbl.add_theme_font_size_override("font_size", 18)
 		vbox.add_child(lbl)
 		
-		panel.self_modulate = Color(0.8, 1.0, 0.8, 0.5)
-		loadout_box.add_child(panel)
+		if abi_id.begins_with("aura_"):
+			panel.self_modulate = Color(1.0, 0.8, 1.0, 0.5)
+			auras_box.add_child(panel)
+		else:
+			panel.self_modulate = Color(0.8, 1.0, 0.8, 0.5)
+			weapons_box.add_child(panel)
 
 	# Optional vertical space
 	var spacer = Control.new()
@@ -375,7 +422,20 @@ func _refresh_shop_ui() -> void:
 		
 		var buy_btn = Button.new()
 		var max_lvl = _get_max_level(abi.id)
-		var is_limit_reached = level == 0 and GameState.run_abilities.size() >= GameConstants.SHOP_MAX_ABILITIES
+		
+		# Separate limit checks
+		var is_limit_reached = false
+		if level == 0:
+			var cur_abi = 0
+			var cur_aur = 0
+			for rid in GameState.run_abilities:
+				if rid.begins_with("aura_"): cur_aur += 1
+				else: cur_abi += 1
+			
+			if abi.get("is_aura", false):
+				is_limit_reached = cur_aur >= GameConstants.AURA_MAX_COUNT
+			else:
+				is_limit_reached = cur_abi >= GameConstants.SHOP_MAX_ABILITIES
 		
 		if level >= max_lvl:
 			buy_btn.text = "MAXED"
@@ -390,6 +450,23 @@ func _refresh_shop_ui() -> void:
 			
 		buy_btn.custom_minimum_size = Vector2(180, 40)
 		vbox.add_child(buy_btn)
+		
+		# Add Description for Auras and maybe weapons too if we want
+		var desc_lbl = Label.new()
+		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc_lbl.modulate = Color(0.8, 0.8, 0.8)
+		desc_lbl.add_theme_font_size_override("font_size", 14)
+		
+		if abi.id.begins_with("aura_"):
+			var aura_data = GameConstants.AURAS[abi.id]
+			var val = aura_data.value
+			if aura_data.stat.ends_with("_multiplier") or aura_data.stat.ends_with("_percent") or aura_data.stat.ends_with("_chance") or aura_data.stat == "thorns_percentage" or aura_data.stat == "gem_drop_chance_bonus" or aura_data.stat == "spawn_rate_multiplier":
+				desc_lbl.text = aura_data.desc % int(val * 100)
+			else:
+				desc_lbl.text = aura_data.desc % val
+		
+		vbox.add_child(desc_lbl)
 		upgrades_box.add_child(panel)
 
 func _get_max_level(id: String) -> int:
@@ -405,6 +482,10 @@ func _get_max_level(id: String) -> int:
 		"turret": return GameConstants.TURRET_MAX_LEVEL
 		"machine_gun": return GameConstants.MG_MAX_LEVEL
 		"ice_wave": return GameConstants.ICE_MAX_LEVEL
+	
+	if id.begins_with("aura_"):
+		return GameConstants.AURA_MAX_LEVEL
+		
 	return 5
 
 func _get_ability_cost(id: String, level: int) -> int:
