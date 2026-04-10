@@ -567,13 +567,13 @@ func trigger_rocket_blast() -> void:
 	
 	# Spawn visual circle at pickup position (no particles at pickup pos)
 	if rocket_script and rocket_script.has_method("spawn_explosion"):
-		rocket_script.spawn_explosion(get_tree().current_scene, blast_pos, radius, false, true, 1.0)
+		rocket_script.spawn_explosion(get_tree().current_scene, blast_pos, radius, false, true, GameConstants.PICKUP_EXPLOSION_EXPAND_TIME)
 	
 	var affected_enemies = get_tree().get_nodes_in_group("enemies").duplicate()
 	var current_scene = get_tree().current_scene
 	var tween = get_tree().create_tween()
 	
-	# Use a tween to expand the "active" radius linearly over 1 second
+	# Use a tween to expand the "active" radius linearly over the expand time
 	# This matches the visual expansion in rocket.gd and checks enemies in real-time
 	tween.tween_method(func(current_radius: float):
 		if not is_instance_valid(self) or not is_instance_valid(current_scene):
@@ -592,7 +592,7 @@ func trigger_rocket_blast() -> void:
 		# Remove enemies we've already hit or that are no longer valid
 		for enemy in processed:
 			affected_enemies.erase(enemy)
-	, 0.0, radius, 1.0)
+	, 0.0, radius, GameConstants.PICKUP_EXPLOSION_EXPAND_TIME)
 
 func _apply_explosion_damage(enemy, damage, rocket_script) -> void:
 	if is_instance_valid(enemy):
