@@ -558,7 +558,7 @@ func trigger_rocket_blast() -> void:
 	var largest_dim = max(viewport_size.x, viewport_size.y)
 	var radius = largest_dim * GameConstants.PICKUP_EXPLOSION_RADIUS_MULTIPLIER
 	
-	var final_res = _get_final_damage(GameConstants.ROCKET_DAMAGE)
+	var final_res = _get_final_damage(GameConstants.PICKUP_EXPLOSION_DAMAGE)
 	var damage = final_res.damage
 	
 	var rocket_script = null
