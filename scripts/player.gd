@@ -567,19 +567,41 @@ func trigger_rocket_blast() -> void:
 	
 	# Spawn visual circle at pickup position (no particles at pickup pos)
 	if rocket_script and rocket_script.has_method("spawn_explosion"):
-		rocket_script.spawn_explosion(get_tree().current_scene, blast_pos, radius, false, true)
+		rocket_script.spawn_explosion(get_tree().current_scene, blast_pos, radius, false, true, 1.0)
 	
-	var enemies = get_tree().get_nodes_in_group("enemies")
-	for enemy in enemies:
-		if is_instance_valid(enemy):
-			var dist = blast_pos.distance_to(enemy.global_position)
-			if dist <= radius:
-				if enemy.has_method("take_damage"):
-					var before_health = enemy.health
-					var actual_dmg = enemy.take_damage(damage, "explosion_pickup")
-					GameState.run_damage_stats["explosion_pickup"] = GameState.run_damage_stats.get("explosion_pickup", 0) + actual_dmg
-					
-					# Particle effect only on position of enemy that explosion kills
-					if enemy.health <= 0 and before_health > 0:
-						if rocket_script and rocket_script.has_method("spawn_explosion"):
-							rocket_script.spawn_explosion(get_tree().current_scene, enemy.global_position, 0, true, false)
+	var affected_enemies = get_tree().get_nodes_in_group("enemies").duplicate()
+	var current_scene = get_tree().current_scene
+	var tween = get_tree().create_tween()
+	
+	# Use a tween to expand the "active" radius linearly over 1 second
+	# This matches the visual expansion in rocket.gd and checks enemies in real-time
+	tween.tween_method(func(current_radius: float):
+		if not is_instance_valid(self) or not is_instance_valid(current_scene):
+			return
+			
+		var processed = []
+		for enemy in affected_enemies:
+			if is_instance_valid(enemy):
+				var dist = blast_pos.distance_to(enemy.global_position)
+				if dist <= current_radius:
+					_apply_explosion_damage(enemy, damage, rocket_script)
+					processed.append(enemy)
+			else:
+				processed.append(enemy)
+		
+		# Remove enemies we've already hit or that are no longer valid
+		for enemy in processed:
+			affected_enemies.erase(enemy)
+	, 0.0, radius, 1.0)
+
+func _apply_explosion_damage(enemy, damage, rocket_script) -> void:
+	if is_instance_valid(enemy):
+		if enemy.has_method("take_damage"):
+			var before_health = enemy.health
+			var actual_dmg = enemy.take_damage(damage, "explosion_pickup")
+			GameState.run_damage_stats["explosion_pickup"] = GameState.run_damage_stats.get("explosion_pickup", 0) + actual_dmg
+			
+			# Particle effect only on position of enemy that explosion kills
+			if enemy.health <= 0 and before_health > 0:
+				if rocket_script and rocket_script.has_method("spawn_explosion"):
+					rocket_script.spawn_explosion(get_tree().current_scene, enemy.global_position, 0, true, false)

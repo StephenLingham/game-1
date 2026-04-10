@@ -74,7 +74,7 @@ func _do_aoe_damage() -> void:
 					if enemy.health <= 0:
 						spawn_explosion(get_tree().current_scene, enemy.global_position, 0)
 
-static func spawn_explosion(parent: Node, pos: Vector2, radius: float = 0.0, spawn_particles: bool = true, spawn_circle: bool = true) -> void:
+static func spawn_explosion(parent: Node, pos: Vector2, radius: float = 0.0, spawn_particles: bool = true, spawn_circle: bool = true, duration: float = 0.25) -> void:
 	# 1. Main Explosion Particles
 	if spawn_particles:
 		var particles = CPUParticles2D.new()
@@ -112,7 +112,7 @@ static func spawn_explosion(parent: Node, pos: Vector2, radius: float = 0.0, spa
 		var circle = Polygon2D.new()
 		circle.global_position = pos
 		var pts = []
-		var segments = 32
+		var segments = 64 # Smoother circle for larger explosions
 		for i in range(segments):
 			var a = i * TAU / segments
 			pts.append(Vector2.RIGHT.rotated(a) * radius)
@@ -120,10 +120,13 @@ static func spawn_explosion(parent: Node, pos: Vector2, radius: float = 0.0, spa
 		
 		# Give it a fiery orange-red color
 		circle.color = Color(1, 0.4, 0, 0.4)
+		circle.scale = Vector2.ZERO # Start at zero size
 		parent.add_child(circle)
 		
 		var tween = parent.create_tween()
 		tween.set_parallel(true)
-		tween.tween_property(circle, "scale", Vector2(1.1, 1.1), 0.25)
-		tween.tween_property(circle, "modulate:a", 0.0, 0.25)
+		# Use linear transition to match the damage delay calculation exactly
+		tween.tween_property(circle, "scale", Vector2(1.0, 1.0), duration).set_trans(Tween.TRANS_LINEAR)
+		# Fade out towards the end of the duration
+		tween.tween_property(circle, "modulate:a", 0.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		tween.chain().tween_callback(circle.queue_free)
