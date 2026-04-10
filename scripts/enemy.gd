@@ -98,14 +98,16 @@ func freeze(duration: float) -> void:
 	tween.tween_property(sprite, "modulate", Color.WHITE, duration)
 
 func _drop_xp() -> void:
-	call_deferred("_spawn_xp_drop")
-
-func _spawn_xp_drop() -> void:
 	var pickup: Area2D = preload("res://scenes/XPPickup.tscn").instantiate()
 	pickup.global_position = global_position
 	var base_xp = randi_range(xp_drop_min, xp_drop_max)
 	pickup.value = base_xp # Multipliers handled in GameState.add_xp
-	get_tree().current_scene.get_node("PickupContainer").add_child(pickup)
+	
+	var container = get_tree().current_scene.get_node_or_null("PickupContainer")
+	if container:
+		container.call_deferred("add_child", pickup)
+	else:
+		get_tree().current_scene.call_deferred("add_child", pickup)
 
 func _on_hitbox_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player") and can_attack:
