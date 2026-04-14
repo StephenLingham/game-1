@@ -579,19 +579,16 @@ func trigger_rocket_blast() -> void:
 		if not is_instance_valid(self) or not is_instance_valid(current_scene):
 			return
 			
-		var processed = []
+		var remaining = []
 		for enemy in affected_enemies:
 			if is_instance_valid(enemy):
 				var dist = blast_pos.distance_to(enemy.global_position)
 				if dist <= current_radius:
 					_apply_explosion_damage(enemy, damage, rocket_script)
-					processed.append(enemy)
-			else:
-				processed.append(enemy)
+				else:
+					remaining.append(enemy)
 		
-		# Remove enemies we've already hit or that are no longer valid
-		for enemy in processed:
-			affected_enemies.erase(enemy)
+		affected_enemies = remaining
 	, 0.0, radius, GameConstants.PICKUP_EXPLOSION_EXPAND_TIME)
 
 func _apply_explosion_damage(enemy, damage, rocket_script) -> void:

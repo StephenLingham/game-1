@@ -167,11 +167,6 @@ layout_mode = 2
 text = "Time: 30s"
 label_settings = SubResource("LabelSettings_shop_info")
 
-[node name="LevelXPLabel" type="Label" parent="UI/HUD/HUDMargin/HUDVBox"]
-layout_mode = 2
-text = "Lv. 1"
-label_settings = SubResource("LabelSettings_shop_info")
-theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 
 [node name="XPBar" type="ProgressBar" parent="UI/HUD"]
 layout_mode = 1
@@ -185,6 +180,20 @@ offset_right = -64.0
 offset_bottom = 40.0
 value = 0.0
 show_percentage = false
+
+[node name="LevelXPLabel" type="Label" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 16.0
+offset_bottom = 40.0
+grow_horizontal = 2
+text = "Lv. 1"
+label_settings = SubResource("LabelSettings_shop_info")
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+horizontal_alignment = 1
+vertical_alignment = 1
+
 
 [node name="GemsLabel" type="Label" parent="UI/HUD/HUDMargin/HUDVBox"]
 layout_mode = 2

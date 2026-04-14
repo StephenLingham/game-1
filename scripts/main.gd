@@ -15,7 +15,7 @@ var item_popup_panel: Control
 @onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
 @onready var shop_capacity_label: Label = Label.new() # Will add to UI
 @onready var xp_bar: ProgressBar = $UI/HUD/XPBar
-@onready var lvl_xp_label: Label = $UI/HUD/HUDMargin/HUDVBox/LevelXPLabel
+@onready var lvl_xp_label: Label = $UI/HUD/LevelXPLabel
 var current_chest_options: Array = []
 
 
