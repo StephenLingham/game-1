@@ -171,10 +171,23 @@ func _setup_arena() -> void:
 	var arena_size := Vector2(square_dim, square_dim)
 	var center: Vector2 = screen_size / 2.0
 	
-	var floor_rect := $ArenaFloor
+	var floor_rect := $ArenaFloor as TextureRect
 	floor_rect.size = arena_size
 	floor_rect.position = center - (arena_size / 2.0)
-	floor_rect.color = Color(0.15, 0.45, 0.2) # Green floor (Grass)
+	floor_rect.texture = load("res://assets/GrassBackground.png")
+	floor_rect.stretch_mode = TextureRect.STRETCH_TILE
+	floor_rect.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	
+	# Scale the tiling using a simple shader
+	var mat = ShaderMaterial.new()
+	var sh = Shader.new()
+	sh.code = "shader_type canvas_item;
+		void fragment() {
+			COLOR = texture(TEXTURE, UV * 8.0);
+		}"
+	mat.shader = sh
+	floor_rect.material = mat
+	
 	floor_rect.z_index = -100 # Ensure it's behind everything
 	
 	$Background.color = Color(0.05, 0.2, 0.1) # Dark green background
@@ -182,9 +195,7 @@ func _setup_arena() -> void:
 	$Background.size = arena_size + Vector2(4000, 4000)
 	$Background.z_index = -101
 	
-	var grass = preload("res://scripts/grass_drawer.gd").new()
-	grass.arena_size = arena_size
-	floor_rect.add_child(grass)
+	# Procedural grass removed in favor of the new texture
 	
 	var thickness := 100.0
 	

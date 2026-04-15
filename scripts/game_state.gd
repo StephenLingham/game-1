@@ -6,7 +6,7 @@ const SAVE_PATH := "user://save.json"
 var gems: int = 0
 
 # Unlocks
-var unlocked_items: Array = ["handgun"] # Abilities the player CAN see in shop
+var unlocked_items: Array = ["handgun", "floor_spikes", "ice_wave", "spike_ball"] # Abilities the player CAN see in shop
 var unlocked_auras: Array = [] # Auras the player CAN see in shop
 var unlocked_treasure_items: Array = [] # Items the player CAN see in chests
 var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed until end)
@@ -65,7 +65,7 @@ func _ready() -> void:
 	if GameConstants.DEBUG_RESET_ALL_DATA:
 		# Reset EVERYTHING
 		gems = 0
-		unlocked_items = ["handgun"]
+		unlocked_items = ["handgun", "floor_spikes", "ice_wave", "spike_ball"]
 		unlocked_auras = []
 		unlocked_treasure_items = []
 		lifetime_kills = {"handgun": 0}
@@ -77,7 +77,7 @@ func _ready() -> void:
 		print("DEBUG: All data reset.")
 	else:
 		if GameConstants.DEBUG_RESET_UNLOCKS:
-			unlocked_items = ["handgun"]
+			unlocked_items = ["handgun", "floor_spikes", "ice_wave", "spike_ball"]
 			unlocked_auras = []
 			unlocked_treasure_items = []
 			lifetime_kills = {"handgun": 0}
@@ -108,6 +108,14 @@ func _ready() -> void:
 			var id = all_items[i]
 			if not unlocked_treasure_items.has(id):
 				unlocked_treasure_items.append(id)
+		changed = true
+	
+	# Initial 4 weapons if none unlocked yet (Handgun, Spikes, Ice, Spike Ball)
+	if unlocked_items.size() < 4:
+		var defaults = ["handgun", "floor_spikes", "ice_wave", "spike_ball"]
+		for id in defaults:
+			if not unlocked_items.has(id):
+				unlocked_items.append(id)
 		changed = true
 	
 	if changed:
@@ -637,7 +645,7 @@ func load_save() -> void:
 	perm_spawn_rate_level = int(parsed.get("perm_spawn_rate_level", 0))
 	perm_crit_damage_level = int(parsed.get("perm_crit_damage_level", 0))
 	
-	unlocked_items = parsed.get("unlocked_items", ["handgun"])
+	unlocked_items = parsed.get("unlocked_items", ["handgun", "floor_spikes", "ice_wave", "spike_ball"])
 	unlocked_auras = parsed.get("unlocked_auras", [])
 	unlocked_treasure_items = parsed.get("unlocked_treasure_items", [])
 	lifetime_kills = parsed.get("lifetime_kills", {"handgun": 0})
