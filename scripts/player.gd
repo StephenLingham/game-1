@@ -113,6 +113,11 @@ func set_camera_limits(rect: Rect2) -> void:
 		cam.force_update_scroll()
 
 func _physics_process(delta: float) -> void:
+	# Zephyros (speed_damage) logic
+	if GameState.current_character == "speed_damage":
+		GameState.run_speed_bonus += 0.5 * delta # Gradual speed boost
+		speed = _base_speed + GameState.run_speed_bonus
+	
 	if _speed_boost_duration > 0:
 		_speed_boost_duration -= delta
 		if _speed_boost_duration <= 0:
@@ -295,13 +300,20 @@ func fire() -> void:
 	can_fire = false
 	fire_timer = _get_fire_interval()
 	
-	var bullet := bullet_scene.instantiate() as Area2D
-	bullet.global_position = muzzle.global_position
-	bullet.rotation = rotation
-	bullet.direction = Vector2.RIGHT.rotated(rotation)
-	var res = _get_final_damage(base_damage)
-	bullet.damage = res.damage
-	get_tree().current_scene.add_child(bullet)
+	var count = 1 + GameState.run_extra_projectiles
+	for i in range(count):
+		var bullet := bullet_scene.instantiate() as Area2D
+		bullet.global_position = muzzle.global_position
+		# Spread them slightly if extra
+		var spread = 0.1 * i if count > 1 else 0.0
+		bullet.rotation = rotation + spread - (0.05 * (count-1))
+		bullet.direction = Vector2.RIGHT.rotated(bullet.rotation)
+		var res = _get_final_damage(base_damage)
+		bullet.damage = res.damage
+		if "is_crit" in bullet: bullet.is_crit = res.is_crit
+		get_tree().current_scene.add_child(bullet)
+		
+	# Lifesteal (Sanguis)
 
 func _fire_shotgun(target: Node2D) -> void:
 	var count := GameState.get_shotgun_bullet_count()
@@ -325,6 +337,7 @@ func _fire_shotgun(target: Node2D) -> void:
 		bullet.direction = Vector2.RIGHT.rotated(angle)
 		var res = _get_final_damage(base_damage)
 		bullet.damage = res.damage
+		if "is_crit" in bullet: bullet.is_crit = res.is_crit
 		bullet.weapon_source = "shotgun"
 		get_tree().current_scene.add_child(bullet)
 
@@ -363,8 +376,9 @@ func _fire_sniper() -> void:
 		_create_crosshair_effect(target.global_position)
 		# Instantly kill enemy
 		if target.has_method("take_damage"):
-			GameState.run_damage_sniper += target.take_damage(99999, "sniper")
-			GameState.run_damage_stats["sniper"] = GameState.run_damage_stats.get("sniper", 0) + 99999
+			var res = _get_final_damage(99999) # Sniper always gets a 'final damage' check for crit consistency
+			GameState.run_damage_sniper += target.take_damage(res.damage, "sniper", res.is_crit)
+			GameState.run_damage_stats["sniper"] = GameState.run_damage_stats.get("sniper", 0) + res.damage
 
 func _create_crosshair_effect(pos: Vector2) -> void:
 	var ch = Node2D.new()
@@ -403,6 +417,10 @@ func take_damage(amount: int = 1, attacker: Node2D = null) -> void:
 	
 	health -= reduced
 	
+	# Zephyros trait: Speed halved on damage
+	if GameState.current_character == "speed_damage":
+		GameState.run_speed_bonus *= 0.5
+	
 	# Thorns
 	var thorns_pct = GameState.get_thorns_percentage()
 	if thorns_pct > 0 and attacker and is_instance_valid(attacker):
@@ -434,6 +452,7 @@ func _fire_spike_ball(target: Node2D) -> void:
 	ball.direction = dir
 	var res = _get_final_damage(GameConstants.SPIKE_BALL_BASE_DAMAGE)
 	ball.damage = res.damage
+	if "is_crit" in ball: ball.is_crit = res.is_crit
 	var lvl = GameState.run_abilities.get("spike_ball", 0)
 	ball.max_distance = GameConstants.SPIKE_BALL_BASE_DISTANCE + (lvl - 1) * GameConstants.SPIKE_BALL_DISTANCE_PER_LEVEL
 	get_tree().current_scene.add_child(ball)
@@ -458,6 +477,7 @@ func _fire_rocket() -> void:
 		rocket.target = target
 		var res = _get_final_damage(GameConstants.ROCKET_DAMAGE)
 		rocket.damage = res.damage
+		if "is_crit" in rocket: rocket.is_crit = res.is_crit
 		rocket.blast_radius = GameState.get_rocket_blast_radius()
 		
 		# Initial direction towards target
@@ -495,6 +515,7 @@ func _fire_disk() -> void:
 	disk.bounces_left = lvl # Increase with each upgrade
 	var res = _get_final_damage(GameConstants.DISK_BASE_DAMAGE)
 	disk.damage = res.damage
+	if "is_crit" in disk: disk.is_crit = res.is_crit
 	get_tree().current_scene.add_child(disk)
 
 func _drop_spikes() -> void:
@@ -502,6 +523,7 @@ func _drop_spikes() -> void:
 	spikes.global_position = global_position + Vector2(randf_range(-50, 50), randf_range(-50, 50))
 	var res = _get_final_damage(GameConstants.SPIKES_BASE_DAMAGE)
 	spikes.damage = res.damage
+	if "is_crit" in spikes: spikes.is_crit = res.is_crit
 	get_tree().current_scene.add_child(spikes)
 
 func _place_turret() -> void:
@@ -547,6 +569,7 @@ func _fire_machine_gun(target: Node2D) -> void:
 	b.rotation = dir.angle()
 	var res = _get_final_damage(GameConstants.MG_DAMAGE)
 	b.damage = res.damage
+	if "is_crit" in b: b.is_crit = res.is_crit
 	b.weapon_source = "machine_gun"
 	get_tree().current_scene.add_child(b)
 

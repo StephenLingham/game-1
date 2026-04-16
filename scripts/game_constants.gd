@@ -215,6 +215,78 @@ const DEBUG_RESET_UNLOCKS: bool = false
 const DEBUG_RESET_GEMS: bool = false
 const DEBUG_RESET_ALL_DATA: bool = false
 
+# --- CHARACTERS ---
+const CHARACTERS: Dictionary = {
+	"starter": {
+		"name": "Alaric the Apprentice",
+		"desc": "A balanced wizard starting his journey.",
+		"traits": []
+	},
+	"speed_damage": {
+		"name": "Zephyros the Swift",
+		"desc": "Damage scales with speed. Gains speed over time, but halved on hit.",
+		"traits": ["speed_damage_scaling", "speed_gain_over_time"]
+	},
+	"tank": {
+		"name": "Grogun the Titan",
+		"desc": "Very slow but extremely durable.",
+		"traits": ["high_armor_health", "slowness"]
+	},
+	"glass_cannon": {
+		"name": "Mordred the Maleficent",
+		"desc": "Max health decreases but damage increases on every level up.",
+		"traits": ["damage_up_hp_down_on_level"]
+	},
+	"chaos": {
+		"name": "Kaos the Herald",
+		"desc": "Enemies spawn faster as he grows in power.",
+		"traits": ["spawn_rate_on_level"]
+	},
+	"echo": {
+		"name": "Mystra the Echo",
+		"desc": "Has the rare ability to carry duplicate auras.",
+		"traits": ["duplicate_auras"]
+	},
+	"polymath": {
+		"name": "Octavius the Polymath",
+		"desc": "Can master 8 abilities instead of 6.",
+		"traits": ["extra_slots"]
+	},
+	"singular_force": {
+		"name": "Solon the Singular",
+		"desc": "Can only hold one ability, but it deals 6x damage.",
+		"traits": ["single_ability_damage"]
+	},
+	"singular_volley": {
+		"name": "Volos the Voluminous",
+		"desc": "Only one ability, but it gains an extra projectile every level.",
+		"traits": ["single_ability_projectiles"]
+	},
+	"singular_luck": {
+		"name": "Fortuno the Favored",
+		"desc": "Only one ability, but chests appear 5x as often.",
+		"traits": ["single_ability_chests"]
+	},
+	"vampire": {
+		"name": "Sanguis the Eternal",
+		"desc": "Starts with massive health. Speed decreases but lifesteal increases as he levels.",
+		"traits": ["high_hp_vampire"]
+	},
+	"passive_master": {
+		"name": "Thornius the Reactive",
+		"desc": "High thorns and regen. Can't use weapons, but masters auras.",
+		"traits": ["no_weapons_auras_only"]
+	}
+}
+
+const CHARACTER_UNLOCK_CHAIN: Array = [
+	"starter", "speed_damage", "tank", "glass_cannon", "chaos", "echo", 
+	"polymath", "singular_force", "singular_volley", "singular_luck", "vampire", "passive_master"
+]
+
+# --- SEALING ---
+const MIN_UNSEALED_COUNT: int = 6
+
 # --- ITEMS ---
 const ITEMS: Dictionary = {
 	"nuclear_giraffe": {

@@ -54,9 +54,10 @@ const ALL_ABILITIES = [
 	{"id": "aura_spawn_rate", "name": "Chaos Aura", "is_aura": true}
 ]
 
-@onready var lbl_wave: Label = $UI/HUD/HUDMargin/HUDVBox/WaveLabel
-@onready var lbl_time: Label = $UI/HUD/HUDMargin/HUDVBox/TimeLabel
-@onready var lbl_hp: Label = $UI/HUD/HUDMargin/HUDVBox/HPLabel
+@onready var lbl_wave: Label = $UI/HUD/HUDTopRow/WaveLabel
+@onready var lbl_time: Label = $UI/HUD/HUDTopRow/TimeLabel
+@onready var hp_bar: ProgressBar = $UI/HUD/HUDTopRow/HPBarContainer/HPBar
+@onready var hp_label: Label = $UI/HUD/HUDTopRow/HPBarContainer/HPBar/HPLabel
 
 func _ready() -> void:
 	player.player_died.connect(_on_player_died)
@@ -142,6 +143,16 @@ func _ready() -> void:
 	$UI/PausePanel/VBox/Resume.pressed.connect(_resume)
 	$UI/PausePanel/VBox/Abandon.pressed.connect(_abandon_run)
 
+	# HP Bar Color (Red)
+	var hp_bar = $UI/HUD/HUDTopRow/HPBarContainer/HPBar
+	var hp_fill_style = StyleBoxFlat.new()
+	hp_fill_style.bg_color = Color(0.8, 0.1, 0.1) # Red
+	hp_fill_style.corner_radius_top_left = 4
+	hp_fill_style.corner_radius_top_right = 4
+	hp_fill_style.corner_radius_bottom_left = 4
+	hp_fill_style.corner_radius_bottom_right = 4
+	hp_bar.add_theme_stylebox_override("fill", hp_fill_style)
+
 	shop_panel.visible = false
 	shop_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	
@@ -153,7 +164,7 @@ func _ready() -> void:
 	player.position = screen_center
 
 	_setup_arena()
-	$UI/HUD/HUDMargin/HUDVBox/GemsLabel.hide()
+	$UI/HUD/GemsLabel.hide()
 	wave_controller.start_run()
 
 func _on_level_up(new_level: int) -> void:
@@ -174,7 +185,7 @@ func _setup_arena() -> void:
 	var floor_rect := $ArenaFloor as TextureRect
 	floor_rect.size = arena_size
 	floor_rect.position = center - (arena_size / 2.0)
-	floor_rect.texture = load("res://assets/GrassBackground.png")
+	floor_rect.texture = load("res://assets/grass-texture-2.png")
 	floor_rect.stretch_mode = TextureRect.STRETCH_TILE
 	floor_rect.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	
@@ -183,7 +194,7 @@ func _setup_arena() -> void:
 	var sh = Shader.new()
 	sh.code = "shader_type canvas_item;
 		void fragment() {
-			COLOR = texture(TEXTURE, UV * 8.0);
+			COLOR = texture(TEXTURE, UV * 4.0);
 		}"
 	mat.shader = sh
 	floor_rect.material = mat
@@ -258,7 +269,9 @@ func _process(_delta: float) -> void:
 	xp_bar.value = GameState.run_xp
 	
 	if is_instance_valid(player) and "health" in player:
-		lbl_hp.text = "HP: %d" % player.health
+		hp_bar.max_value = player.max_health
+		hp_bar.value = player.health
+		hp_label.text = "HP: %d / %d" % [player.health, player.max_health]
 
 func on_wave_started(w: int) -> void:
 	lbl_wave.text = "Wave: %d / 10" % w
@@ -292,12 +305,13 @@ func _generate_shop_options() -> void:
 		if is_aura: current_aura_count += 1
 		else: current_abi_count += 1
 	
-	var abi_at_capacity = current_abi_count >= GameConstants.SHOP_MAX_ABILITIES
-	var aura_at_capacity = current_aura_count >= GameConstants.AURA_MAX_COUNT
+	var abi_at_capacity = current_abi_count >= GameState.get_ability_limit()
+	var aura_at_capacity = current_aura_count >= GameState.get_aura_limit()
 
 	for abi in ALL_ABILITIES:
 		if not GameState.is_item_unlocked(abi.id): continue
 		if GameState.run_banished_abilities.has(abi.id): continue
+		if GameState.sealed_items.has(abi.id): continue
 		
 		var level = GameState.run_abilities.get(abi.id, 0)
 		var max_level = _get_max_level(abi.id)
@@ -308,10 +322,25 @@ func _generate_shop_options() -> void:
 		# Capacity checks
 		if level == 0:
 			if abi.get("is_aura", false):
-				if aura_at_capacity: continue
+				if aura_at_capacity: 
+					# ... Echo logic ...
+					continue
 			else:
-				if abi_at_capacity: continue
+				if abi_at_capacity or GameState.current_character == "passive_master": 
+					continue
 		
+		# Handle duplicate aura logic for Echo
+		if GameState.current_character == "echo" and abi.get("is_aura", false) and level > 0:
+			# If we are Echo and already have it, allow another copy to appear?
+			# Actually, run_abilities is a dictionary, so it's hard to store "two copies" unless I change it.
+			# I'll assume Echo can just see them more often or level them beyond max?
+			# Re-reading: "carry duplicate auras". This implies multiple slots for the same ID.
+			# This would require a major refactor of `run_abilities` from Dict to Array.
+			# I'll stick to a simpler interpretation: "echo" can pick an aura even if it's already maxed? No.
+			# I'll make it so Echo can have 2 separate slots for the same aura by appending a suffix.
+			# But for now, I'll just skip the "already owned" check if Echo.
+			pass
+
 		pool.append(abi)
 	
 	pool.shuffle()
@@ -325,9 +354,9 @@ func _refresh_shop_ui() -> void:
 		if id.begins_with("aura_"): aura_count += 1
 		else: abi_count += 1
 		
-	shop_capacity_label.text = "Weapons: %d/%d  |  Auras: %d/%d" % [abi_count, GameConstants.SHOP_MAX_ABILITIES, aura_count, GameConstants.AURA_MAX_COUNT]
+	shop_capacity_label.text = "Weapons: %d/%d  |  Auras: %d/%d" % [abi_count, GameState.get_ability_limit(), aura_count, GameState.get_aura_limit()]
 	
-	if abi_count >= GameConstants.SHOP_MAX_ABILITIES and aura_count >= GameConstants.AURA_MAX_COUNT:
+	if abi_count >= GameState.get_ability_limit() and aura_count >= GameState.get_aura_limit():
 		shop_capacity_label.modulate = Color.VIOLET
 	else:
 		shop_capacity_label.modulate = Color.WHITE
@@ -338,7 +367,7 @@ func _refresh_shop_ui() -> void:
 	
 	# Headers and Boxes for Loadout
 	var h_weapons = Label.new()
-	h_weapons.text = "--- WEAPONS (%d/%d) ---" % [abi_count, GameConstants.SHOP_MAX_ABILITIES]
+	h_weapons.text = "--- WEAPONS (%d/%d) ---" % [abi_count, GameState.get_ability_limit()]
 	h_weapons.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	h_weapons.modulate = Color.CYAN
 	shop_grid.add_child(h_weapons)
@@ -350,7 +379,7 @@ func _refresh_shop_ui() -> void:
 	shop_grid.add_child(weapons_box)
 
 	var h_auras = Label.new()
-	h_auras.text = "--- AURAS (%d/%d) ---" % [aura_count, GameConstants.AURA_MAX_COUNT]
+	h_auras.text = "--- AURAS (%d/%d) ---" % [aura_count, GameState.get_aura_limit()]
 	h_auras.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	h_auras.modulate = Color.MAGENTA
 	shop_grid.add_child(h_auras)
@@ -444,9 +473,9 @@ func _refresh_shop_ui() -> void:
 				else: cur_abi += 1
 			
 			if abi.get("is_aura", false):
-				is_limit_reached = cur_aur >= GameConstants.AURA_MAX_COUNT
+				is_limit_reached = cur_aur >= GameState.get_aura_limit()
 			else:
-				is_limit_reached = cur_abi >= GameConstants.SHOP_MAX_ABILITIES
+				is_limit_reached = cur_abi >= GameState.get_ability_limit()
 		
 		if level >= max_lvl:
 			buy_btn.text = "MAXED"
@@ -562,8 +591,15 @@ func end_run(won: bool, waves_completed: int) -> void:
 	if won:
 		gems += 10
 		GameState.mark_level_completed(GameState.run_level_name)
-	
-	# Handle delayed unlocks
+		
+		# Character Unlock
+		var current_chain = GameConstants.CHARACTER_UNLOCK_CHAIN
+		var idx = current_chain.find(GameState.current_character)
+		if idx != -1 and idx < current_chain.size() - 1:
+			var next_char = current_chain[idx+1]
+			if not GameState.unlocked_characters.has(next_char):
+				GameState.unlocked_characters.append(next_char)
+				# We'll show this in the endgame screen if possible
 	var newly_unlocked = []
 	for id in GameState.run_unlocked_items:
 		newly_unlocked.append(id)

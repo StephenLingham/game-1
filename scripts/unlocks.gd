@@ -21,6 +21,7 @@ var current_view: String = "weapons"
 var weapon_tab: Button
 var aura_tab: Button
 var item_tab: Button
+var char_tab: Button
 
 func _ready() -> void:
 	back_btn.pressed.connect(_on_back_pressed)
@@ -49,6 +50,12 @@ func _ready() -> void:
 	item_tab.pressed.connect(_on_view_changed.bind("items"))
 	hbox.add_child(item_tab)
 	
+	char_tab = Button.new()
+	char_tab.text = "Characters"
+	char_tab.custom_minimum_size = Vector2(180, 40)
+	char_tab.pressed.connect(_on_view_changed.bind("characters"))
+	hbox.add_child(char_tab)
+	
 	_refresh_ui()
 
 func _on_view_changed(view: String) -> void:
@@ -66,13 +73,13 @@ func _refresh_ui() -> void:
 	weapon_tab.modulate = Color.WHITE if current_view == "weapons" else Color(0.6, 0.6, 0.6)
 	aura_tab.modulate = Color.WHITE if current_view == "auras" else Color(0.6, 0.6, 0.6)
 	item_tab.modulate = Color.WHITE if current_view == "items" else Color(0.6, 0.6, 0.6)
+	char_tab.modulate = Color.WHITE if current_view == "characters" else Color(0.6, 0.6, 0.6)
 	
-	if current_view == "weapons":
-		_show_weapons()
-	elif current_view == "auras":
-		_show_auras()
-	else:
-		_show_items()
+	match current_view:
+		"weapons": _show_weapons()
+		"auras": _show_auras()
+		"items": _show_items()
+		"characters": _show_characters()
 
 func _show_weapons() -> void:
 	for id in WEAPONS:
@@ -119,9 +126,11 @@ func _show_weapons() -> void:
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc.modulate = Color(0.8, 0.8, 0.9)
-		vbox.add_child(desc)
-		
 		grid.add_child(panel)
+		
+		# Sealing
+		if is_unlocked and GameState.max_levels_reached.get(id, false):
+			_add_seal_button(id, vbox, "weapons")
 
 func _show_items() -> void:
 	var items = GameConstants.ITEMS
@@ -187,9 +196,11 @@ func _show_items() -> void:
 			lock_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			lock_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			lock_info.modulate = Color(0.7, 0.7, 0.7)
-			vbox.add_child(lock_info)
-		
 		grid.add_child(panel)
+		
+		# Sealing
+		if is_unlocked:
+			_add_seal_button(id, vbox, "items")
 
 func _show_auras() -> void:
 	var auras = GameConstants.AURAS
@@ -249,9 +260,11 @@ func _show_auras() -> void:
 				progress.text = "Max Level Progress: %d / %d" % [max_reached, GameConstants.AURA_MAX_LEVEL]
 				progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 				progress.modulate = Color.CYAN
-				vbox.add_child(progress)
-		
 		grid.add_child(panel)
+		
+		# Sealing
+		if is_unlocked and GameState.max_levels_reached.get(id, false):
+			_add_seal_button(id, vbox, "auras")
 
 func _get_aura_precursor(id: String) -> String:
 	var aura_chain = GameConstants.AURAS.keys()
@@ -269,6 +282,112 @@ func _get_precursor(id: String) -> String:
 	if idx > 0:
 		return weapon_chain[idx-1]
 	return ""
+
+func _show_characters() -> void:
+	var chars = GameConstants.CHARACTERS
+	var chain = GameConstants.CHARACTER_UNLOCK_CHAIN
+	
+	for id in chain:
+		var cdata = chars[id]
+		var is_unlocked = GameState.unlocked_characters.has(id)
+		var is_selected = GameState.current_character == id
+		
+		var panel = PanelContainer.new()
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var vbox = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 10)
+		vbox.custom_minimum_size = Vector2(280, 0)
+		panel.add_child(vbox)
+		
+		var title = Label.new()
+		title.text = cdata.name
+		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		title.add_theme_font_size_override("font_size", 22)
+		vbox.add_child(title)
+		
+		var status = Label.new()
+		status.text = "Selected" if is_selected else ("Unlocked" if is_unlocked else "Locked")
+		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		status.modulate = Color.CYAN if is_selected else (Color.SPRING_GREEN if is_unlocked else Color.TOMATO)
+		vbox.add_child(status)
+		
+		var desc = Label.new()
+		desc.text = cdata.desc
+		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc.modulate = Color(0.8, 0.8, 0.9)
+		vbox.add_child(desc)
+		
+		if is_unlocked:
+			if not is_selected:
+				var sel_btn = Button.new()
+				sel_btn.text = "Select Character"
+				sel_btn.pressed.connect(_on_character_selected.bind(id))
+				vbox.add_child(sel_btn)
+		else:
+			# Show precursor
+			var idx = chain.find(id)
+			if idx > 0:
+				var prec_id = chain[idx-1]
+				var prec_name = chars[prec_id].name
+				var hint = Label.new()
+				hint.text = "Unlock by winning a run with %s" % prec_name
+				hint.add_theme_font_size_override("font_size", 12)
+				hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				hint.modulate = Color.GOLD
+				vbox.add_child(hint)
+				
+		grid.add_child(panel)
+
+func _on_character_selected(id: String) -> void:
+	GameState.current_character = id
+	GameState.save()
+	_refresh_ui()
+
+func _add_seal_button(id: String, container: Control, category: String) -> void:
+	var btn = Button.new()
+	var is_sealed = GameState.sealed_items.has(id)
+	
+	btn.text = "Unseal" if is_sealed else "Seal"
+	btn.modulate = Color.ORANGE if is_sealed else Color.WHITE
+	
+	btn.pressed.connect(_on_seal_toggled.bind(id, category))
+	container.add_child(btn)
+
+func _on_seal_toggled(id: String, category: String) -> void:
+	var is_sealed = GameState.sealed_items.has(id)
+	
+	if not is_sealed:
+		# Enforce 6-left rule
+		var total_count = 0
+		var sealed_count = 0
+		
+		if category == "weapons":
+			total_count = GameConstants.CHARACTER_UNLOCK_CHAIN.size() # Wait, no.
+			# I need the count of all weapons in GameConstants
+			# Actually, I'll just check against the list in the current view
+			total_count = WEAPONS.size()
+			for wid in WEAPONS:
+				if GameState.sealed_items.has(wid): sealed_count += 1
+		elif category == "items":
+			total_count = GameConstants.ITEMS.size()
+			for iid in GameConstants.ITEMS:
+				if GameState.sealed_items.has(iid): sealed_count += 1
+		elif category == "auras":
+			total_count = GameConstants.AURAS.size()
+			for aid in GameConstants.AURAS:
+				if GameState.sealed_items.has(aid): sealed_count += 1
+				
+		if total_count - sealed_count <= GameConstants.MIN_UNSEALED_COUNT:
+			# Show warning or just return
+			return
+			
+		GameState.sealed_items.append(id)
+	else:
+		GameState.sealed_items.erase(id)
+		
+	GameState.save()
+	_refresh_ui()
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")

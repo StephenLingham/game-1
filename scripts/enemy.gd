@@ -71,8 +71,12 @@ func _physics_process(delta: float) -> void:
 	
 	move_and_slide()
 
-func take_damage(amount: int = 1, source: String = "") -> int:
+func take_damage(amount: int = 1, source: String = "", is_crit: bool = false) -> int:
 	var actual_damage = max(0, min(amount, health))
+	
+	# Spawn damage number
+	_spawn_damage_number(amount, is_crit)
+	
 	var before_health = health
 	health -= amount
 	
@@ -87,6 +91,14 @@ func take_damage(amount: int = 1, source: String = "") -> int:
 			GameState.record_kill(source)
 		enemy_killed.emit()
 		_drop_xp()
+		
+		# Lifesteal (Sanguis)
+		if GameState.run_lifesteal > 0:
+			var p = get_tree().get_first_node_in_group("player")
+			if p and "health" in p:
+				var heal = max(1, int(actual_damage * GameState.run_lifesteal))
+				p.health = min(p.health + heal, p.max_health)
+				
 		queue_free()
 	
 	return actual_damage
@@ -108,6 +120,15 @@ func _drop_xp() -> void:
 		container.call_deferred("add_child", pickup)
 	else:
 		get_tree().current_scene.call_deferred("add_child", pickup)
+
+func _spawn_damage_number(dmg: int, is_crit: bool) -> void:
+	var dn_script = preload("res://scripts/damage_number.gd")
+	var dn = Node2D.new()
+	dn.set_script(dn_script)
+	dn.damage = dmg
+	dn.is_crit = is_crit
+	dn.global_position = global_position + Vector2(0, -20)
+	get_tree().current_scene.add_child(dn)
 
 func _on_hitbox_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player") and can_attack:

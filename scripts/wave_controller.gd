@@ -83,8 +83,11 @@ func _process(delta: float) -> void:
 		chest_spawn_timer -= delta
 		if chest_spawn_timer <= 0:
 			_spawn_chest()
-			# Spawn every 8-12 seconds ensures a few per 30s wave
-			chest_spawn_timer = randf_range(GameConstants.CHEST_SPAWN_INTERVAL_MIN, GameConstants.CHEST_SPAWN_INTERVAL_MAX)
+			# Spawn interval scaling for character traits
+			var mult = 1.0
+			if GameState.current_character == "singular_luck":
+				mult = 0.2 # 5x more often = 0.2x interval
+			chest_spawn_timer = randf_range(GameConstants.CHEST_SPAWN_INTERVAL_MIN, GameConstants.CHEST_SPAWN_INTERVAL_MAX) * mult
 
 
 func _end_wave() -> void:

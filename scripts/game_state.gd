@@ -13,6 +13,10 @@ var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed 
 var completed_levels: Array = []
 var lifetime_kills: Dictionary = {"handgun": 0}
 var lifetime_chests_opened: int = 0
+var sealed_items: Array = [] # IDs of items the player has sealed
+var unlocked_characters: Array = ["starter"]
+var current_character: String = "starter"
+var max_levels_reached: Dictionary = {} # item_id -> reached_max (bool)
 
 # Permanent Upgrades
 var perm_damage_level: int = 0
@@ -42,6 +46,11 @@ var run_reroll_cost: int = 2
 var run_banished_abilities: Array = []
 var run_banish_count: int = 2
 var run_items: Array = [] # [item_id, item_id, ...]
+
+# Character specific run state
+var run_speed_bonus: float = 0.0
+var run_lifesteal: float = 0.0
+var run_extra_projectiles: int = 0
 
 signal level_up(new_level: int)
 
@@ -162,6 +171,30 @@ func reset_run() -> void:
 	run_damage_stats = {}
 	run_unlocked_items = []
 	run_items = []
+	
+	run_speed_bonus = 0.0
+	run_lifesteal = 0.0
+	run_extra_projectiles = 0
+	
+	_apply_initial_character_traits()
+
+func _apply_initial_character_traits() -> void:
+	# Add initial weapon based on character or default
+	if run_abilities.is_empty() or (run_abilities.size() == 1 and run_abilities.has("handgun")):
+		if current_character == "passive_master":
+			run_abilities.clear() # No weapons
+			# Maybe give an initial aura?
+			run_abilities["aura_damage"] = 1
+		else:
+			run_abilities = {"handgun": 1}
+	
+	match current_character:
+		"vampire":
+			# Handled via 10x max health in GameState.get_max_health
+			pass
+		"tank":
+			# Handled in player.refresh_stats (slow)
+			pass
 
 func add_xp(amount: int) -> void:
 	# Gold multiplier still applies to XP collection if we want, or we can just call it XP multiplier
@@ -174,7 +207,18 @@ func add_xp(amount: int) -> void:
 		run_level += 1
 		# Exponential/linear scaling
 		run_xp_to_next_level = int(run_xp_to_next_level * GameConstants.XP_SCALING) + GameConstants.XP_INCREMENT
+		_apply_character_level_up_traits()
 		level_up.emit(run_level)
+
+func _apply_character_level_up_traits() -> void:
+	match current_character:
+		"glass_cannon":
+			# Handled in player.refresh_stats probably, but we can modify constants here or apply run-time multipliers
+			pass 
+		"vampire":
+			run_lifesteal += 0.01 # +1% lifesteal per level
+		"singular_volley":
+			run_extra_projectiles += 1
 
 
 # --- HELPER GETTERS (Backward Compatibility) ---
@@ -261,6 +305,18 @@ func get_damage_multiplier() -> float:
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		mult += stats.get("damage_multiplier", 0.0)
+	
+	# Character traits
+	match current_character:
+		"speed_damage":
+			# Damage scales with speed: +1% damage per 5% speed bonus
+			var speed_mult = get_speed_multiplier()
+			mult += (speed_mult - 1.0) * 0.2 
+		"glass_cannon":
+			mult += run_level * 0.05 # +5% damage per level
+		"singular_force":
+			mult *= 6.0
+	
 	return mult
 
 
@@ -302,7 +358,21 @@ func get_max_health() -> int:
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("max_health", 0)
-	return base + bonus
+	
+	var final_hp = base + bonus
+	
+	# Character traits
+	match current_character:
+		"tank":
+			final_hp = int(final_hp * 2.5)
+		"glass_cannon":
+			final_hp = max(10, final_hp - (run_level - 1) * 5)
+		"vampire":
+			final_hp = int(final_hp * 10.0)
+		"passive_master":
+			final_hp = int(final_hp * 1.5)
+			
+	return final_hp
 
 
 func get_health_regen() -> float:
@@ -342,7 +412,17 @@ func get_armor() -> int:
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("armor", 0)
-	return base + bonus
+	
+	var final_armor = base + bonus
+	
+	# Character traits
+	match current_character:
+		"tank":
+			final_armor += 20
+		"passive_master":
+			final_armor += 10
+			
+	return final_armor
 
 
 func get_armor_percent() -> float:
@@ -367,7 +447,13 @@ func get_thorns_percentage() -> float:
 
 func get_spawn_rate_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_spawn_rate_level
-	return 1.0 + float(lvl) * 0.1 + _get_aura_bonus("spawn_rate_multiplier") # +10% spawn rate per level
+	var mult = 1.0 + float(lvl) * 0.1 + _get_aura_bonus("spawn_rate_multiplier") # +10% spawn rate per level
+	
+	match current_character:
+		"chaos":
+			mult += run_level * 0.1 # +10% spawn rate per level
+			
+	return mult
 
 func get_xp_drop_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gold_drop_level
@@ -397,7 +483,25 @@ func get_speed_multiplier() -> float:
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("speed_multiplier", 0.0)
-	return base + bonus
+	
+	var mult = base + bonus + run_speed_bonus # From Zephyros trait
+	
+	match current_character:
+		"tank":
+			mult *= 0.5 # Slow
+		"vampire":
+			mult = max(0.4, mult - (run_level - 1) * 0.02) # Decreases as level increases
+			
+	return mult
+
+func get_ability_limit() -> int:
+	match current_character:
+		"polymath": return 8
+		"singular_force", "singular_volley", "singular_luck": return 1
+	return GameConstants.SHOP_MAX_ABILITIES
+
+func get_aura_limit() -> int:
+	return GameConstants.AURA_MAX_COUNT
 
 func _get_aura_bonus(stat_name: String) -> float:
 	var total = 0.0
@@ -497,9 +601,36 @@ func record_ability_upgrade(id: String, level: int) -> void:
 		var current_max = aura_max_levels_reached.get(id, 0)
 		if level > current_max:
 			aura_max_levels_reached[id] = level
-	# No save() here to avoid mid-run permanent save of kills/unlocks if we want to be strict, 
-	# but kills are already being saved in record_kill. Let's be consistent.
+	
+	# General max level tracking for sealing
+	var max_lvl = 5 # Default
+	# Note: I should probably move _get_max_level to a utility or Constants, 
+	# but for now I'll just check if it's max.
+	# Actually, Main.gd has _get_max_level. I'll just assume 5 if not specified.
+	# To be safe, I'll just check if it's "high enough" or if we know the max.
+	# I'll add a helper to check if an ID is maxed.
+	if _is_ability_at_max(id, level):
+		max_levels_reached[id] = true
+	
 	save()
+
+func _is_ability_at_max(id: String, level: int) -> bool:
+	# Keep in sync with Main.gd _get_max_level
+	match id:
+		"handgun": return level >= GameConstants.GUN_MAX_LEVEL
+		"orbs": return level >= GameConstants.ORB_MAX_LEVEL
+		"spike_ball": return level >= GameConstants.SPIKE_BALL_MAX_LEVEL
+		"shotgun": return level >= GameConstants.SHOTGUN_MAX_LEVEL
+		"sniper": return level >= GameConstants.SNIPER_MAX_LEVEL
+		"rocket": return level >= GameConstants.ROCKET_MAX_LEVEL
+		"bouncing_disk": return level >= GameConstants.DISK_MAX_LEVEL
+		"floor_spikes": return level >= GameConstants.SPIKES_MAX_LEVEL
+		"turret": return level >= GameConstants.TURRET_MAX_LEVEL
+		"machine_gun": return level >= GameConstants.MG_MAX_LEVEL
+		"ice_wave": return level >= GameConstants.ICE_MAX_LEVEL
+	if id.begins_with("aura_"):
+		return level >= GameConstants.AURA_MAX_LEVEL
+	return level >= 5
 
 func is_item_unlocked(id: String) -> bool:
 	if GameConstants.DEBUG_UNLOCK_ALL_WEAPONS:
@@ -611,7 +742,11 @@ func save() -> void:
 		"lifetime_kills": lifetime_kills,
 		"lifetime_chests_opened": lifetime_chests_opened,
 		"completed_levels": completed_levels,
-		"aura_max_levels_reached": aura_max_levels_reached
+		"aura_max_levels_reached": aura_max_levels_reached,
+		"sealed_items": sealed_items,
+		"unlocked_characters": unlocked_characters,
+		"current_character": current_character,
+		"max_levels_reached": max_levels_reached
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -652,3 +787,7 @@ func load_save() -> void:
 	lifetime_chests_opened = int(parsed.get("lifetime_chests_opened", 0))
 	completed_levels = parsed.get("completed_levels", [])
 	aura_max_levels_reached = parsed.get("aura_max_levels_reached", {})
+	sealed_items = parsed.get("sealed_items", [])
+	unlocked_characters = parsed.get("unlocked_characters", ["starter"])
+	current_character = parsed.get("current_character", "starter")
+	max_levels_reached = parsed.get("max_levels_reached", {})
