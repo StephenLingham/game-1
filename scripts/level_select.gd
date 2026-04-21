@@ -28,7 +28,7 @@ func _on_level_3_pressed() -> void:
 	_start_level(5.0, 3.0, 1.8, "Level 3")
 
 func _on_back_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")
+	get_tree().change_scene_to_file("res://scenes/CharacterSelect.tscn")
 
 func _start_level(h: float, d: float, s: float, name: String) -> void:
 	GameState.run_difficulty_health_mult = h

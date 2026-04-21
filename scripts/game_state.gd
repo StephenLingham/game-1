@@ -64,11 +64,11 @@ var run_level_name: String = "Level 1"
 # Run statistics (reset per run)
 var run_enemies_killed: int = 0
 var run_xp_collected: int = 0
+var run_gems_collected: int = 0
 var run_damage_stats: Dictionary = {} # ability_id -> damage
 
 func _ready() -> void:
 	load_save()
-	get_tree().set_auto_accept_quit(false)
 	
 	var changed := false
 	if GameConstants.DEBUG_RESET_ALL_DATA:
@@ -130,16 +130,6 @@ func _ready() -> void:
 	if changed:
 		save()
 
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		# Clear references to prevent texture/resource leaks on exit
-		run_damage_stats.clear()
-		run_abilities.clear()
-		run_banished_abilities.clear()
-		run_unlocked_items.clear()
-		lifetime_kills.clear()
-		get_tree().quit()
-
 func _reset_all_perm_levels() -> void:
 	perm_damage_level = 0
 	perm_atkspd_level = 0
@@ -168,6 +158,7 @@ func reset_run() -> void:
 	
 	run_enemies_killed = 0
 	run_xp_collected = 0
+	run_gems_collected = 0
 	run_damage_stats = {}
 	run_unlocked_items = []
 	run_items = []
@@ -523,6 +514,7 @@ func add_run_item(item_id: String) -> void:
 
 func award_gems(amount: int) -> void:
 	gems += max(amount, 0)
+	run_gems_collected += max(amount, 0)
 	save()
 
 func reset_gems() -> void:

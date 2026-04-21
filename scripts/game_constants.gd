@@ -19,8 +19,8 @@ const XP_SCALING: float = 1.1 # Multiplier for next level
 const XP_INCREMENT: int = 50 # Additive for next level
 
 # --- PERMANENT UPGRADES ---
-const PERM_LEVEL_COST: int = 10
-const PERM_COST_INCREMENT: int = 10
+const PERM_LEVEL_COST: int = 1
+const PERM_COST_INCREMENT: int = 0
 
 # --- GUN ABILITY SETTINGS ---
 const GUN_MAX_LEVEL: int = 4
@@ -205,6 +205,9 @@ const POWERUP_GEM_AWARD_AMOUNT: int = 1
 const POWERUP_ICON_SCALE: float = 0.07
 const CHEST_SPAWN_INTERVAL_MIN: float = 10.0
 const CHEST_SPAWN_INTERVAL_MAX: float = 15.0
+
+# --- GEM DROP SETTINGS ---
+const GEM_DROP_TIMES: Array = [30.0, 90.0, 150.0, 210.0, 270.0]
 
 # --- UNLOCKS ---
 const UNLOCK_KILLS_NEEDED: int = 50

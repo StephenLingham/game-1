@@ -58,6 +58,12 @@ func _ready() -> void:
 	
 	_refresh_ui()
 
+func _exit_tree() -> void:
+	if is_instance_valid(grid):
+		for child in grid.get_children():
+			child.queue_free()
+	if is_instance_valid(weapon_tab) and is_instance_valid(weapon_tab.get_parent()):
+		weapon_tab.get_parent().queue_free()
 func _on_view_changed(view: String) -> void:
 	current_view = view
 	_refresh_ui()
@@ -290,7 +296,6 @@ func _show_characters() -> void:
 	for id in chain:
 		var cdata = chars[id]
 		var is_unlocked = GameState.unlocked_characters.has(id)
-		var is_selected = GameState.current_character == id
 		
 		var panel = PanelContainer.new()
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -306,25 +311,19 @@ func _show_characters() -> void:
 		vbox.add_child(title)
 		
 		var status = Label.new()
-		status.text = "Selected" if is_selected else ("Unlocked" if is_unlocked else "Locked")
+		status.text = "Unlocked" if is_unlocked else "Locked"
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		status.modulate = Color.CYAN if is_selected else (Color.SPRING_GREEN if is_unlocked else Color.TOMATO)
+		status.modulate = Color.SPRING_GREEN if is_unlocked else Color.TOMATO
 		vbox.add_child(status)
 		
 		var desc = Label.new()
-		desc.text = cdata.desc
+		desc.text = cdata.desc if is_unlocked else "???"
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc.modulate = Color(0.8, 0.8, 0.9)
 		vbox.add_child(desc)
 		
-		if is_unlocked:
-			if not is_selected:
-				var sel_btn = Button.new()
-				sel_btn.text = "Select Character"
-				sel_btn.pressed.connect(_on_character_selected.bind(id))
-				vbox.add_child(sel_btn)
-		else:
+		if not is_unlocked:
 			# Show precursor
 			var idx = chain.find(id)
 			if idx > 0:
@@ -338,11 +337,6 @@ func _show_characters() -> void:
 				vbox.add_child(hint)
 				
 		grid.add_child(panel)
-
-func _on_character_selected(id: String) -> void:
-	GameState.current_character = id
-	GameState.save()
-	_refresh_ui()
 
 func _add_seal_button(id: String, container: Control, category: String) -> void:
 	var btn = Button.new()

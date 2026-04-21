@@ -167,6 +167,15 @@ func _ready() -> void:
 	$UI/HUD/GemsLabel.hide()
 	wave_controller.start_run()
 
+func _exit_tree() -> void:
+	if is_instance_valid(item_popup_panel):
+		item_popup_panel.queue_free()
+	if is_instance_valid(shop_capacity_label):
+		shop_capacity_label.queue_free()
+	if is_instance_valid(shop_grid):
+		for child in shop_grid.get_children():
+			child.queue_free()
+
 func _on_level_up(new_level: int) -> void:
 	_generate_shop_options()
 	if current_shop_options.is_empty():
@@ -586,10 +595,9 @@ func end_run(won: bool, waves_completed: int) -> void:
 		return
 	get_tree().paused = true
 
-	# Gems reward: 2 per wave + 10 bonus if win
-	var gems := waves_completed * 2
+	# Gems reward: Removed as per new requirement (Gems now drop during run)
+	var gems := 0
 	if won:
-		gems += 10
 		GameState.mark_level_completed(GameState.run_level_name)
 		
 		# Character Unlock
@@ -653,7 +661,7 @@ func end_run(won: bool, waves_completed: int) -> void:
 	gold_grid.get_node("GoldSpentValue").visible = false
 
 	# Gems
-	stats_vbox.get_node("GemsLabel").text = "Gems earned: %d  |  Total gems: %d" % [gems, GameState.gems]
+	stats_vbox.get_node("GemsLabel").text = "Gems collected: %d  |  Total gems: %d" % [GameState.run_gems_collected, GameState.gems]
 
 	# Unlocks
 	if newly_unlocked.size() > 0:

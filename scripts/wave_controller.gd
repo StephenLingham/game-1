@@ -19,6 +19,8 @@ var spawning: bool = false
 
 var powerup_spawn_timer: float = 0.0
 var chest_spawn_timer: float = 0.0
+var run_total_time: float = 0.0
+var gem_intervals_spawned: Array = []
 
 
 var arena_rect: Rect2
@@ -88,6 +90,15 @@ func _process(delta: float) -> void:
 			if GameState.current_character == "singular_luck":
 				mult = 0.2 # 5x more often = 0.2x interval
 			chest_spawn_timer = randf_range(GameConstants.CHEST_SPAWN_INTERVAL_MIN, GameConstants.CHEST_SPAWN_INTERVAL_MAX) * mult
+
+	# Interval-based gem spawning
+	if spawning:
+		run_total_time += delta
+		for drop_time in GameConstants.GEM_DROP_TIMES:
+			if run_total_time >= drop_time and not gem_intervals_spawned.has(drop_time):
+				if gem_intervals_spawned.size() < 5:
+					_spawn_gem()
+					gem_intervals_spawned.append(drop_time)
 
 
 func _end_wave() -> void:
@@ -173,15 +184,10 @@ func _spawn_powerup() -> void:
 	
 	var p = powerup_scene.instantiate()
 	
-	var rand_v = randf()
-	var gem_chance = 0.15 + GameState.get_gem_drop_chance_bonus()
 	
-	if rand_v < gem_chance:
-		p.type = 4 # GEM
-	else:
-		# Randomly pick from others: MAGNET, SPEED, HEAL, ROCKET, ATK_SPEED
-		var types = [0, 1, 2, 3, 5]
-		p.type = types.pick_random()
+	# Randomly pick from: MAGNET, SPEED, HEAL, ROCKET, ATK_SPEED (No GEMS here)
+	var types = [0, 1, 2, 3, 5]
+	p.type = types.pick_random()
 	
 	# Spawn randomly within the arena bounds (with some margin)
 	var margin := 100.0
@@ -207,5 +213,24 @@ func _spawn_chest() -> void:
 	
 	c.global_position = spawn_pos
 	game.get_node("PickupContainer").add_child(c)
+
+func _spawn_gem() -> void:
+	if powerup_scene == null: return
+	var p = powerup_scene.instantiate()
+	p.type = 4 # GEM
+	
+	# Spawn near player but not on top
+	var player = game.player
+	var offset = Vector2(randf_range(-200, 200), randf_range(-200, 200))
+	if offset.length() < 100: offset = offset.normalized() * 100
+	
+	var spawn_pos = player.global_position + offset
+	# Clamp to arena
+	var safety := 45.0
+	spawn_pos.x = clamp(spawn_pos.x, arena_rect.position.x + safety, arena_rect.position.x + arena_rect.size.x - safety)
+	spawn_pos.y = clamp(spawn_pos.y, arena_rect.position.y + safety, arena_rect.position.y + arena_rect.size.y - safety)
+	
+	p.global_position = spawn_pos
+	game.get_node("PickupContainer").add_child(p)
 
 

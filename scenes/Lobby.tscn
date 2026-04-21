@@ -64,15 +64,15 @@ custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 text = "Start Run"
 
-[node name="Upgrades" type="Button" parent="VBox"]
-custom_minimum_size = Vector2(0, 60)
-layout_mode = 2
-text = "Upgrades"
-
 [node name="Unlocks" type="Button" parent="VBox"]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 text = "Unlocks"
+
+[node name="Upgrades" type="Button" parent="VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Upgrades"
 
 [node name="Exit" type="Button" parent="VBox"]
 layout_mode = 2

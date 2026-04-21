@@ -28,6 +28,11 @@ func _ready() -> void:
 	reset_btn.pressed.connect(_on_reset_pressed)
 	_refresh_ui()
 
+func _exit_tree() -> void:
+	if is_instance_valid(grid):
+		for child in grid.get_children():
+			child.queue_free()
+
 func _refresh_ui() -> void:
 	gems_label.text = "Gems: %d" % GameState.gems
 	
