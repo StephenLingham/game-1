@@ -46,6 +46,8 @@ var run_reroll_cost: int = 2
 var run_banished_abilities: Array = []
 var run_banish_count: int = 2
 var run_items: Array = [] # [item_id, item_id, ...]
+var run_gold: int = 0
+
 
 # Character specific run state
 var run_speed_bonus: float = 0.0
@@ -162,6 +164,8 @@ func reset_run() -> void:
 	run_damage_stats = {}
 	run_unlocked_items = []
 	run_items = []
+	run_gold = perm_start_gold_level * 1 # +1 gold per level
+
 	
 	run_speed_bonus = 0.0
 	run_lifesteal = 0.0
@@ -290,8 +294,8 @@ var run_damage_explosion_pickup: int:
 	set(v): run_damage_stats["explosion_pickup"] = v
 
 func get_damage_multiplier() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_damage_level
-	var mult = 1.0 + 0.10 * float(lvl)
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_damage_level, 10)
+	var mult = 1.0 + 0.01 * float(lvl)
 	mult += _get_aura_bonus("damage_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -312,8 +316,8 @@ func get_damage_multiplier() -> float:
 
 
 func get_atkspd_multiplier() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_atkspd_level
-	var mult = 1.0 + 0.10 * float(lvl)
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_atkspd_level, 10)
+	var mult = 1.0 + 0.01 * float(lvl)
 	mult += _get_aura_bonus("atkspd_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -323,7 +327,7 @@ func get_atkspd_multiplier() -> float:
 
 func get_pickup_radius() -> float:
 	var base := GameConstants.BASE_COLLECTION_RADIUS
-	var plvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_pickup_radius_level
+	var plvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_pickup_radius_level, 10)
 	var perm := float(plvl) * GameConstants.PERM_COLLECTION_RADIUS_INCREMENT
 	var bonus := _get_aura_bonus("pickup_radius")
 	for item_id in run_items:
@@ -343,8 +347,8 @@ func get_total_damage(base: int) -> int:
 	return int(round(dmg))
 
 func get_max_health() -> int:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_max_health_level
-	var base = GameConstants.PLAYER_MAX_HEALTH + lvl * 20
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_max_health_level, 10)
+	var base = GameConstants.PLAYER_MAX_HEALTH + lvl * 1
 	var bonus = int(_get_aura_bonus("max_health"))
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -367,8 +371,8 @@ func get_max_health() -> int:
 
 
 func get_health_regen() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_regen_level
-	var base = float(lvl) * 0.5 # 0.5 HP per second
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_regen_level, 10)
+	var base = float(lvl) * 0.1 # 0.1 HP per second
 	var bonus = _get_aura_bonus("health_regen")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -377,8 +381,8 @@ func get_health_regen() -> float:
 
 
 func get_crit_chance() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_crit_level
-	var base = float(lvl) * 0.05 # 5% per level
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_crit_level, 10)
+	var base = float(lvl) * 0.01 # 1% per level
 	var bonus = _get_aura_bonus("crit_chance")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -387,8 +391,8 @@ func get_crit_chance() -> float:
 
 
 func get_crit_multiplier() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_crit_damage_level
-	var base = 2.0 + float(lvl) * 0.2 # Base 2.0x, +0.2x per level
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_crit_damage_level, 10)
+	var base = 2.0 + float(lvl) * 0.1 # Base 2.0x, +0.1x per level
 	var bonus = _get_aura_bonus("crit_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -397,8 +401,8 @@ func get_crit_multiplier() -> float:
 
 
 func get_armor() -> int:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_armor_level
-	var base = lvl * 2 # Flat damage reduction
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_armor_level, 10)
+	var base = lvl * 1 # Flat damage reduction
 	var bonus = int(_get_aura_bonus("armor"))
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -417,8 +421,8 @@ func get_armor() -> int:
 
 
 func get_armor_percent() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_armor_percent_level
-	var base = float(lvl) * 0.05 # 5% reduction per level
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_armor_percent_level, 10)
+	var base = float(lvl) * 0.01 # 1% reduction per level
 	var bonus = _get_aura_bonus("armor_percent")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -427,8 +431,8 @@ func get_armor_percent() -> float:
 
 
 func get_thorns_percentage() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_thorns_level
-	var base = float(lvl) * 0.1 # 10% thorns per level
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_thorns_level, 10)
+	var base = float(lvl) * 0.01 # 1% thorns per level
 	var bonus = _get_aura_bonus("thorns_percentage")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -437,8 +441,8 @@ func get_thorns_percentage() -> float:
 
 
 func get_spawn_rate_multiplier() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_spawn_rate_level
-	var mult = 1.0 + float(lvl) * 0.1 + _get_aura_bonus("spawn_rate_multiplier") # +10% spawn rate per level
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_spawn_rate_level, 10)
+	var mult = 1.0 + float(lvl) * 0.01 + _get_aura_bonus("spawn_rate_multiplier") # +1% spawn rate per level
 	
 	match current_character:
 		"chaos":
@@ -447,8 +451,8 @@ func get_spawn_rate_multiplier() -> float:
 	return mult
 
 func get_xp_drop_multiplier() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gold_drop_level
-	var base = 1.0 + float(lvl) * 0.1
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_gold_drop_level, 10)
+	var base = 1.0 + float(lvl) * 0.01
 	# Any item bonuses too
 	var bonus = _get_aura_bonus("xp_drop_multiplier")
 	for item_id in run_items:
@@ -458,8 +462,8 @@ func get_xp_drop_multiplier() -> float:
 
 
 func get_gem_drop_chance_bonus() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_gem_drop_level
-	var base = float(lvl) * 0.02
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_gem_drop_level, 10)
+	var base = float(lvl) * 0.01
 	var bonus = _get_aura_bonus("gem_drop_chance_bonus")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -468,8 +472,8 @@ func get_gem_drop_chance_bonus() -> float:
 
 
 func get_speed_multiplier() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else perm_speed_level
-	var base = 1.0 + float(lvl) * 0.05
+	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_speed_level, 10)
+	var base = 1.0 + float(lvl) * 0.01
 	var bonus = _get_aura_bonus("speed_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
@@ -570,6 +574,9 @@ func buy_perm_upgrade(property: String) -> bool:
 	var level_var = "perm_" + property + "_level"
 	var current_level = get(level_var)
 	var cost = get_perm_cost(current_level)
+	
+	if current_level >= 10:
+		return false
 	
 	if gems >= cost:
 		gems -= cost
