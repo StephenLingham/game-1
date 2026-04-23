@@ -24,8 +24,6 @@ const PERM_COST_INCREMENT: int = 0
 
 # --- GUN ABILITY SETTINGS ---
 const GUN_MAX_LEVEL: int = 4
-const GUN_BASE_COST: int = 15
-const GUN_COST_INCREMENT: int = 10
 const GUN_DAMAGE_PER_UPGRADE: int = 50
 const GUN_ATK_SPD_PER_UPGRADE: float = 0.15
 
@@ -82,8 +80,6 @@ const ORB_UPGRADE_ROTATE_SPEED: float = 4.5
 const ORB_RADIUS: float = 100.0
 const ORB_DAMAGE: int = 100
 const ORB_MAX_LEVEL: int = 6
-const ORB_BASE_COST: int = 10
-const ORB_COST_INCREMENT_PER_LEVEL: int = 5
 
 # --- SPIKE BALL ABILITY SETTINGS ---
 const SPIKE_BALL_BASE_DAMAGE: int = 750
@@ -92,22 +88,16 @@ const SPIKE_BALL_DISTANCE_PER_LEVEL: float = 200.0
 const SPIKE_BALL_BASE_COOLDOWN: float = 2.5
 const SPIKE_BALL_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.4
 const SPIKE_BALL_MAX_LEVEL: int = 5
-const SPIKE_BALL_BASE_COST: int = 25
-const SPIKE_BALL_COST_INCREMENT_PER_LEVEL: int = 15
 
 # --- SHOTGUN ABILITY SETTINGS ---
 const SHOTGUN_BASE_COOLDOWN: float = 1.0
 const SHOTGUN_SPREAD_ANGLE: float = 45.0
 const SHOTGUN_MAX_LEVEL: int = 4
-const SHOTGUN_BASE_COST: int = 10
-const SHOTGUN_COST_INCREMENT_PER_LEVEL: int = 10
 
 # --- SNIPER ABILITY SETTINGS ---
 const SNIPER_BASE_COOLDOWN: float = 2.0
 const SNIPER_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.4
 const SNIPER_MAX_LEVEL: int = 5
-const SNIPER_BASE_COST: int = 10
-const SNIPER_COST_INCREMENT_PER_LEVEL: int = 10
 
 # --- ROCKET LAUNCHER ABILITY SETTINGS ---
 const ROCKET_BASE_COOLDOWN: float = 4.0
@@ -115,8 +105,6 @@ const ROCKET_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.5
 const ROCKET_BASE_BLAST_RADIUS: float = 150.0
 const ROCKET_BLAST_RADIUS_PER_LEVEL: float = 30.0
 const ROCKET_MAX_LEVEL: int = 5
-const ROCKET_BASE_COST: int = 20
-const ROCKET_COST_INCREMENT_PER_LEVEL: int = 15
 const ROCKET_SPEED: float = 400.0
 const ROCKET_TURN_SPEED: float = 5.0
 const ROCKET_DAMAGE: int = 500
@@ -126,16 +114,12 @@ const ROCKET_TARGET_RADIUS: float = 600.0
 const DISK_BASE_COOLDOWN: float = 3.0
 const DISK_BASE_DAMAGE: int = 600
 const DISK_MAX_LEVEL: int = 5
-const DISK_BASE_COST: int = 20
-const DISK_COST_INCREMENT: int = 15
 const DISK_SPEED: float = 500.0
 
 # Turret
 const TURRET_BASE_COOLDOWN: float = 8.0
 const TURRET_COOLDOWN_REDUCTION: float = 1.0
 const TURRET_MAX_LEVEL: int = 5
-const TURRET_BASE_COST: int = 25
-const TURRET_COST_INCREMENT: int = 20
 const TURRET_DAMAGE: int = 250
 const TURRET_FIRE_RATE: float = 0.5
 
@@ -143,30 +127,22 @@ const TURRET_FIRE_RATE: float = 0.5
 const MG_BASE_COOLDOWN: float = 0.15
 const MG_DAMAGE: int = 50
 const MG_MAX_LEVEL: int = 5
-const MG_BASE_COST: int = 20
-const MG_COST_INCREMENT: int = 15
 
 # Floor Spikes
 const SPIKES_BASE_COOLDOWN: float = 2.0
 const SPIKES_BASE_DAMAGE: int = 500
 const SPIKES_MAX_LEVEL: int = 5
-const SPIKES_BASE_COST: int = 15
-const SPIKES_COST_INCREMENT: int = 10
 
 # Ice Wave
 const ICE_BASE_COOLDOWN: float = 6.0
 const ICE_BASE_RADIUS: float = 200.0
 const ICE_RADIUS_INCREMENT: float = 100.0
 const ICE_MAX_LEVEL: int = 5
-const ICE_BASE_COST: int = 15
-const ICE_COST_INCREMENT: int = 10
 const ICE_FREEZE_DURATION: float = 2.0
 
 # --- AURA SETTINGS ---
 const AURA_MAX_LEVEL: int = 5
 const AURA_MAX_COUNT: int = 6
-const AURA_BASE_COST: int = 20
-const AURA_COST_INCREMENT: int = 15
 
 # Aura Stat Values (per level)
 const AURA_DAMAGE_BOOST: float = 0.15 # +15%
@@ -181,14 +157,11 @@ const AURA_ARMOR_PCT_BOOST: float = 0.05 # +5% armor
 const AURA_THORNS_BOOST: float = 0.15 # +15% thorns
 const AURA_SPAWN_BOOST: float = 0.15  # +15% spawn rate
 const AURA_XP_BOOST: float = 0.15    # +15% XP drop
-const AURA_GEM_BOOST: float = 0.03   # +3% gem drop chance
 const AURA_SPEED_BOOST: float = 0.10  # +10% movement speed
 
 # --- SHOP SETTINGS ---
 const SHOP_OPTIONS_COUNT: int = 3
 const SHOP_MAX_ABILITIES: int = 6
-const SHOP_REROLL_BASE_COST: int = 2
-const SHOP_REROLL_INCREMENT: int = 2
 const SHOP_BANISH_COUNT: int = 3
 
 # --- POWER-UP ITEM SETTINGS ---
@@ -450,12 +423,6 @@ const AURAS: Dictionary = {
 		"stat": "xp_drop_multiplier",
 		"value": AURA_XP_BOOST,
 		"desc": "Increases XP gained from drops by %d%% per level."
-	},
-	"aura_gem_drop": {
-		"name": "Fortune Aura",
-		"stat": "gem_drop_chance_bonus",
-		"value": AURA_GEM_BOOST,
-		"desc": "Increases gem drop chance by %d%% per level."
 	},
 	"aura_spawn_rate": {
 		"name": "Chaos Aura",

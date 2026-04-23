@@ -17,9 +17,7 @@ const UPGRADES = [
 	{"id": "armor_percent", "name": "Armor (%)", "desc": "+1% Total damage reduction per level"},
 	{"id": "thorns", "name": "Thorns", "desc": "+1% Thorns damage reflected"},
 	{"id": "spawn_rate", "name": "Spawn Rate", "desc": "+1% Enemy spawn rate"},
-	{"id": "start_gold", "name": "Starting Gold", "desc": "+1 Gold per level"},
-	{"id": "gold_drop", "name": "Gold Drop", "desc": "+1% Gold from enemies"},
-	{"id": "gem_drop", "name": "Gem Drop", "desc": "+1% Gem drop chance"},
+	{"id": "gold_drop", "name": "XP Multiplier", "desc": "+1% XP gained from all sources per level"},
 	{"id": "speed", "name": "Movement Speed", "desc": "+1% Speed per level"}
 ]
 

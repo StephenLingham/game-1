@@ -27,9 +27,7 @@ var perm_regen_level: int = 0
 var perm_crit_level: int = 0
 var perm_armor_level: int = 0
 var perm_armor_percent_level: int = 0
-var perm_start_gold_level: int = 0
 var perm_gold_drop_level: int = 0
-var perm_gem_drop_level: int = 0
 var perm_speed_level: int = 0
 var perm_thorns_level: int = 0
 var perm_spawn_rate_level: int = 0
@@ -42,11 +40,10 @@ var run_xp: int = 0
 var run_level: int = 1
 var run_xp_to_next_level: int = 100
 var run_abilities: Dictionary = {} # ability_id -> level
-var run_reroll_cost: int = 2
+var run_reroll_count: int = 3
 var run_banished_abilities: Array = []
 var run_banish_count: int = 2
 var run_items: Array = [] # [item_id, item_id, ...]
-var run_gold: int = 0
 
 
 # Character specific run state
@@ -141,9 +138,7 @@ func _reset_all_perm_levels() -> void:
 	perm_crit_level = 0
 	perm_armor_level = 0
 	perm_armor_percent_level = 0
-	perm_start_gold_level = 0
 	perm_gold_drop_level = 0
-	perm_gem_drop_level = 0
 	perm_speed_level = 0
 	perm_thorns_level = 0
 	perm_spawn_rate_level = 0
@@ -154,9 +149,9 @@ func reset_run() -> void:
 	run_level = 1
 	run_xp_to_next_level = GameConstants.XP_BASE_LEVEL
 	run_abilities = {"handgun": 1}
-	run_reroll_cost = GameConstants.SHOP_REROLL_BASE_COST
 	run_banished_abilities = []
 	run_banish_count = GameConstants.SHOP_BANISH_COUNT
+	run_reroll_count = 3 # 3 rerolls per run
 	
 	run_enemies_killed = 0
 	run_xp_collected = 0
@@ -164,7 +159,6 @@ func reset_run() -> void:
 	run_damage_stats = {}
 	run_unlocked_items = []
 	run_items = []
-	run_gold = perm_start_gold_level * 1 # +1 gold per level
 
 	
 	run_speed_bonus = 0.0
@@ -192,7 +186,7 @@ func _apply_initial_character_traits() -> void:
 			pass
 
 func add_xp(amount: int) -> void:
-	# Gold multiplier still applies to XP collection if we want, or we can just call it XP multiplier
+	# Apply the XP multiplier from permanent upgrades and auras
 	var actual_amount = int(amount * get_xp_drop_multiplier())
 	run_xp += actual_amount
 	run_xp_collected += actual_amount
@@ -461,16 +455,6 @@ func get_xp_drop_multiplier() -> float:
 	return base + bonus
 
 
-func get_gem_drop_chance_bonus() -> float:
-	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_gem_drop_level, 10)
-	var base = float(lvl) * 0.01
-	var bonus = _get_aura_bonus("gem_drop_chance_bonus")
-	for item_id in run_items:
-		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
-		bonus += stats.get("gem_drop_chance_bonus", 0.0)
-	return base + bonus
-
-
 func get_speed_multiplier(include_dynamic: bool = true) -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_speed_level, 10)
 	var base = 1.0 + float(lvl) * 0.01
@@ -534,9 +518,7 @@ func reset_gems() -> void:
 	spent += _calculate_spent(perm_crit_level)
 	spent += _calculate_spent(perm_armor_level)
 	spent += _calculate_spent(perm_armor_percent_level)
-	spent += _calculate_spent(perm_start_gold_level)
 	spent += _calculate_spent(perm_gold_drop_level)
-	spent += _calculate_spent(perm_gem_drop_level)
 	spent += _calculate_spent(perm_speed_level)
 	spent += _calculate_spent(perm_thorns_level)
 	spent += _calculate_spent(perm_spawn_rate_level)
@@ -553,9 +535,7 @@ func reset_gems() -> void:
 	perm_crit_level = 0
 	perm_armor_level = 0
 	perm_armor_percent_level = 0
-	perm_start_gold_level = 0
 	perm_gold_drop_level = 0
-	perm_gem_drop_level = 0
 	perm_speed_level = 0
 	perm_thorns_level = 0
 	perm_spawn_rate_level = 0
@@ -730,9 +710,7 @@ func save() -> void:
 		"perm_crit_level": perm_crit_level,
 		"perm_armor_level": perm_armor_level,
 		"perm_armor_percent_level": perm_armor_percent_level,
-		"perm_start_gold_level": perm_start_gold_level,
 		"perm_gold_drop_level": perm_gold_drop_level,
-		"perm_gem_drop_level": perm_gem_drop_level,
 		"perm_speed_level": perm_speed_level,
 		"perm_thorns_level": perm_thorns_level,
 		"perm_spawn_rate_level": perm_spawn_rate_level,
@@ -773,9 +751,7 @@ func load_save() -> void:
 	perm_crit_level = int(parsed.get("perm_crit_level", 0))
 	perm_armor_level = int(parsed.get("perm_armor_level", 0))
 	perm_armor_percent_level = int(parsed.get("perm_armor_percent_level", 0))
-	perm_start_gold_level = int(parsed.get("perm_start_gold_level", 0))
 	perm_gold_drop_level = int(parsed.get("perm_gold_drop_level", 0))
-	perm_gem_drop_level = int(parsed.get("perm_gem_drop_level", 0))
 	perm_speed_level = int(parsed.get("perm_speed_level", 0))
 	perm_thorns_level = int(parsed.get("perm_thorns_level", 0))
 	perm_spawn_rate_level = int(parsed.get("perm_spawn_rate_level", 0))

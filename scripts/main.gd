@@ -50,7 +50,6 @@ const ALL_ABILITIES = [
 	{"id": "aura_thorns", "name": "Spike Aura", "is_aura": true},
 	{"id": "aura_speed", "name": "Haste Aura", "is_aura": true},
 	{"id": "aura_xp_drop", "name": "Learning Aura", "is_aura": true},
-	{"id": "aura_gem_drop", "name": "Fortune Aura", "is_aura": true},
 	{"id": "aura_spawn_rate", "name": "Chaos Aura", "is_aura": true}
 ]
 
@@ -518,6 +517,23 @@ func _refresh_shop_ui() -> void:
 		vbox.add_child(desc_lbl)
 		upgrades_box.add_child(panel)
 
+	# --- FOOTER (Reroll) ---
+	var footer_spacer = Control.new()
+	footer_spacer.custom_minimum_size = Vector2(0, 40)
+	shop_grid.add_child(footer_spacer)
+	
+	var footer_box = HBoxContainer.new()
+	footer_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	footer_box.add_theme_constant_override("separation", 50)
+	shop_grid.add_child(footer_box)
+	
+	var reroll_btn = Button.new()
+	reroll_btn.text = "Reroll Shop (%d left)" % GameState.run_reroll_count
+	reroll_btn.disabled = GameState.run_reroll_count <= 0
+	reroll_btn.custom_minimum_size = Vector2(250, 50)
+	reroll_btn.pressed.connect(_reroll_shop)
+	footer_box.add_child(reroll_btn)
+
 func _get_max_level(id: String) -> int:
 	match id:
 		"handgun": return GameConstants.GUN_MAX_LEVEL
@@ -537,20 +553,6 @@ func _get_max_level(id: String) -> int:
 		
 	return 5
 
-func _get_ability_cost(id: String, level: int) -> int:
-	var base = 15
-	var inc = 10
-	match id:
-		"handgun": base = GameConstants.GUN_BASE_COST; inc = GameConstants.GUN_COST_INCREMENT
-		"orbs": base = GameConstants.ORB_BASE_COST; inc = GameConstants.ORB_COST_INCREMENT_PER_LEVEL
-		"spike_ball": base = GameConstants.SPIKE_BALL_BASE_COST; inc = GameConstants.SPIKE_BALL_COST_INCREMENT_PER_LEVEL
-		"shotgun": base = GameConstants.SHOTGUN_BASE_COST; inc = GameConstants.SHOTGUN_COST_INCREMENT_PER_LEVEL
-		"sniper": base = GameConstants.SNIPER_BASE_COST; inc = GameConstants.SNIPER_COST_INCREMENT_PER_LEVEL
-		"rocket": base = GameConstants.ROCKET_BASE_COST; inc = GameConstants.ROCKET_COST_INCREMENT_PER_LEVEL
-		# New ones use defaults if not specific
-	
-	if level == 0: return base
-	return base + level * inc
 
 func _buy_ability(id: String) -> void:
 	var level = GameState.run_abilities.get(id, 0)
@@ -560,16 +562,10 @@ func _buy_ability(id: String) -> void:
 		GameState.record_ability_upgrade(id, level + 1)
 		_close_shop()
 
-func _sell_ability(id: String, value: int) -> void:
-	if GameState.run_abilities.has(id):
-		GameState.run_abilities.erase(id)
-		GameState.run_gold += value
-		_refresh_shop_ui()
 
 func _reroll_shop() -> void:
-	if GameState.run_gold >= GameState.run_reroll_cost:
-		GameState.run_gold -= GameState.run_reroll_cost
-		GameState.run_reroll_cost += GameConstants.SHOP_REROLL_INCREMENT
+	if GameState.run_reroll_count > 0:
+		GameState.run_reroll_count -= 1
 		_generate_shop_options()
 		_refresh_shop_ui()
 
