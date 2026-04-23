@@ -145,18 +145,18 @@ const AURA_MAX_LEVEL: int = 5
 const AURA_MAX_COUNT: int = 6
 
 # Aura Stat Values (per level)
-const AURA_DAMAGE_BOOST: float = 0.15 # +15%
-const AURA_ATKSPD_BOOST: float = 0.15 # +15%
-const AURA_PICKUP_BOOST: float = 15.0 # +15 collection radius
-const AURA_HEALTH_BOOST: int = 25     # +25 max health
-const AURA_REGEN_BOOST: float = 0.5   # +0.5 HP/sec
+const AURA_DAMAGE_BOOST: float = 0.1 # +10%
+const AURA_ATKSPD_BOOST: float = 0.1 # +10%
+const AURA_PICKUP_BOOST: float = 5.0 # +5 collection radius
+const AURA_HEALTH_BOOST: int = 10     # +10 max health
+const AURA_REGEN_BOOST: float = 0.1   # +0.1 HP/sec
 const AURA_CRIT_BOOST: float = 0.05   # +5% crit chance
-const AURA_CRIT_DMG_BOOST: float = 0.25 # +0.25x crit multiplier
+const AURA_CRIT_DMG_BOOST: float = 0.1 # +0.1x crit multiplier
 const AURA_ARMOR_BOOST: int = 3      # +3 flat armor
 const AURA_ARMOR_PCT_BOOST: float = 0.05 # +5% armor
-const AURA_THORNS_BOOST: float = 0.15 # +15% thorns
-const AURA_SPAWN_BOOST: float = 0.15  # +15% spawn rate
-const AURA_XP_BOOST: float = 0.15    # +15% XP drop
+const AURA_THORNS_BOOST: float = 0.1 # +10% thorns
+const AURA_SPAWN_BOOST: float = 0.1  # +10% spawn rate
+const AURA_XP_BOOST: float = 0.1    # +10% XP drop
 const AURA_SPEED_BOOST: float = 0.10  # +10% movement speed
 
 # --- SHOP SETTINGS ---
@@ -267,87 +267,87 @@ const MIN_UNSEALED_COUNT: int = 6
 const ITEMS: Dictionary = {
 	"nuclear_giraffe": {
 		"name": "Nuclear Giraffe",
-		"stats": {"crit_multiplier": 0.1, "crit_chance": 0.05}
+		"stats": {"crit_multiplier": 0.1}
 	},
 	"wholemeal_sandwich": {
 		"name": "Wholemeal Sandwich",
-		"stats": {"atkspd_multiplier": 0.1, "armor": 5}
+		"stats": {"max_health": 10}
 	},
 	"banana_peel": {
 		"name": "Slippery Banana Peel Dispenser",
-		"stats": {"speed_multiplier": 0.05, "armor_percent": 0.05}
+		"stats": {"speed_multiplier": 0.1}
 	},
 	"meatloaf": {
 		"name": "Grandma’s Hearty Meatloaf",
-		"stats": {"max_health": 10, "health_regen": 0.1}
+		"stats": {"health_regen": 0.1}
 	},
 	"quantum_socks": {
 		"name": "Quantum Socks",
-		"stats": {"pickup_radius": 5.0, "speed_multiplier": 0.1}
+		"stats": {"pickup_radius": 5.0}
 	},
 	"pirate_rum": {
 		"name": "Drunken Pirate’s Bottomless Rum",
-		"stats": {"damage_multiplier": 0.1, "speed_multiplier": 0.05}
+		"stats": {"damage_multiplier": 0.1}
 	},
 	"friendly_spoon": {
 		"name": "Friendly Spoon",
-		"stats": {"armor": 10, "atkspd_multiplier": 0.05}
+		"stats": {"armor": 5}
 	},
 	"bouncy_armor": {
 		"name": "Inflatable Bouncy Castle Armor",
-		"stats": {"armor": 5, "armor_percent": 0.1, "damage_multiplier": 0.05}
+		"stats": {"armor_percent": 0.1}
 	},
 	"coffee_thermos": {
 		"name": "Bottomless Coffee Thermos",
-		"stats": {"atkspd_multiplier": 0.1, "speed_multiplier": 0.05}
+		"stats": {"atkspd_multiplier": 0.1}
 	},
 	"pet_rock": {
 		"name": "Loyal Pet Rock",
-		"stats": {"armor": 10, "thorns_percentage": 0.1}
+		"stats": {"thorns_percentage": 0.1}
 	},
 	"disco_ball": {
 		"name": "Laser Disco Ball",
-		"stats": {"crit_chance": 0.1, "pickup_radius": 5.0}
+		"stats": {"crit_chance": 0.1}
 	},
 	"clown_horn": {
 		"name": "The Over-Enthusiastic Megaphone",
-		"stats": {"damage_multiplier": 0.1, "atkspd_multiplier": 0.1}
+		"stats": {"damage_multiplier": 0.1}
 	},
 	"hamster_wheel": {
 		"name": "Unstable Hamster Wheel",
-		"stats": {"speed_multiplier": 0.1, "max_health": 5}
+		"stats": {"speed_multiplier": 0.1}
 	},
 	"toaster": {
 		"name": "Fiery Toaster Attachment",
-		"stats": {"damage_multiplier": 0.1, "thorns_percentage": 0.1}
+		"stats": {"damage_multiplier": 0.1}
 	},
 	"boomerang": {
 		"name": "Sentient Boomerang",
-		"stats": {"crit_chance": 0.05, "crit_multiplier": 0.1}
+		"stats": {"crit_multiplier": 0.1}
 	},
 	"lunchbox": {
 		"name": "Lunchbox of Plenty",
-		"stats": {"thorns_percentage": 0.1, "armor": 5}
+		"stats": {"max_health": 10}
 	},
 	"eight_ball": {
 		"name": "Magic 8-Ball of Chaos",
-		"stats": {"damage_multiplier": 0.05, "crit_multiplier": 0.05, "crit_chance": 0.05}
+		"stats": {"crit_chance": 0.1}
 	},
 	"squirrel_launcher": {
 		"name": "Hyperactive Squirrel Acorn Launcher",
-		"stats": {"atkspd_multiplier": 0.1, "damage_multiplier": 0.05}
+		"stats": {"atkspd_multiplier": 0.1}
 	},
 	"springy_shoes": {
 		"name": "Springy Shoes",
-		"stats": {"health_regen": 0.1, "speed_multiplier": 0.1}
+		"stats": {"speed_multiplier": 0.1}
 	},
 	"pinata_buddy": {
 		"name": "Sentient Piñata Buddy",
-		"stats": {"xp_drop_multiplier": 0.1, "gem_drop_chance_bonus": 0.05}
+		"stats": {"xp_drop_multiplier": 0.1}
 	},
 	"cosmic_sausage": {
 		"name": "Cosmic Sausage",
-		"stats": {"max_health": -5, "damage": 5}
+		"stats": {"damage": 5}
 	}
 }
 

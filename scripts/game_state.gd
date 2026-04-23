@@ -388,7 +388,7 @@ func get_crit_chance() -> float:
 
 func get_crit_multiplier() -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_crit_damage_level, 10)
-	var base = 2.0 + float(lvl) * 0.1 # Base 2.0x, +0.1x per level
+	var base = 2.0 + float(lvl) * 0.01 # Base 2.0x, +0.01x per level
 	var bonus = _get_aura_bonus("crit_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
