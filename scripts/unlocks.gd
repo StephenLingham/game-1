@@ -58,12 +58,6 @@ func _ready() -> void:
 	
 	_refresh_ui()
 
-func _exit_tree() -> void:
-	if is_instance_valid(grid):
-		for child in grid.get_children():
-			child.queue_free()
-	if is_instance_valid(weapon_tab) and is_instance_valid(weapon_tab.get_parent()):
-		weapon_tab.get_parent().queue_free()
 func _on_view_changed(view: String) -> void:
 	current_view = view
 	_refresh_ui()
@@ -132,6 +126,7 @@ func _show_weapons() -> void:
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc.modulate = Color(0.8, 0.8, 0.9)
+		vbox.add_child(desc)
 		grid.add_child(panel)
 		
 		# Sealing
@@ -210,6 +205,7 @@ func _show_items() -> void:
 			lock_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			lock_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			lock_info.modulate = Color(0.7, 0.7, 0.7)
+			vbox.add_child(lock_info)
 		grid.add_child(panel)
 		
 		# Sealing
@@ -282,6 +278,7 @@ func _show_auras() -> void:
 				progress.text = "Max Level Progress: %d / %d" % [max_reached, GameConstants.AURA_MAX_LEVEL]
 				progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 				progress.modulate = Color.CYAN
+				vbox.add_child(progress)
 		grid.add_child(panel)
 		
 		# Sealing

@@ -11,11 +11,6 @@ func _ready() -> void:
 	
 	_refresh_ui()
 
-func _exit_tree() -> void:
-	# Explicitly clean up programmatic nodes to prevent CanvasItem/Texture leaks
-	if is_instance_valid(grid):
-		for child in grid.get_children():
-			child.queue_free()
 
 func _refresh_ui() -> void:
 	for child in grid.get_children():
@@ -72,10 +67,7 @@ func _refresh_ui() -> void:
 		
 		if is_unlocked:
 			panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-			panel.gui_input.connect(func(event):
-				if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-					_on_character_selected(id)
-			)
+			panel.gui_input.connect(_on_card_gui_input.bind(id))
 		else:
 			# Show hint
 			var idx = chain.find(id)
@@ -90,6 +82,10 @@ func _refresh_ui() -> void:
 				vbox.add_child(hint)
 		
 		grid.add_child(panel)
+
+func _on_card_gui_input(event: InputEvent, id: String) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_on_character_selected(id)
 
 func _on_character_selected(id: String) -> void:
 	GameState.current_character = id
