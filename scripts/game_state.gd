@@ -471,7 +471,7 @@ func get_gem_drop_chance_bonus() -> float:
 	return base + bonus
 
 
-func get_speed_multiplier() -> float:
+func get_speed_multiplier(include_dynamic: bool = true) -> float:
 	var lvl = 10 if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_speed_level, 10)
 	var base = 1.0 + float(lvl) * 0.01
 	var bonus = _get_aura_bonus("speed_multiplier")
@@ -479,7 +479,9 @@ func get_speed_multiplier() -> float:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("speed_multiplier", 0.0)
 	
-	var mult = base + bonus + run_speed_bonus # From Zephyros trait
+	var mult = base + bonus
+	if include_dynamic:
+		mult += run_speed_bonus # From Zephyros trait
 	
 	match current_character:
 		"tank":

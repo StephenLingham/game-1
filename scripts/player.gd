@@ -13,6 +13,7 @@ var can_fire: bool = true
 var fire_timer: float = 0.0
 
 var _base_speed: float = GameConstants.PLAYER_SPEED
+var _speed_boost_multiplier: float = 1.0
 var _speed_boost_duration: float = 0.0
 var _atk_speed_boost_multiplier: float = 1.0
 var _atk_speed_boost_duration: float = 0.0
@@ -57,10 +58,8 @@ func refresh_stats() -> void:
 	if max_health > old_max:
 		health += (max_health - old_max)
 	
-	_base_speed = GameConstants.PLAYER_SPEED * GameState.get_speed_multiplier()
-	# Update current speed only if no active boost
-	if _speed_boost_duration <= 0:
-		speed = _base_speed
+	_base_speed = GameConstants.PLAYER_SPEED * GameState.get_speed_multiplier(false)
+	# Current speed is updated in _physics_process
 
 
 func reset_state(pos: Vector2) -> void:
@@ -96,9 +95,9 @@ func reset_state(pos: Vector2) -> void:
 
 func reset_powerups() -> void:
 	_speed_boost_duration = 0.0
+	_speed_boost_multiplier = 1.0
 	_atk_speed_boost_duration = 0.0
 	_atk_speed_boost_multiplier = 1.0
-	speed = _base_speed
 	sprite.modulate = Color.WHITE
 
 func set_camera_limits(rect: Rect2) -> void:
@@ -115,13 +114,15 @@ func set_camera_limits(rect: Rect2) -> void:
 func _physics_process(delta: float) -> void:
 	# Zephyros (speed_damage) logic
 	if GameState.current_character == "speed_damage":
-		GameState.run_speed_bonus += 0.5 * delta # Gradual speed boost
-		speed = _base_speed + GameState.run_speed_bonus
+		GameState.run_speed_bonus += 0.05 * delta # Gradual speed boost (+5% per second)
 	
 	if _speed_boost_duration > 0:
 		_speed_boost_duration -= delta
 		if _speed_boost_duration <= 0:
-			speed = _base_speed
+			_speed_boost_multiplier = 1.0
+	
+	# Update speed every frame to account for dynamic bonuses and boosts
+	speed = GameConstants.PLAYER_SPEED * GameState.get_speed_multiplier(true) * _speed_boost_multiplier
 			
 	if _atk_speed_boost_duration > 0:
 		_atk_speed_boost_duration -= delta
@@ -495,7 +496,7 @@ func heal_full() -> void:
 	tween.tween_property(sprite, "modulate", Color.WHITE, 0.3)
 
 func apply_speed_boost(multiplier: float, duration: float) -> void:
-	speed = _base_speed * multiplier
+	_speed_boost_multiplier = multiplier
 	_speed_boost_duration = duration
 	var tween := create_tween()
 	sprite.modulate = Color(0.3, 0.3, 1.0)
