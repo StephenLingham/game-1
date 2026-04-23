@@ -712,8 +712,12 @@ func _abandon_run() -> void:
 	pause_panel.visible = false
 
 func show_item_window(_deprecated_item_id: String = "") -> void:
-	# Only show items the player has unlocked
-	var all_keys = GameState.unlocked_treasure_items.duplicate()
+	# Only show items the player has unlocked AND NOT sealed
+	var all_keys = []
+	for item_id in GameState.unlocked_treasure_items:
+		if not GameState.sealed_items.has(item_id):
+			all_keys.append(item_id)
+			
 	all_keys.shuffle()
 	current_chest_options = all_keys.slice(0, 3)
 	

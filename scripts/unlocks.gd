@@ -135,8 +135,16 @@ func _show_weapons() -> void:
 		grid.add_child(panel)
 		
 		# Sealing
-		if is_unlocked and GameState.max_levels_reached.get(id, false):
+		var total_upgrades = GameState.lifetime_upgrades.get(id, 0)
+		if is_unlocked and total_upgrades >= 5:
 			_add_seal_button(id, vbox, "weapons")
+		elif is_unlocked:
+			var prog = Label.new()
+			prog.text = "Lifetime Upgrades: %d / 5" % total_upgrades
+			prog.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			prog.modulate = Color(0.5, 0.5, 0.5)
+			prog.add_theme_font_size_override("font_size", 12)
+			vbox.add_child(prog)
 
 func _show_items() -> void:
 	var items = GameConstants.ITEMS
@@ -205,8 +213,16 @@ func _show_items() -> void:
 		grid.add_child(panel)
 		
 		# Sealing
-		if is_unlocked:
+		var picks = GameState.lifetime_item_picks.get(id, 0)
+		if is_unlocked and picks >= 5:
 			_add_seal_button(id, vbox, "items")
+		elif is_unlocked:
+			var prog = Label.new()
+			prog.text = "Times Chosen: %d / 5" % picks
+			prog.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			prog.modulate = Color(0.5, 0.5, 0.5)
+			prog.add_theme_font_size_override("font_size", 12)
+			vbox.add_child(prog)
 
 func _show_auras() -> void:
 	var auras = GameConstants.AURAS
@@ -269,8 +285,16 @@ func _show_auras() -> void:
 		grid.add_child(panel)
 		
 		# Sealing
-		if is_unlocked and GameState.max_levels_reached.get(id, false):
+		var total_upgrades = GameState.lifetime_upgrades.get(id, 0)
+		if is_unlocked and total_upgrades >= 5:
 			_add_seal_button(id, vbox, "auras")
+		elif is_unlocked:
+			var prog = Label.new()
+			prog.text = "Lifetime Upgrades: %d / 5" % total_upgrades
+			prog.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			prog.modulate = Color(0.5, 0.5, 0.5)
+			prog.add_theme_font_size_override("font_size", 12)
+			vbox.add_child(prog)
 
 func _get_aura_precursor(id: String) -> String:
 	var aura_chain = GameConstants.AURAS.keys()

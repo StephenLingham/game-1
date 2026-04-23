@@ -17,6 +17,8 @@ var sealed_items: Array = [] # IDs of items the player has sealed
 var unlocked_characters: Array = ["starter"]
 var current_character: String = "starter"
 var max_levels_reached: Dictionary = {} # item_id -> reached_max (bool)
+var lifetime_upgrades: Dictionary = {} # id -> total upgrades across all runs
+var lifetime_item_picks: Dictionary = {} # id -> total picks across all runs
 
 # Permanent Upgrades
 var perm_damage_level: int = 0
@@ -496,6 +498,8 @@ func _get_aura_bonus(stat_name: String) -> float:
 
 func add_run_item(item_id: String) -> void:
 	run_items.append(item_id)
+	lifetime_item_picks[item_id] = lifetime_item_picks.get(item_id, 0) + 1
+	
 	var p = get_tree().get_first_node_in_group("player")
 	if p and p.has_method("refresh_stats"):
 		p.refresh_stats()
@@ -578,6 +582,9 @@ func record_chest_opened() -> void:
 	save()
 
 func record_ability_upgrade(id: String, level: int) -> void:
+	# Tracking total upgrades across all runs for sealing
+	lifetime_upgrades[id] = lifetime_upgrades.get(id, 0) + 1
+	
 	if id.begins_with("aura_"):
 		var current_max = aura_max_levels_reached.get(id, 0)
 		if level > current_max:
@@ -725,7 +732,9 @@ func save() -> void:
 		"sealed_items": sealed_items,
 		"unlocked_characters": unlocked_characters,
 		"current_character": current_character,
-		"max_levels_reached": max_levels_reached
+		"max_levels_reached": max_levels_reached,
+		"lifetime_upgrades": lifetime_upgrades,
+		"lifetime_item_picks": lifetime_item_picks
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -768,3 +777,5 @@ func load_save() -> void:
 	unlocked_characters = parsed.get("unlocked_characters", ["starter"])
 	current_character = parsed.get("current_character", "starter")
 	max_levels_reached = parsed.get("max_levels_reached", {})
+	lifetime_upgrades = parsed.get("lifetime_upgrades", {})
+	lifetime_item_picks = parsed.get("lifetime_item_picks", {})
