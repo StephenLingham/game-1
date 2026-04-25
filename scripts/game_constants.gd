@@ -44,6 +44,9 @@ const PROB_FAST_ENEMY: float = 0.20
 const PROB_BIG_ENEMY: float = 0.10
 
 # --- ENEMY SETTINGS ---
+const ENEMY_NORMAL_SPRITE_SCALE: float = 0.09
+const ENEMY_FAST_SPRITE_SCALE: float = 0.07
+const ENEMY_BIG_SPRITE_SCALE: float = 0.15
 const ENEMY_NORMAL_SPEED: float = 80.0
 const ENEMY_NORMAL_HEALTH: int = 100
 const ENEMY_NORMAL_DAMAGE: int = 20

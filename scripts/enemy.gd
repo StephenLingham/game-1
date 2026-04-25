@@ -15,6 +15,9 @@ var target: Node2D = null
 var can_attack: bool = true
 var attack_timer: float = 0.0
 var _freeze_timer: float = 0.0
+const TEXTURE_NORMAL = preload("res://assets/Enemies/enemy1-cropped.png")
+const TEXTURE_FAST = preload("res://assets/Enemies/enemy2-cropped.png")
+const TEXTURE_BIG = preload("res://assets/Enemies/enemy3-cropped.png")
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -24,6 +27,8 @@ func _ready() -> void:
 	
 	match enemy_type:
 		"Fast":
+			sprite.texture = TEXTURE_FAST
+			sprite.scale = Vector2.ONE * GameConstants.ENEMY_FAST_SPRITE_SCALE
 			speed = GameConstants.ENEMY_FAST_SPEED
 			health = GameConstants.ENEMY_FAST_HEALTH
 			damage = GameConstants.ENEMY_FAST_DAMAGE
@@ -31,6 +36,8 @@ func _ready() -> void:
 			xp_drop_min = GameConstants.ENEMY_FAST_XP_MIN
 			xp_drop_max = GameConstants.ENEMY_FAST_XP_MAX
 		"Big":
+			sprite.texture = TEXTURE_BIG
+			sprite.scale = Vector2.ONE * GameConstants.ENEMY_BIG_SPRITE_SCALE
 			speed = GameConstants.ENEMY_BIG_SPEED
 			health = GameConstants.ENEMY_BIG_HEALTH
 			damage = GameConstants.ENEMY_BIG_DAMAGE
@@ -38,6 +45,8 @@ func _ready() -> void:
 			xp_drop_min = GameConstants.ENEMY_BIG_XP_MIN
 			xp_drop_max = GameConstants.ENEMY_BIG_XP_MAX
 		_, "Normal":
+			sprite.texture = TEXTURE_NORMAL
+			sprite.scale = Vector2.ONE * GameConstants.ENEMY_NORMAL_SPRITE_SCALE
 			speed = GameConstants.ENEMY_NORMAL_SPEED
 			health = int(GameConstants.ENEMY_NORMAL_HEALTH * GameState.run_difficulty_health_mult)
 			damage = int(GameConstants.ENEMY_NORMAL_DAMAGE * GameState.run_difficulty_damage_mult)
@@ -65,7 +74,6 @@ func _physics_process(delta: float) -> void:
 	elif target and is_instance_valid(target):
 		var dir := (target.global_position - global_position).normalized()
 		velocity = dir * speed
-		look_at(target.global_position)
 	else:
 		velocity = Vector2.ZERO
 	
