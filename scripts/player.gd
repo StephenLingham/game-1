@@ -379,9 +379,9 @@ func _fire_sniper() -> void:
 		_create_crosshair_effect(target.global_position)
 		# Instantly kill enemy
 		if target.has_method("take_damage"):
-			var res = _get_final_damage(99999) # Sniper always gets a 'final damage' check for crit consistency
-			GameState.run_damage_sniper += target.take_damage(res.damage, "sniper", res.is_crit)
-			GameState.run_damage_stats["sniper"] = GameState.run_damage_stats.get("sniper", 0) + res.damage
+			var res = _get_final_damage(GameConstants.SNIPER_DAMAGE)
+			var actual_dmg = target.take_damage(res.damage, "sniper", res.is_crit)
+			GameState.run_damage_stats["sniper"] = GameState.run_damage_stats.get("sniper", 0) + actual_dmg
 
 func _create_crosshair_effect(pos: Vector2) -> void:
 	var ch = Node2D.new()
