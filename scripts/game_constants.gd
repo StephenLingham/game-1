@@ -5,7 +5,7 @@ class_name GameConstants extends RefCounted
 # Edit these variables to adjust gameplay!
 # ==========================================
 
-const GAME_VERSION: String = "v0.12.0"
+const GAME_VERSION: String = "v0.13.0"
 
 # --- PLAYER STATS ---
 const PLAYER_SPEED: float = 300.0
