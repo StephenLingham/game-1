@@ -112,9 +112,11 @@ func set_camera_limits(rect: Rect2) -> void:
 		cam.force_update_scroll()
 
 func _physics_process(delta: float) -> void:
-	# Zephyros (speed_damage) logic
 	if GameState.current_character == "speed_damage":
-		GameState.run_speed_bonus += 0.05 * delta # Gradual speed boost (+5% per second)
+		GameState.run_speed_bonus = min(
+			GameState.run_speed_bonus + GameConstants.ZEPHYROS_SPEED_GAIN_PER_SEC * delta,
+			GameConstants.ZEPHYROS_MAX_SPEED_BONUS
+		)
 	
 	if _speed_boost_duration > 0:
 		_speed_boost_duration -= delta

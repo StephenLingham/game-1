@@ -260,6 +260,11 @@ const CHARACTER_UNLOCK_CHAIN: Array = [
 	"polymath", "singular_force", "singular_volley", "singular_luck", "vampire", "passive_master"
 ]
 
+# --- CHARACTER SPECIFIC SETTINGS ---
+# Zephyros
+const ZEPHYROS_SPEED_GAIN_PER_SEC: float = 0.05
+const ZEPHYROS_MAX_SPEED_BONUS: float = 2.0
+
 # --- SEALING ---
 const MIN_UNSEALED_COUNT: int = 6
 
