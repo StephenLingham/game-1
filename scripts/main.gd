@@ -528,7 +528,7 @@ func _refresh_shop_ui() -> void:
 	shop_grid.add_child(footer_box)
 	
 	var reroll_btn = Button.new()
-	reroll_btn.text = "Reroll Shop (%d left)" % GameState.run_reroll_count
+	reroll_btn.text = "Reroll (%d left)" % GameState.run_reroll_count
 	reroll_btn.disabled = GameState.run_reroll_count <= 0
 	reroll_btn.custom_minimum_size = Vector2(250, 50)
 	reroll_btn.pressed.connect(_reroll_shop)
