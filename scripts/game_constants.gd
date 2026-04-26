@@ -69,8 +69,8 @@ const ENEMY_BIG_ATTACK_COOLDOWN: float = 1.5
 const ENEMY_BIG_XP_MIN: int = 40
 const ENEMY_BIG_XP_MAX: int = 60
 
-const ENEMY_TANK_SPRITE_SCALE: float = 0.08
-const ENEMY_TANK_SPEED: float = 80.0
+const ENEMY_TANK_SPRITE_SCALE: float = 0.07
+const ENEMY_TANK_SPEED: float = 90.0
 const ENEMY_TANK_HEALTH: int = 50
 const ENEMY_TANK_DAMAGE: int = 20
 const ENEMY_TANK_ATTACK_COOLDOWN: float = 1.0
