@@ -39,14 +39,13 @@ const WAVE_MIN_SPAWN_WAIT: float = 0.25
 const WAVE_SPAWN_WAIT_DECREMENT: float = 0.05
 
 # Enemy Probabilities
-const PROB_NORMAL_ENEMY: float = 0.70
+const PROB_NORMAL_ENEMY: float = 0.50
 const PROB_FAST_ENEMY: float = 0.20
 const PROB_BIG_ENEMY: float = 0.10
+const PROB_TANK_ENEMY: float = 0.20
 
 # --- ENEMY SETTINGS ---
 const ENEMY_NORMAL_SPRITE_SCALE: float = 0.09
-const ENEMY_FAST_SPRITE_SCALE: float = 0.07
-const ENEMY_BIG_SPRITE_SCALE: float = 0.15
 const ENEMY_NORMAL_SPEED: float = 80.0
 const ENEMY_NORMAL_HEALTH: int = 100
 const ENEMY_NORMAL_DAMAGE: int = 20
@@ -54,6 +53,7 @@ const ENEMY_NORMAL_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_NORMAL_XP_MIN: int = 10
 const ENEMY_NORMAL_XP_MAX: int = 15
 
+const ENEMY_FAST_SPRITE_SCALE: float = 0.07
 const ENEMY_FAST_SPEED: float = 160.0
 const ENEMY_FAST_HEALTH: int = 50
 const ENEMY_FAST_DAMAGE: int = 20
@@ -61,12 +61,21 @@ const ENEMY_FAST_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_FAST_XP_MIN: int = 8
 const ENEMY_FAST_XP_MAX: int = 12
 
+const ENEMY_BIG_SPRITE_SCALE: float = 0.15
 const ENEMY_BIG_SPEED: float = 80.0
 const ENEMY_BIG_HEALTH: int = 400
 const ENEMY_BIG_DAMAGE: int = 40
 const ENEMY_BIG_ATTACK_COOLDOWN: float = 1.5
 const ENEMY_BIG_XP_MIN: int = 40
 const ENEMY_BIG_XP_MAX: int = 60
+
+const ENEMY_TANK_SPRITE_SCALE: float = 0.08
+const ENEMY_TANK_SPEED: float = 80.0
+const ENEMY_TANK_HEALTH: int = 50
+const ENEMY_TANK_DAMAGE: int = 20
+const ENEMY_TANK_ATTACK_COOLDOWN: float = 1.0
+const ENEMY_TANK_XP_MIN: int = 10
+const ENEMY_TANK_XP_MAX: int = 15
 
 # --- COLLECTION SETTINGS ---
 const BASE_COLLECTION_RADIUS: float = 50.0

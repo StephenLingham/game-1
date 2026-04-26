@@ -6,6 +6,7 @@ class_name WaveController
 
 var enemy_fast_scene := preload("res://scenes/enemy_fast.tscn")
 var enemy_big_scene := preload("res://scenes/enemy_big.tscn")
+var enemy_tank_scene := preload("res://scenes/enemy_tank.tscn")
 var powerup_scene := preload("res://scenes/PowerupPickup.tscn")
 var chest_scene := preload("res://scenes/TreasureChest.tscn")
 
@@ -136,6 +137,8 @@ func _spawn_tick() -> void:
 			scene_to_spawn = enemy_big_scene
 		elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY):
 			scene_to_spawn = enemy_fast_scene
+		elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_TANK_ENEMY):
+			scene_to_spawn = enemy_tank_scene
 			
 		var e := scene_to_spawn.instantiate()
 
