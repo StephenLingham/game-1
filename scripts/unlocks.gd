@@ -271,13 +271,12 @@ func _show_auras() -> void:
 			else:
 				desc.text = aura_data.desc % val
 		else:
-			# Get precursor
 			var precursor = _get_aura_precursor(id)
 			if precursor != "":
 				var prec_name = auras[precursor].name
 				desc.text = "Unlock by reaching Max Level with %s" % prec_name
 			else:
-				desc.text = "Unlocked by default"
+				desc.text = "Kill 100 enemies with Zap to unlock"
 				
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

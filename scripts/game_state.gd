@@ -100,14 +100,6 @@ func _ready() -> void:
 			changed = true
 			print("DEBUG: Unlocks reset.")
 	
-	# Start with 4 auras if none unlocked
-	if unlocked_auras.size() < 4:
-		var all_auras = GameConstants.AURAS.keys()
-		for i in range(min(4, all_auras.size())):
-			var id = all_auras[i]
-			if not unlocked_auras.has(id):
-				unlocked_auras.append(id)
-		changed = true
 	
 	if GameConstants.DEBUG_RESET_GEMS:
 		gems = 0
@@ -728,9 +720,15 @@ func _check_unlocks() -> void:
 				if current_total >= should_have_total:
 					break
 	
-	# Aura chain: starting with 4, then previous at max level unlocks next
-	# We check permanent ability upgrades recorded
+	# Aura chain: previous at max level unlocks next
 	var aura_chain = GameConstants.AURAS.keys()
+	
+	# Initial aura unlock: Kill 100 enemies with Zap
+	if not unlocked_auras.has(aura_chain[0]):
+		if lifetime_kills.get("zap", 0) >= 100:
+			if not run_unlocked_items.has(aura_chain[0]):
+				run_unlocked_items.append(aura_chain[0])
+
 	for i in range(aura_chain.size() - 1):
 		var current = aura_chain[i]
 		var next = aura_chain[i+1]
