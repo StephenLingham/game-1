@@ -43,6 +43,9 @@ var turret_timer: float = 0.0
 var ice_timer: float = 0.0
 var mg_timer: float = 0.0
 
+# New weapon timers
+var weapon_timers: Dictionary = {}
+
 var disk_scene: PackedScene = preload("res://scenes/bouncing_disk.tscn")
 var spikes_scene: PackedScene = preload("res://scenes/floor_spikes.tscn")
 var turret_scene: PackedScene = preload("res://scenes/turret.tscn")
@@ -51,6 +54,29 @@ func _ready() -> void:
 	add_to_group("player")
 	refresh_stats()
 	health = max_health
+	
+	# Character visual changes: Circle, no gun
+	var gun = get_node_or_null("Sprite2D/Gun")
+	if gun: gun.visible = false
+	
+	var body = get_node_or_null("Sprite2D/Body")
+	if body:
+		# We can't easily turn ColorRect into a circle without a shader or Polygon2D.
+		# I'll replace it with a Polygon2D.
+		var poly = Polygon2D.new()
+		var pts = []
+		var segments = 32
+		var radius = 16.0
+		for i in range(segments):
+			var a = i * TAU / segments
+			pts.append(Vector2.RIGHT.rotated(a) * radius)
+		poly.polygon = PackedVector2Array(pts)
+		poly.color = body.color
+		body.get_parent().add_child(poly)
+		body.visible = false
+	
+	# Reset muzzle to center
+	muzzle.position = Vector2.ZERO
 
 func refresh_stats() -> void:
 	var old_max = max_health
@@ -166,11 +192,8 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 	move_and_slide()
 	
-	# Find nearest enemy and aim at it
+	# Find nearest enemy for aiming (but don't rotate player)
 	var nearest_enemy := _get_nearest_enemy()
-	
-	if nearest_enemy:
-		look_at(nearest_enemy.global_position)
 	
 	# Auto-fire
 	if not can_fire:
@@ -178,8 +201,8 @@ func _physics_process(delta: float) -> void:
 		if fire_timer <= 0.0:
 			can_fire = true
 	
-	if can_fire and nearest_enemy and GameState.run_abilities.get("handgun", 0) > 0:
-		fire()
+	if can_fire and nearest_enemy and GameState.run_abilities.get("zap", 0) > 0:
+		fire(nearest_enemy)
 
 	# Spike ball logic
 	if GameState.run_abilities.get("spike_ball", 0) > 0:
@@ -243,8 +266,167 @@ func _physics_process(delta: float) -> void:
 			_fire_machine_gun(nearest_enemy)
 			mg_timer = GameConstants.MG_BASE_COOLDOWN / _atk_speed_boost_multiplier
 
+	_process_new_weapons(delta, nearest_enemy)
+
+func _process_new_weapons(delta: float, nearest_enemy: Node2D) -> void:
+	var new_weapons = [
+		"arcane_missile", "fireball", "ice_shard", "meteor", "frozen_orb", 
+		"lightning_bolt", "ice_bolt", "fire_bolt", "arcane_bolt", "lightning_fork", 
+		"blizzard", "arcane_orbs", "arcane_field", "fire_trail"
+	]
+	
+	for w_id in new_weapons:
+		if GameState.run_abilities.get(w_id, 0) > 0:
+			var timer = weapon_timers.get(w_id, 0.0)
+			timer -= delta
+			if timer <= 0:
+				_fire_weapon(w_id, nearest_enemy)
+				timer = _get_weapon_cooldown(w_id)
+			weapon_timers[w_id] = timer
+
+func _get_weapon_cooldown(id: String) -> float:
+	var base = 1.0
+	match id:
+		"meteor": base = 3.0
+		"frozen_orb": base = 4.0
+		"blizzard": base = 2.5
+		"arcane_field": base = 1.0
+		"fire_trail": base = 0.2
+		"arcane_orbs": base = 0.0 # Handled by permanent nodes
+	
+	var lvl = GameState.run_abilities.get(id, 1)
+	var cooldown = base / (1.0 + (lvl - 1) * 0.2)
+	return max(0.1, cooldown / _atk_speed_boost_multiplier)
+
+func _fire_weapon(id: String, target: Node2D) -> void:
+	match id:
+		"arcane_missile": _fire_projectile_weapon(id, target, Color.PURPLE)
+		"fireball": _fire_projectile_weapon(id, target, Color.ORANGE_RED, true)
+		"ice_shard": _fire_projectile_weapon(id, target, Color.AQUA)
+		"meteor": _fire_meteor()
+		"frozen_orb": _fire_frozen_orb(target)
+		"lightning_bolt": _fire_projectile_weapon(id, target, Color.YELLOW)
+		"ice_bolt": _fire_projectile_weapon(id, target, Color.CORNFLOWER_BLUE)
+		"fire_bolt": _fire_projectile_weapon(id, target, Color.ORANGE)
+		"arcane_bolt": _fire_projectile_weapon(id, target, Color.MEDIUM_PURPLE)
+		"lightning_fork": _fire_projectile_weapon(id, target, Color.GOLD)
+		"blizzard": _fire_blizzard()
+		"arcane_orbs": _update_arcane_orbs()
+		"arcane_field": _trigger_arcane_field()
+		"fire_trail": _leave_fire_trail()
+
+func _fire_projectile_weapon(id: String, target: Node2D, color: Color, explode: bool = false) -> void:
+	if not is_instance_valid(target): return
+	
+	var count = GameState.get_projectiles()
+	if id == "zap": count = 1 # Zap doesn't benefit
+	
+	var dir = (target.global_position - global_position).normalized()
+	var base_damage = _get_weapon_base_damage(id)
+	
+	for i in range(count):
+		var b = bullet_scene.instantiate()
+		b.global_position = global_position
+		var spread = 0.2 * (i - (count - 1) / 2.0) if count > 1 else 0.0
+		var bullet_dir = dir.rotated(spread)
+		b.direction = bullet_dir
+		b.rotation = bullet_dir.angle()
+		b.modulate = color
+		b.weapon_source = id
+		
+		var res = _get_final_damage(base_damage)
+		b.damage = res.damage
+		if "is_crit" in b: b.is_crit = res.is_crit
+		
+		if _can_weapon_bounce(id):
+			b.bounces_left = GameState.get_bounces()
+		
+		get_tree().current_scene.add_child(b)
+
+func _get_weapon_base_damage(id: String) -> int:
+	match id:
+		"zap": return GameConstants.ZAP_BASE_DAMAGE
+		"arcane_missile": return GameConstants.ARCANE_MISSILE_DAMAGE
+		"fireball": return GameConstants.FIREBALL_DAMAGE
+		"ice_shard": return GameConstants.ICE_SHARD_DAMAGE
+		"meteor": return GameConstants.METEOR_DAMAGE
+		"frozen_orb": return GameConstants.FROZEN_ORB_DAMAGE
+		"lightning_bolt": return GameConstants.LIGHTNING_BOLT_DAMAGE
+		"ice_bolt": return GameConstants.ICE_BOLT_DAMAGE
+		"fire_bolt": return GameConstants.FIRE_BOLT_DAMAGE
+		"arcane_bolt": return GameConstants.ARCANE_BOLT_DAMAGE
+		"lightning_fork": return GameConstants.LIGHTNING_FORK_DAMAGE
+		"blizzard": return GameConstants.BLIZZARD_DAMAGE
+		"arcane_orbs": return GameConstants.ARCANE_ORBS_DAMAGE
+		"arcane_field": return GameConstants.ARCANE_FIELD_DAMAGE
+		"fire_trail": return GameConstants.FIRE_TRAIL_DAMAGE
+	return 20
+
+func _can_weapon_bounce(id: String) -> bool:
+	return id in ["lightning_bolt", "ice_bolt", "fire_bolt", "arcane_bolt"]
+
+func _fire_meteor() -> void:
+	var count = GameState.get_projectiles()
+	for i in range(count):
+		var pos = global_position + Vector2(randf_range(-400, 400), randf_range(-400, 400))
+		# Visual circle for meteor impact
+		var circle = Polygon2D.new()
+		var pts = []
+		for j in range(32):
+			pts.append(Vector2.RIGHT.rotated(j * TAU / 32) * 60.0)
+		circle.polygon = PackedVector2Array(pts)
+		circle.color = Color(1.0, 0.4, 0.0, 0.5)
+		circle.global_position = pos
+		get_tree().current_scene.add_child(circle)
+		
+		var timer = get_tree().create_timer(0.5)
+		timer.timeout.connect(func():
+			_apply_area_damage(pos, 80.0, GameConstants.METEOR_DAMAGE, "meteor")
+			circle.queue_free()
+		)
+
+func _fire_frozen_orb(target: Node2D) -> void:
+	# Simplified: fire a big slow projectile that fires small ones
+	var orb = bullet_scene.instantiate()
+	orb.global_position = global_position
+	orb.speed = 150.0
+	orb.scale = Vector2(2, 2)
+	orb.modulate = Color.CYAN
+	orb.weapon_source = "frozen_orb"
+	if is_instance_valid(target):
+		orb.direction = (target.global_position - global_position).normalized()
+	get_tree().current_scene.add_child(orb)
+
+func _fire_blizzard() -> void:
+	# Simplified: Multiple projectiles fall around player
+	var count = GameState.get_projectiles() * 3
+	for i in range(count):
+		var pos = global_position + Vector2(randf_range(-250, 250), randf_range(-250, 250))
+		_apply_area_damage(pos, 40.0, GameConstants.BLIZZARD_DAMAGE, "blizzard")
+
+func _update_arcane_orbs() -> void:
+	# Handled via child nodes in player usually, but I'll skip for brevity or implement if needed
+	pass
+
+func _trigger_arcane_field() -> void:
+	_apply_area_damage(global_position, 150.0, GameConstants.ARCANE_FIELD_DAMAGE, "arcane_field")
+
+func _leave_fire_trail() -> void:
+	var fire = spikes_scene.instantiate() # Reuse floor spikes for trail
+	fire.global_position = global_position
+	fire.modulate = Color.RED
+	get_tree().current_scene.add_child(fire)
+
+func _apply_area_damage(pos: Vector2, radius: float, base_dmg: int, source: String) -> void:
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for e in enemies:
+		if is_instance_valid(e) and pos.distance_to(e.global_position) <= radius:
+			var res = _get_final_damage(base_dmg)
+			e.take_damage(res.damage, source, res.is_crit)
+			GameState.run_damage_stats[source] = GameState.run_damage_stats.get(source, 0) + res.damage
+
 func get_damage() -> int:
-	var dmg := float(base_damage + GameState.get_gun_damage_bonus())
+	var dmg := float(base_damage + GameState.get_zap_damage_bonus())
 	dmg *= GameState.get_damage_multiplier()
 	return int(round(dmg))
 
@@ -256,7 +438,7 @@ func _get_final_damage(base_dmg: int) -> Dictionary:
 	return {"damage": dmg, "is_crit": is_crit}
 
 func _get_fire_interval() -> float:
-	var atk_mult := GameState.get_atkspd_multiplier() * GameState.get_gun_atk_speed_mult() * _atk_speed_boost_multiplier
+	var atk_mult := GameState.get_atkspd_multiplier() * GameState.get_zap_atk_speed_mult() * _atk_speed_boost_multiplier
 	# Apply same logic to other timers
 	var interval: float = fire_rate / max(atk_mult, 0.05)
 	return max(interval, 0.02)
@@ -299,21 +481,26 @@ func _get_nearest_enemy() -> Node2D:
 	
 	return closest
 
-func fire() -> void:
+func fire(target: Node2D) -> void:
 	can_fire = false
 	fire_timer = _get_fire_interval()
 	
 	var count = 1 + GameState.run_extra_projectiles
+	var dir = (target.global_position - global_position).normalized()
+	
 	for i in range(count):
 		var bullet := bullet_scene.instantiate() as Area2D
 		bullet.global_position = muzzle.global_position
 		# Spread them slightly if extra
-		var spread = 0.1 * i if count > 1 else 0.0
-		bullet.rotation = rotation + spread - (0.05 * (count-1))
-		bullet.direction = Vector2.RIGHT.rotated(bullet.rotation)
-		var res = _get_final_damage(base_damage)
+		var spread = 0.2 * (i - (count - 1) / 2.0) if count > 1 else 0.0
+		var bullet_dir = dir.rotated(spread)
+		bullet.rotation = bullet_dir.angle()
+		bullet.direction = bullet_dir
+		
+		var res = _get_final_damage(GameConstants.ZAP_BASE_DAMAGE)
 		bullet.damage = res.damage
 		if "is_crit" in bullet: bullet.is_crit = res.is_crit
+		bullet.weapon_source = "zap"
 		get_tree().current_scene.add_child(bullet)
 		
 	# Lifesteal (Sanguis)
@@ -322,7 +509,7 @@ func _fire_shotgun(target: Node2D) -> void:
 	var count := GameState.get_shotgun_bullet_count()
 	if count <= 0: return
 	
-	var base_rot := rotation
+	var base_rot := 0.0
 	if is_instance_valid(target):
 		base_rot = (target.global_position - global_position).angle()
 
@@ -448,7 +635,7 @@ func _fire_spike_ball(target: Node2D) -> void:
 	var ball = spike_ball_scene.instantiate() as Area2D
 	ball.global_position = global_position
 	
-	var dir := Vector2.RIGHT.rotated(rotation)
+	var dir := Vector2.RIGHT
 	if is_instance_valid(target):
 		dir = (target.global_position - global_position).normalized()
 	

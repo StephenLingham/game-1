@@ -18,7 +18,10 @@ const UPGRADES = [
 	{"id": "thorns", "name": "Thorns", "desc": "+1% Thorns damage reflected"},
 	{"id": "spawn_rate", "name": "Spawn Rate", "desc": "+1% Enemy spawn rate"},
 	{"id": "gold_drop", "name": "XP Multiplier", "desc": "+1% XP gained from all sources per level"},
-	{"id": "speed", "name": "Movement Speed", "desc": "+1% Speed per level"}
+	{"id": "speed", "name": "Movement Speed", "desc": "+1% Speed per level"},
+	{"id": "projectiles", "name": "Projectiles", "desc": "+1 Projectile per level (Selected weapons)"},
+	{"id": "bounces", "name": "Bounces", "desc": "+1 Bounce per level (Selected weapons)"},
+	{"id": "extra_slots", "name": "Extra Slots", "desc": "+1 Ability Slot per level"}
 ]
 
 func _ready() -> void:

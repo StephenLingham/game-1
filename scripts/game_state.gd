@@ -6,12 +6,12 @@ const SAVE_PATH := "user://save.json"
 var gems: int = 0
 
 # Unlocks
-var unlocked_items: Array = ["handgun", "floor_spikes", "ice_wave", "spike_ball"] # Abilities the player CAN see in shop
+var unlocked_items: Array = ["zap"] # Abilities the player CAN see in shop
 var unlocked_auras: Array = [] # Auras the player CAN see in shop
 var unlocked_treasure_items: Array = [] # Items the player CAN see in chests
 var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed until end)
 var completed_levels: Array = []
-var lifetime_kills: Dictionary = {"handgun": 0}
+var lifetime_kills: Dictionary = {"zap": 0}
 var lifetime_chests_opened: int = 0
 var sealed_items: Array = [] # IDs of items the player has sealed
 var unlocked_characters: Array = ["starter"]
@@ -34,6 +34,9 @@ var perm_speed_level: int = 0
 var perm_thorns_level: int = 0
 var perm_spawn_rate_level: int = 0
 var perm_crit_damage_level: int = 0
+var perm_projectiles_level: int = 0
+var perm_bounces_level: int = 0
+var perm_extra_slots_level: int = 0
 
 var aura_max_levels_reached: Dictionary = {} # aura_id -> max_level
 
@@ -52,6 +55,7 @@ var run_items: Array = [] # [item_id, item_id, ...]
 var run_speed_bonus: float = 0.0
 var run_lifesteal: float = 0.0
 var run_extra_projectiles: int = 0
+var run_extra_bounces: int = 0
 
 signal level_up(new_level: int)
 
@@ -75,10 +79,10 @@ func _ready() -> void:
 	if GameConstants.DEBUG_RESET_ALL_DATA:
 		# Reset EVERYTHING
 		gems = 0
-		unlocked_items = ["handgun", "floor_spikes", "ice_wave", "spike_ball"]
+		unlocked_items = ["zap"]
 		unlocked_auras = []
 		unlocked_treasure_items = []
-		lifetime_kills = {"handgun": 0}
+		lifetime_kills = {"zap": 0}
 		lifetime_chests_opened = 0
 		completed_levels = []
 		aura_max_levels_reached = {}
@@ -87,10 +91,10 @@ func _ready() -> void:
 		print("DEBUG: All data reset.")
 	else:
 		if GameConstants.DEBUG_RESET_UNLOCKS:
-			unlocked_items = ["handgun", "floor_spikes", "ice_wave", "spike_ball"]
+			unlocked_items = ["zap"]
 			unlocked_auras = []
 			unlocked_treasure_items = []
-			lifetime_kills = {"handgun": 0}
+			lifetime_kills = {"zap": 0}
 			lifetime_chests_opened = 0
 			completed_levels = []
 			changed = true
@@ -120,9 +124,9 @@ func _ready() -> void:
 				unlocked_treasure_items.append(id)
 		changed = true
 	
-	# Initial 4 weapons if none unlocked yet (Handgun, Spikes, Ice, Spike Ball)
-	if unlocked_items.size() < 4:
-		var defaults = ["handgun", "floor_spikes", "ice_wave", "spike_ball"]
+	# Initial 1 weapons if none unlocked yet (Zap)
+	if unlocked_items.size() < 1:
+		var defaults = ["zap"]
 		for id in defaults:
 			if not unlocked_items.has(id):
 				unlocked_items.append(id)
@@ -130,6 +134,24 @@ func _ready() -> void:
 	
 	if changed:
 		save()
+
+func reset_all_data() -> void:
+	gems = 0
+	unlocked_items = ["zap"]
+	unlocked_auras = []
+	unlocked_treasure_items = []
+	lifetime_kills = {"zap": 0}
+	lifetime_chests_opened = 0
+	completed_levels = []
+	aura_max_levels_reached = {}
+	sealed_items = []
+	unlocked_characters = ["starter"]
+	current_character = "starter"
+	max_levels_reached = {}
+	lifetime_upgrades = {}
+	lifetime_item_picks = {}
+	_reset_all_perm_levels()
+	save()
 
 func _reset_all_perm_levels() -> void:
 	perm_damage_level = 0
@@ -145,12 +167,14 @@ func _reset_all_perm_levels() -> void:
 	perm_thorns_level = 0
 	perm_spawn_rate_level = 0
 	perm_crit_damage_level = 0
+	perm_projectiles_level = 0
+	perm_bounces_level = 0
 
 func reset_run() -> void:
 	run_xp = 0
 	run_level = 1
 	run_xp_to_next_level = GameConstants.XP_BASE_LEVEL
-	run_abilities = {"handgun": 1}
+	run_abilities = {"zap": 1}
 	run_banished_abilities = []
 	run_banish_count = GameConstants.SHOP_BANISH_COUNT
 	run_reroll_count = 3 # 3 rerolls per run
@@ -166,18 +190,19 @@ func reset_run() -> void:
 	run_speed_bonus = 0.0
 	run_lifesteal = 0.0
 	run_extra_projectiles = 0
+	run_extra_bounces = 0
 	
 	_apply_initial_character_traits()
 
 func _apply_initial_character_traits() -> void:
 	# Add initial weapon based on character or default
-	if run_abilities.is_empty() or (run_abilities.size() == 1 and run_abilities.has("handgun")):
+	if run_abilities.is_empty() or (run_abilities.size() == 1 and run_abilities.has("zap")):
 		if current_character == "passive_master":
 			run_abilities.clear() # No weapons
 			# Maybe give an initial aura?
 			run_abilities["aura_damage"] = 1
 		else:
-			run_abilities = {"handgun": 1}
+			run_abilities = {"zap": 1}
 	
 	match current_character:
 		"vampire":
@@ -203,13 +228,18 @@ func add_xp(amount: int) -> void:
 
 func _apply_character_level_up_traits() -> void:
 	match current_character:
-		"glass_cannon":
-			# Handled in player.refresh_stats probably, but we can modify constants here or apply run-time multipliers
-			pass 
 		"vampire":
 			run_lifesteal += 0.01 # +1% lifesteal per level
 		"singular_volley":
 			run_extra_projectiles += 1
+
+func get_projectiles() -> int:
+	var plvl = min(perm_projectiles_level, 10)
+	return GameConstants.BASE_PROJECTILES + plvl + run_extra_projectiles
+
+func get_bounces() -> int:
+	var blvl = min(perm_bounces_level, 10)
+	return GameConstants.BASE_BOUNCES + blvl + run_extra_bounces
 
 
 # --- HELPER GETTERS (Backward Compatibility) ---
@@ -240,13 +270,13 @@ func get_rocket_blast_radius() -> float:
 	var lvl = run_abilities.get("rocket", 0)
 	return GameConstants.ROCKET_BASE_BLAST_RADIUS + (lvl - 1) * GameConstants.ROCKET_BLAST_RADIUS_PER_LEVEL
 
-func get_gun_damage_bonus() -> int:
-	var lvl = run_abilities.get("handgun", 1)
-	return (lvl - 1) * GameConstants.GUN_DAMAGE_PER_UPGRADE
+func get_zap_damage_bonus() -> int:
+	var lvl = run_abilities.get("zap", 1)
+	return (lvl - 1) * GameConstants.ZAP_DAMAGE_PER_UPGRADE
 
-func get_gun_atk_speed_mult() -> float:
-	var lvl = run_abilities.get("handgun", 1)
-	return 1.0 + float(lvl - 1) * GameConstants.GUN_ATK_SPD_PER_UPGRADE
+func get_zap_atk_speed_mult() -> float:
+	var lvl = run_abilities.get("zap", 1)
+	return 1.0 + float(lvl - 1) * GameConstants.ZAP_ATK_SPD_PER_UPGRADE
 
 func get_shotgun_bullet_count() -> int:
 	var lvl = run_abilities.get("shotgun", 0)
@@ -258,9 +288,9 @@ func get_shotgun_bullet_count() -> int:
 	return 0
 
 # Legacy properties for scripts I haven't fully updated yet
-var run_damage_handgun: int:
-	get: return run_damage_stats.get("handgun", 0)
-	set(v): run_damage_stats["handgun"] = v
+var run_damage_zap: int:
+	get: return run_damage_stats.get("zap", 0)
+	set(v): run_damage_stats["zap"] = v
 var run_damage_shotgun: int:
 	get: return run_damage_stats.get("shotgun", 0)
 	set(v): run_damage_stats["shotgun"] = v
@@ -338,7 +368,7 @@ func get_total_damage(base: int) -> int:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus_flat += stats.get("damage", 0)
 		
-	var dmg = float(base + get_gun_damage_bonus() + bonus_flat)
+	var dmg = float(base + get_zap_damage_bonus() + bonus_flat)
 	dmg *= get_damage_multiplier()
 	return int(round(dmg))
 
@@ -479,9 +509,12 @@ func get_speed_multiplier(include_dynamic: bool = true) -> float:
 
 func get_ability_limit() -> int:
 	match current_character:
-		"polymath": return 8
+		"polymath": return 8 + perm_extra_slots_level
 		"singular_force", "singular_volley", "singular_luck": return 1
-	return GameConstants.SHOP_MAX_ABILITIES
+	
+	var base_slots = 1
+	var extra_from_level = int(floor(run_level / 5.0)) # One new slot every 5 levels
+	return base_slots + extra_from_level + perm_extra_slots_level
 
 func get_aura_limit() -> int:
 	return GameConstants.AURA_MAX_COUNT
@@ -527,6 +560,8 @@ func reset_gems() -> void:
 	spent += _calculate_spent(perm_thorns_level)
 	spent += _calculate_spent(perm_spawn_rate_level)
 	spent += _calculate_spent(perm_crit_damage_level)
+	spent += _calculate_spent(perm_projectiles_level)
+	spent += _calculate_spent(perm_bounces_level)
 	
 	gems += spent
 	
@@ -544,6 +579,8 @@ func reset_gems() -> void:
 	perm_thorns_level = 0
 	perm_spawn_rate_level = 0
 	perm_crit_damage_level = 0
+	perm_projectiles_level = 0
+	perm_bounces_level = 0
 	
 	save()
 
@@ -605,7 +642,7 @@ func record_ability_upgrade(id: String, level: int) -> void:
 func _is_ability_at_max(id: String, level: int) -> bool:
 	# Keep in sync with Main.gd _get_max_level
 	match id:
-		"handgun": return level >= GameConstants.GUN_MAX_LEVEL
+		"zap": return level >= GameConstants.ZAP_MAX_LEVEL
 		"orbs": return level >= GameConstants.ORB_MAX_LEVEL
 		"spike_ball": return level >= GameConstants.SPIKE_BALL_MAX_LEVEL
 		"shotgun": return level >= GameConstants.SHOTGUN_MAX_LEVEL
@@ -660,9 +697,12 @@ func is_level_unlocked(level_id: String) -> bool:
 	return false
 
 func _check_unlocks() -> void:
-	# Handgun -> Shotgun -> Sniper -> Rocket -> Machine Gun
+	# Zap -> Arcane Missile -> Fireball -> ...
 	var weapon_chain = [
-		"handgun", "floor_spikes", "ice_wave", "spike_ball", "shotgun", "turret", 
+		"zap", "arcane_missile", "fireball", "ice_shard", "meteor", "frozen_orb", 
+		"lightning_bolt", "ice_bolt", "fire_bolt", "arcane_bolt", "lightning_fork", 
+		"blizzard", "arcane_orbs", "arcane_field", "fire_trail",
+		"shotgun", "floor_spikes", "ice_wave", "spike_ball", "turret", 
 		"sniper", "orbs", "bouncing_disk", "machine_gun", "rocket",
 	]
 	for i in range(weapon_chain.size() - 1):
@@ -722,6 +762,8 @@ func save() -> void:
 		"perm_thorns_level": perm_thorns_level,
 		"perm_spawn_rate_level": perm_spawn_rate_level,
 		"perm_crit_damage_level": perm_crit_damage_level,
+		"perm_projectiles_level": perm_projectiles_level,
+		"perm_bounces_level": perm_bounces_level,
 		"unlocked_items": unlocked_items,
 		"unlocked_auras": unlocked_auras,
 		"unlocked_treasure_items": unlocked_treasure_items,
@@ -765,11 +807,13 @@ func load_save() -> void:
 	perm_thorns_level = int(parsed.get("perm_thorns_level", 0))
 	perm_spawn_rate_level = int(parsed.get("perm_spawn_rate_level", 0))
 	perm_crit_damage_level = int(parsed.get("perm_crit_damage_level", 0))
+	perm_projectiles_level = int(parsed.get("perm_projectiles_level", 0))
+	perm_bounces_level = int(parsed.get("perm_bounces_level", 0))
 	
-	unlocked_items = parsed.get("unlocked_items", ["handgun", "floor_spikes", "ice_wave", "spike_ball"])
+	unlocked_items = parsed.get("unlocked_items", ["zap"])
 	unlocked_auras = parsed.get("unlocked_auras", [])
 	unlocked_treasure_items = parsed.get("unlocked_treasure_items", [])
-	lifetime_kills = parsed.get("lifetime_kills", {"handgun": 0})
+	lifetime_kills = parsed.get("lifetime_kills", {"zap": 0})
 	lifetime_chests_opened = int(parsed.get("lifetime_chests_opened", 0))
 	completed_levels = parsed.get("completed_levels", [])
 	aura_max_levels_reached = parsed.get("aura_max_levels_reached", {})

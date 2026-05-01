@@ -6,7 +6,7 @@ class_name WaveController
 
 var enemy_fast_scene := preload("res://scenes/enemy_fast.tscn")
 var enemy_big_scene := preload("res://scenes/enemy_big.tscn")
-var enemy_tank_scene := preload("res://scenes/enemy_tank.tscn")
+var enemy_cute_scene := preload("res://scenes/enemy_cute.tscn")
 var powerup_scene := preload("res://scenes/PowerupPickup.tscn")
 var chest_scene := preload("res://scenes/TreasureChest.tscn")
 
@@ -49,6 +49,10 @@ func _next_wave() -> void:
 	# spawn rate ramps with wave
 	var base_wait: float = GameConstants.WAVE_BASE_SPAWN_WAIT
 	var wait: float = max(base_wait - (GameConstants.WAVE_SPAWN_WAIT_DECREMENT * float(wave - 1)), GameConstants.WAVE_MIN_SPAWN_WAIT)
+	
+	if wave == 3:
+		wait = 0.05 # Very high spawn rate for Wave 3
+	
 	# Difficulty adjustment
 	wait /= GameState.run_difficulty_spawn_mult
 	# Permanent upgrade adjustment
@@ -132,13 +136,17 @@ func _spawn_tick() -> void:
 		var rand_val := randf()
 		var scene_to_spawn := enemy_scene
 		
-		# Probability logic
-		if rand_val < GameConstants.PROB_BIG_ENEMY:
-			scene_to_spawn = enemy_big_scene
-		elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY):
-			scene_to_spawn = enemy_fast_scene
-		elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_TANK_ENEMY):
-			scene_to_spawn = enemy_tank_scene
+		# Wave-specific spawning
+		if wave == 1:
+			scene_to_spawn = enemy_cute_scene
+		else:
+			# Probability logic for Wave 2+
+			if rand_val < GameConstants.PROB_BIG_ENEMY:
+				scene_to_spawn = enemy_big_scene
+			elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY):
+				scene_to_spawn = enemy_fast_scene
+			elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_CUTE_ENEMY):
+				scene_to_spawn = enemy_cute_scene
 			
 		var e := scene_to_spawn.instantiate()
 

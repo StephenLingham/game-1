@@ -25,7 +25,23 @@ var banish_active: bool = false
 var current_shop_options: Array = []
 
 const ALL_ABILITIES = [
-	{"id": "handgun", "name": "Handgun", "weapon": true},
+	{"id": "zap", "name": "Zap", "weapon": true},
+	{"id": "arcane_missile", "name": "Arcane Missile", "weapon": true},
+	{"id": "fireball", "name": "Fireball", "weapon": true},
+	{"id": "ice_shard", "name": "Ice Shard", "weapon": true},
+	{"id": "meteor", "name": "Meteor", "weapon": true},
+	{"id": "frozen_orb", "name": "Frozen Orb", "weapon": true},
+	{"id": "lightning_bolt", "name": "Lightning Bolt", "weapon": true},
+	{"id": "ice_bolt", "name": "Ice Bolt", "weapon": true},
+	{"id": "fire_bolt", "name": "Fire Bolt", "weapon": true},
+	{"id": "arcane_bolt", "name": "Arcane Bolt", "weapon": true},
+	{"id": "lightning_fork", "name": "Lightning Fork", "weapon": true},
+	{"id": "blizzard", "name": "Blizzard", "weapon": true},
+	{"id": "arcane_orbs", "name": "Arcane Orbs", "weapon": true},
+	{"id": "arcane_field", "name": "Arcane Field", "weapon": true},
+	{"id": "fire_trail", "name": "Fire Trail", "weapon": true},
+	
+	# Old/Other abilities
 	{"id": "shotgun", "name": "Shotgun", "weapon": true},
 	{"id": "sniper", "name": "Sniper Gun", "weapon": true},
 	{"id": "rocket", "name": "Rocket Launcher", "weapon": true},
@@ -536,7 +552,7 @@ func _refresh_shop_ui() -> void:
 
 func _get_max_level(id: String) -> int:
 	match id:
-		"handgun": return GameConstants.GUN_MAX_LEVEL
+		"zap": return GameConstants.ZAP_MAX_LEVEL
 		"orbs": return GameConstants.ORB_MAX_LEVEL
 		"spike_ball": return GameConstants.SPIKE_BALL_MAX_LEVEL
 		"shotgun": return GameConstants.SHOTGUN_MAX_LEVEL
@@ -623,7 +639,7 @@ func end_run(won: bool, waves_completed: int) -> void:
 	# Damage breakdown
 	var dmg_grid = stats_vbox.get_node("DmgGrid")
 	var dmg_stats = [
-		["DmgHandgun", GameState.run_damage_handgun],
+		["DmgZap", GameState.run_damage_zap],
 		["DmgShotgun", GameState.run_damage_shotgun],
 		["DmgSniper", GameState.run_damage_sniper],
 		["DmgRocket", GameState.run_damage_rocket],

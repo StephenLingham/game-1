@@ -22,10 +22,12 @@ const XP_INCREMENT: int = 50 # Additive for next level
 const PERM_LEVEL_COST: int = 1
 const PERM_COST_INCREMENT: int = 0
 
-# --- GUN ABILITY SETTINGS ---
-const GUN_MAX_LEVEL: int = 4
-const GUN_DAMAGE_PER_UPGRADE: int = 50
-const GUN_ATK_SPD_PER_UPGRADE: float = 0.15
+# --- ZAP ABILITY SETTINGS ---
+const ZAP_MAX_LEVEL: int = 5
+const ZAP_DAMAGE_PER_UPGRADE: int = 0
+const ZAP_ATK_SPD_PER_UPGRADE: float = 0.15
+const ZAP_BASE_DAMAGE: int = 20
+const ZAP_SECOND_WEAPON_DAMAGE: int = 100
 
 # --- WAVES & SPAWN SETTINGS ---
 const TOTAL_WAVES: int = 10
@@ -42,7 +44,7 @@ const WAVE_SPAWN_WAIT_DECREMENT: float = 0.05
 const PROB_NORMAL_ENEMY: float = 0.50
 const PROB_FAST_ENEMY: float = 0.20
 const PROB_BIG_ENEMY: float = 0.10
-const PROB_TANK_ENEMY: float = 0.20
+const PROB_CUTE_ENEMY: float = 0.20
 
 # --- ENEMY SETTINGS ---
 const ENEMY_NORMAL_SPRITE_SCALE: float = 0.09
@@ -69,13 +71,13 @@ const ENEMY_BIG_ATTACK_COOLDOWN: float = 1.5
 const ENEMY_BIG_XP_MIN: int = 40
 const ENEMY_BIG_XP_MAX: int = 60
 
-const ENEMY_TANK_SPRITE_SCALE: float = 0.07
-const ENEMY_TANK_SPEED: float = 90.0
-const ENEMY_TANK_HEALTH: int = 50
-const ENEMY_TANK_DAMAGE: int = 20
-const ENEMY_TANK_ATTACK_COOLDOWN: float = 1.0
-const ENEMY_TANK_XP_MIN: int = 10
-const ENEMY_TANK_XP_MAX: int = 15
+const ENEMY_CUTE_SPRITE_SCALE: float = 0.07
+const ENEMY_CUTE_SPEED: float = 90.0
+const ENEMY_CUTE_HEALTH: int = 100
+const ENEMY_CUTE_DAMAGE: int = 20
+const ENEMY_CUTE_ATTACK_COOLDOWN: float = 1.0
+const ENEMY_CUTE_XP_MIN: int = 10
+const ENEMY_CUTE_XP_MAX: int = 15
 
 # --- COLLECTION SETTINGS ---
 const BASE_COLLECTION_RADIUS: float = 50.0
@@ -152,6 +154,26 @@ const ICE_BASE_RADIUS: float = 200.0
 const ICE_RADIUS_INCREMENT: float = 100.0
 const ICE_MAX_LEVEL: int = 5
 const ICE_FREEZE_DURATION: float = 2.0
+
+# --- NEW WEAPONS STATS ---
+const ARCANE_MISSILE_DAMAGE: int = 100
+const FIREBALL_DAMAGE: int = 60
+const ICE_SHARD_DAMAGE: int = 30
+const METEOR_DAMAGE: int = 150
+const FROZEN_ORB_DAMAGE: int = 25
+const LIGHTNING_BOLT_DAMAGE: int = 35
+const ICE_BOLT_DAMAGE: int = 30
+const FIRE_BOLT_DAMAGE: int = 45
+const ARCANE_BOLT_DAMAGE: int = 40
+const LIGHTNING_FORK_DAMAGE: int = 30
+const BLIZZARD_DAMAGE: int = 20
+const ARCANE_ORBS_DAMAGE: int = 50
+const ARCANE_FIELD_DAMAGE: int = 15
+const FIRE_TRAIL_DAMAGE: int = 10
+
+# --- GLOBAL PROJECTILE STATS ---
+const BASE_PROJECTILES: int = 1
+const BASE_BOUNCES: int = 0
 
 # --- AURA SETTINGS ---
 const AURA_MAX_LEVEL: int = 5

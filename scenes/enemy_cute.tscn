@@ -9,11 +9,11 @@ radius = 16.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_2"]
 radius = 20.0
 
-[node name="EnemyTank" type="CharacterBody2D"]
+[node name="EnemyCute" type="CharacterBody2D"]
 collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_script")
-enemy_type = "Tank"
+enemy_type = "Cute"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_texture")

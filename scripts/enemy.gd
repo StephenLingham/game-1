@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 signal enemy_killed
 
-@export_enum("Normal", "Fast", "Big", "Tank") var enemy_type: String = "Normal"
+@export_enum("Normal", "Fast", "Big", "Cute") var enemy_type: String = "Normal"
 
 var speed: float
 var health: int
@@ -18,7 +18,7 @@ var _freeze_timer: float = 0.0
 const TEXTURE_NORMAL = preload("res://assets/Enemies/enemy1-cropped.png")
 const TEXTURE_FAST = preload("res://assets/Enemies/enemy2-cropped.png")
 const TEXTURE_BIG = preload("res://assets/Enemies/enemy3-cropped.png")
-const TEXTURE_TANK = preload("res://assets/Enemies/enemy4-cropped.png")
+const TEXTURE_CUTE = preload("res://assets/Enemies/enemy4-cropped.png")
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -45,15 +45,15 @@ func _ready() -> void:
 			attack_cooldown = GameConstants.ENEMY_BIG_ATTACK_COOLDOWN
 			xp_drop_min = GameConstants.ENEMY_BIG_XP_MIN
 			xp_drop_max = GameConstants.ENEMY_BIG_XP_MAX
-		"Tank":
-			sprite.texture = TEXTURE_TANK
-			sprite.scale = Vector2.ONE * GameConstants.ENEMY_TANK_SPRITE_SCALE
-			speed = GameConstants.ENEMY_TANK_SPEED
-			health = GameConstants.ENEMY_TANK_HEALTH
-			damage = GameConstants.ENEMY_TANK_DAMAGE
-			attack_cooldown = GameConstants.ENEMY_TANK_ATTACK_COOLDOWN
-			xp_drop_min = GameConstants.ENEMY_TANK_XP_MIN
-			xp_drop_max = GameConstants.ENEMY_TANK_XP_MAX
+		"Cute":
+			sprite.texture = TEXTURE_CUTE
+			sprite.scale = Vector2.ONE * GameConstants.ENEMY_CUTE_SPRITE_SCALE
+			speed = GameConstants.ENEMY_CUTE_SPEED
+			health = GameConstants.ENEMY_CUTE_HEALTH
+			damage = GameConstants.ENEMY_CUTE_DAMAGE
+			attack_cooldown = GameConstants.ENEMY_CUTE_ATTACK_COOLDOWN
+			xp_drop_min = GameConstants.ENEMY_CUTE_XP_MIN
+			xp_drop_max = GameConstants.ENEMY_CUTE_XP_MAX
 		_, "Normal":
 			sprite.texture = TEXTURE_NORMAL
 			sprite.scale = Vector2.ONE * GameConstants.ENEMY_NORMAL_SPRITE_SCALE

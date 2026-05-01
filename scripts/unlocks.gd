@@ -4,10 +4,24 @@ extends Control
 @onready var back_btn: Button = $VBox/Footer/Back
 
 const WEAPONS = {
-	"handgun": {"name": "Handgun", "unlock": "Unlocked by default"},
-	"floor_spikes": {"name": "Floor Spikes", "unlock": "Kill 50 enemies with Handgun"},
+	"zap": {"name": "Zap", "unlock": "Unlocked by default"},
+	"arcane_missile": {"name": "Arcane Missile", "unlock": "Kill 50 enemies with Zap"},
+	"fireball": {"name": "Fireball", "unlock": "Kill 50 enemies with Arcane Missile"},
+	"ice_shard": {"name": "Ice Shard", "unlock": "Kill 50 enemies with Fireball"},
+	"meteor": {"name": "Meteor", "unlock": "Kill 50 enemies with Ice Shard"},
+	"frozen_orb": {"name": "Frozen Orb", "unlock": "Kill 50 enemies with Meteor"},
+	"lightning_bolt": {"name": "Lightning Bolt", "unlock": "Kill 50 enemies with Frozen Orb"},
+	"ice_bolt": {"name": "Ice Bolt", "unlock": "Kill 50 enemies with Lightning Bolt"},
+	"fire_bolt": {"name": "Fire Bolt", "unlock": "Kill 50 enemies with Ice Bolt"},
+	"arcane_bolt": {"name": "Arcane Bolt", "unlock": "Kill 50 enemies with Fire Bolt"},
+	"lightning_fork": {"name": "Lightning Fork", "unlock": "Kill 50 enemies with Arcane Bolt"},
+	"blizzard": {"name": "Blizzard", "unlock": "Kill 50 enemies with Lightning Fork"},
+	"arcane_orbs": {"name": "Arcane Orbs", "unlock": "Kill 50 enemies with Blizzard"},
+	"arcane_field": {"name": "Arcane Field", "unlock": "Kill 50 enemies with Arcane Orbs"},
+	"fire_trail": {"name": "Fire Trail", "unlock": "Kill 50 enemies with Arcane Field"},
+	"floor_spikes": {"name": "Floor Spikes", "unlock": "Kill 50 enemies with Fire Trail"},
 	"ice_wave": {"name": "Ice Wave", "unlock": "Kill 50 enemies with Floor Spikes"},
-	"spike_ball": {"name": "Spike Ball", "unlock": "Freeze 50 enemies with Ice Wave"},
+	"spike_ball": {"name": "Spike Ball", "unlock": "Kill 50 enemies with Ice Wave"},
 	"shotgun": {"name": "Shotgun", "unlock": "Kill 50 enemies with Spike Ball"},
 	"turret": {"name": "Turret", "unlock": "Kill 50 enemies with Shotgun"},
 	"sniper": {"name": "Sniper Gun", "unlock": "Kill 50 enemies with Turret"},
@@ -110,7 +124,7 @@ func _show_weapons() -> void:
 		status.add_theme_font_size_override("font_size", 18)
 		vbox.add_child(status)
 		
-		if id != "handgun" and not is_unlocked:
+		if id != "zap" and not is_unlocked:
 			# Find the precursor to show its kills
 			var precursor = _get_precursor(id)
 			if precursor != "":
@@ -301,10 +315,7 @@ func _get_aura_precursor(id: String) -> String:
 	return ""
 
 func _get_precursor(id: String) -> String:
-	var weapon_chain = [
-		"handgun", "floor_spikes", "ice_wave", "spike_ball", "shotgun", "turret", 
-		"sniper", "orbs", "bouncing_disk", "machine_gun", "rocket",
-	]
+	var weapon_chain = WEAPONS.keys()
 	var idx = weapon_chain.find(id)
 	if idx > 0:
 		return weapon_chain[idx-1]

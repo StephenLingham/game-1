@@ -74,6 +74,12 @@ custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 text = "Upgrades"
 
+[node name="ResetAll" type="Button" parent="VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+text = "Reset All Data"
+
 [node name="Exit" type="Button" parent="VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 60)
@@ -92,3 +98,11 @@ grow_vertical = 0
 text = "v0.1.0"
 theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 0.5)
 theme_override_font_sizes/font_size = 14
+
+[node name="ResetConfirmation" type="ConfirmationDialog" parent="."]
+title = "Reset All Data?"
+initial_position = 2
+size = Vector2i(350, 100)
+dialog_text = "Are you sure you want to clear all progress? This cannot be undone."
+ok_button_text = "Yes, Reset Everything"
+cancel_button_text = "No, Keep My Data"
