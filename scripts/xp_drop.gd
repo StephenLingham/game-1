@@ -13,10 +13,6 @@ func _ready() -> void:
 	# Scale slightly based on value
 	var s := 0.8 + (float(value) / 100.0)
 	scale = Vector2(s, s)
-	
-	modulate = Color(0.1, 0.4, 1.0) # Deep vibrant blue
-	if has_node("CoinVisual"):
-		$CoinVisual.modulate = Color(1.2, 1.4, 3.0) # Boost brightness for a glow effect
 
 func _process(delta: float) -> void:
 	if not is_magnetized:
