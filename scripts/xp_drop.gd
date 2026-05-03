@@ -4,11 +4,17 @@ var value: int = 1
 var is_magnetized: bool = false
 var player: Node2D = null
 
+const TEXTURE_1 = preload("res://assets/xp-pick-up-cropped.png")
+#const TEXTURE_2 = preload("res://assets/xp-pick-up-2-cropped.png")
+
 func _ready() -> void:
 	add_to_group("xp_drops")
 	set_deferred("monitoring", true)
 	set_deferred("monitorable", true)
 	body_entered.connect(_on_body_entered)
+	
+	if has_node("CoinVisual"):
+		$CoinVisual.texture = TEXTURE_1 # if randf() < 0.5 else TEXTURE_2
 	
 	# Scale slightly based on value
 	var s := 0.8 + (float(value) / 100.0)
