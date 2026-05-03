@@ -90,10 +90,13 @@ func _on_card_gui_input(event: InputEvent, id: String) -> void:
 func _on_character_selected(id: String) -> void:
 	GameState.current_character = id
 	GameState.save()
-	_on_start_run_pressed()
+	if id == "passive_master":
+		get_tree().change_scene_to_file("res://scenes/LevelSelect.tscn")
+	else:
+		_on_start_run_pressed()
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")
 
 func _on_start_run_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/LevelSelect.tscn")
+	get_tree().change_scene_to_file("res://scenes/WeaponSelect.tscn")

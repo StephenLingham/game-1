@@ -17,6 +17,7 @@ var sealed_items: Array = [] # IDs of items the player has sealed
 var unlocked_characters: Array = ["starter"]
 var current_character: String = "starter"
 var max_levels_reached: Dictionary = {} # item_id -> reached_max (bool)
+var selected_starter_weapon: String = "zap"
 var lifetime_upgrades: Dictionary = {} # id -> total upgrades across all runs
 var lifetime_item_picks: Dictionary = {} # id -> total picks across all runs
 
@@ -194,7 +195,7 @@ func _apply_initial_character_traits() -> void:
 			# Maybe give an initial aura?
 			run_abilities["aura_damage"] = 1
 		else:
-			run_abilities = {"zap": 1}
+			run_abilities = {selected_starter_weapon: 1}
 	
 	match current_character:
 		"vampire":
