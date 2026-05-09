@@ -51,9 +51,6 @@ var spikes_scene: PackedScene = preload("res://scenes/floor_spikes.tscn")
 var turret_scene: PackedScene = preload("res://scenes/turret.tscn")
 
 func _ready() -> void:
-	# Hide sprite immediately to prevent 'scaling flash'
-	sprite.hide()
-	
 	add_to_group("player")
 	refresh_stats()
 	health = max_health
@@ -66,9 +63,6 @@ func _ready() -> void:
 		# Adjust scale if needed. Many character assets are large.
 		# A good default scale for these assets might be 0.05 or similar.
 		sprite.scale = Vector2(0.05, 0.05)
-	
-	# Show configured sprite
-	sprite.show()
 	
 	# Hide old visual nodes if they exist
 	var gun = get_node_or_null("Sprite2D/Gun")
