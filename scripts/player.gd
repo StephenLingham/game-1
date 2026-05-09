@@ -72,6 +72,11 @@ func _ready() -> void:
 	
 	# Reset muzzle to center
 	muzzle.position = Vector2.ZERO
+	
+	# Disable camera smoothing to reduce jitter
+	var cam = get_node_or_null("Camera2D")
+	if cam:
+		cam.position_smoothing_enabled = false
 
 func refresh_stats() -> void:
 	var old_max = max_health
