@@ -19,6 +19,7 @@ const TEXTURE_NORMAL = preload("res://assets/Enemies/enemy1-cropped.png")
 const TEXTURE_FAST = preload("res://assets/Enemies/enemy2-cropped.png")
 const TEXTURE_BIG = preload("res://assets/Enemies/enemy3-cropped.png")
 const TEXTURE_CUTE = preload("res://assets/Enemies/enemy4-cropped.png")
+const TEXTURE_ELITE = preload("res://assets/Enemies/enemy5.png")
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -57,6 +58,15 @@ func _ready() -> void:
 			attack_cooldown = GameConstants.ENEMY_CUTE_ATTACK_COOLDOWN
 			xp_drop_min = GameConstants.ENEMY_CUTE_XP_MIN
 			xp_drop_max = GameConstants.ENEMY_CUTE_XP_MAX
+		"Elite":
+			sprite.texture = TEXTURE_ELITE
+			sprite.scale = Vector2.ONE * GameConstants.ENEMY_ELITE_SPRITE_SCALE
+			speed = GameConstants.ENEMY_ELITE_SPEED
+			health = GameConstants.ENEMY_ELITE_HEALTH
+			damage = GameConstants.ENEMY_ELITE_DAMAGE
+			attack_cooldown = GameConstants.ENEMY_ELITE_ATTACK_COOLDOWN
+			xp_drop_min = GameConstants.ENEMY_ELITE_XP_MIN
+			xp_drop_max = GameConstants.ENEMY_ELITE_XP_MAX
 		_, "Normal":
 			sprite.texture = TEXTURE_NORMAL
 			sprite.scale = Vector2.ONE * GameConstants.ENEMY_NORMAL_SPRITE_SCALE
@@ -86,6 +96,11 @@ func _physics_process(delta: float) -> void:
 	elif target and is_instance_valid(target):
 		var dir := (target.global_position - global_position).normalized()
 		velocity = dir * speed
+		
+		# Flip sprite based on direction
+		if velocity.x != 0:
+			# Assume the base asset faces left (like character3)
+			sprite.flip_h = velocity.x > 0
 	else:
 		velocity = Vector2.ZERO
 	

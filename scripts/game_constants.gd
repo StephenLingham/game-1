@@ -39,12 +39,14 @@ const ARENA_SIZE_MULTIPLIER: float = 2.0
 const WAVE_BASE_SPAWN_WAIT: float = 0.75
 const WAVE_MIN_SPAWN_WAIT: float = 0.25
 const WAVE_SPAWN_WAIT_DECREMENT: float = 0.05
+const WAVE_3_SPAWN_WAIT: float = 0.10
 
 # Enemy Probabilities
 const PROB_NORMAL_ENEMY: float = 0.50
 const PROB_FAST_ENEMY: float = 0.20
 const PROB_BIG_ENEMY: float = 0.10
 const PROB_CUTE_ENEMY: float = 0.20
+const PROB_ELITE_ENEMY: float = 0.10
 
 # --- ENEMY SETTINGS ---
 const ENEMY_NORMAL_SPRITE_SCALE: float = 0.07
@@ -78,6 +80,14 @@ const ENEMY_CUTE_DAMAGE: int = 20
 const ENEMY_CUTE_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_CUTE_XP_MIN: int = 10
 const ENEMY_CUTE_XP_MAX: int = 15
+
+const ENEMY_ELITE_SPRITE_SCALE: float = 0.08
+const ENEMY_ELITE_SPEED: float = 60.0
+const ENEMY_ELITE_HEALTH: int = 100
+const ENEMY_ELITE_DAMAGE: int = 25
+const ENEMY_ELITE_ATTACK_COOLDOWN: float = 1.0
+const ENEMY_ELITE_XP_MIN: int = 20
+const ENEMY_ELITE_XP_MAX: int = 30
 
 # --- COLLECTION SETTINGS ---
 const BASE_COLLECTION_RADIUS: float = 50.0
