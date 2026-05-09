@@ -18,7 +18,7 @@ var _freeze_timer: float = 0.0
 const TEXTURE_NORMAL = preload("res://assets/Enemies/enemy1-cropped.png")
 const TEXTURE_FAST = preload("res://assets/Enemies/enemy2-cropped.png")
 const TEXTURE_BIG = preload("res://assets/Enemies/enemy3-cropped.png")
-const TEXTURE_CUTE = preload("res://assets/Enemies/enemy4-cropped.png")
+const TEXTURE_CUTE = preload("res://assets/Enemies/enemy6.png")
 const TEXTURE_ELITE = preload("res://assets/Enemies/enemy5.png")
 
 @onready var sprite: Sprite2D = $Sprite2D
@@ -93,8 +93,12 @@ func _physics_process(delta: float) -> void:
 		
 		# Flip sprite based on direction
 		if velocity.x != 0:
-			# Assume the base asset faces left (like character3)
-			sprite.flip_h = velocity.x > 0
+			if enemy_type == "Cute":
+				# enemy6 faces right by default, so flip when moving left
+				sprite.flip_h = velocity.x < 0
+			else:
+				# Other enemies face left by default, so flip when moving right
+				sprite.flip_h = velocity.x > 0
 	else:
 		velocity = Vector2.ZERO
 	
