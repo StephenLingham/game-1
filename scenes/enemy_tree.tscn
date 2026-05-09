@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/Enemies/enemy4-cropped.png" id="2_texture"]
+[ext_resource type="Texture2D" path="res://assets/Enemies/enemy6.png" id="2_texture"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 16.0
@@ -9,11 +9,11 @@ radius = 16.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_2"]
 radius = 20.0
 
-[node name="EnemyCute" type="CharacterBody2D"]
+[node name="EnemyTree" type="CharacterBody2D"]
 collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_script")
-enemy_type = "Cute"
+enemy_type = "Tree"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_texture")

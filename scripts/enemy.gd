@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 signal enemy_killed
 
-@export_enum("Normal", "Fast", "Big", "Cute") var enemy_type: String = "Normal"
+@export_enum("Normal", "Fast", "Big", "Tree", "Elite") var enemy_type: String = "Normal"
 
 var speed: float
 var health: int
@@ -18,7 +18,7 @@ var _freeze_timer: float = 0.0
 const TEXTURE_NORMAL = preload("res://assets/Enemies/enemy1-cropped.png")
 const TEXTURE_FAST = preload("res://assets/Enemies/enemy2-cropped.png")
 const TEXTURE_BIG = preload("res://assets/Enemies/enemy3-cropped.png")
-const TEXTURE_CUTE = preload("res://assets/Enemies/enemy6.png")
+const TEXTURE_TREE = preload("res://assets/Enemies/enemy6.png")
 const TEXTURE_ELITE = preload("res://assets/Enemies/enemy5.png")
 
 @onready var sprite: Sprite2D = $Sprite2D
@@ -46,15 +46,15 @@ func _ready() -> void:
 			attack_cooldown = GameConstants.ENEMY_BIG_ATTACK_COOLDOWN
 			xp_drop_min = GameConstants.ENEMY_BIG_XP_MIN
 			xp_drop_max = GameConstants.ENEMY_BIG_XP_MAX
-		"Cute":
-			sprite.texture = TEXTURE_CUTE
-			sprite.scale = Vector2.ONE * GameConstants.ENEMY_CUTE_SPRITE_SCALE
-			speed = GameConstants.ENEMY_CUTE_SPEED
-			health = GameConstants.ENEMY_CUTE_HEALTH
-			damage = GameConstants.ENEMY_CUTE_DAMAGE
-			attack_cooldown = GameConstants.ENEMY_CUTE_ATTACK_COOLDOWN
-			xp_drop_min = GameConstants.ENEMY_CUTE_XP_MIN
-			xp_drop_max = GameConstants.ENEMY_CUTE_XP_MAX
+		"Tree":
+			sprite.texture = TEXTURE_TREE
+			sprite.scale = Vector2.ONE * GameConstants.ENEMY_TREE_SPRITE_SCALE
+			speed = GameConstants.ENEMY_TREE_SPEED
+			health = GameConstants.ENEMY_TREE_HEALTH
+			damage = GameConstants.ENEMY_TREE_DAMAGE
+			attack_cooldown = GameConstants.ENEMY_TREE_ATTACK_COOLDOWN
+			xp_drop_min = GameConstants.ENEMY_TREE_XP_MIN
+			xp_drop_max = GameConstants.ENEMY_TREE_XP_MAX
 		"Elite":
 			sprite.texture = TEXTURE_ELITE
 			sprite.scale = Vector2.ONE * GameConstants.ENEMY_ELITE_SPRITE_SCALE
@@ -93,7 +93,7 @@ func _physics_process(delta: float) -> void:
 		
 		# Flip sprite based on direction
 		if velocity.x != 0:
-			if enemy_type == "Cute":
+			if enemy_type == "Tree":
 				# enemy6 faces right by default, so flip when moving left
 				sprite.flip_h = velocity.x < 0
 			else:

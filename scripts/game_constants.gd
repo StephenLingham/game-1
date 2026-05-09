@@ -45,7 +45,7 @@ const WAVE_3_SPAWN_WAIT: float = 0.10
 const PROB_NORMAL_ENEMY: float = 0.50
 const PROB_FAST_ENEMY: float = 0.20
 const PROB_BIG_ENEMY: float = 0.10
-const PROB_CUTE_ENEMY: float = 0.20
+const PROB_TREE_ENEMY: float = 0.20
 const PROB_ELITE_ENEMY: float = 0.10
 
 # --- ENEMY SETTINGS ---
@@ -73,13 +73,13 @@ const ENEMY_BIG_ATTACK_COOLDOWN: float = 1.5
 const ENEMY_BIG_XP_MIN: int = 40
 const ENEMY_BIG_XP_MAX: int = 60
 
-const ENEMY_CUTE_SPRITE_SCALE: float = 0.05
-const ENEMY_CUTE_SPEED: float = 60.0
-const ENEMY_CUTE_HEALTH: int = 100
-const ENEMY_CUTE_DAMAGE: int = 20
-const ENEMY_CUTE_ATTACK_COOLDOWN: float = 1.0
-const ENEMY_CUTE_XP_MIN: int = 10
-const ENEMY_CUTE_XP_MAX: int = 15
+const ENEMY_TREE_SPRITE_SCALE: float = 0.05
+const ENEMY_TREE_SPEED: float = 60.0
+const ENEMY_TREE_HEALTH: int = 100
+const ENEMY_TREE_DAMAGE: int = 20
+const ENEMY_TREE_ATTACK_COOLDOWN: float = 1.0
+const ENEMY_TREE_XP_MIN: int = 10
+const ENEMY_TREE_XP_MAX: int = 15
 
 const ENEMY_ELITE_SPRITE_SCALE: float = 0.08
 const ENEMY_ELITE_SPEED: float = 60.0

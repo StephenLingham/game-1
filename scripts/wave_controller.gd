@@ -6,7 +6,7 @@ class_name WaveController
 
 var enemy_fast_scene := preload("res://scenes/enemy_fast.tscn")
 var enemy_big_scene := preload("res://scenes/enemy_big.tscn")
-var enemy_cute_scene := preload("res://scenes/enemy_cute.tscn")
+var enemy_tree_scene := preload("res://scenes/enemy_tree.tscn")
 var enemy_elite_scene := preload("res://scenes/enemy_elite.tscn")
 var powerup_scene := preload("res://scenes/PowerupPickup.tscn")
 var chest_scene := preload("res://scenes/TreasureChest.tscn")
@@ -139,7 +139,7 @@ func _spawn_tick() -> void:
 		
 		# Wave-specific spawning
 		if wave == 1:
-			scene_to_spawn = enemy_cute_scene
+			scene_to_spawn = enemy_tree_scene
 		elif wave == 3:
 			scene_to_spawn = enemy_elite_scene
 		else:
@@ -148,9 +148,9 @@ func _spawn_tick() -> void:
 				scene_to_spawn = enemy_big_scene
 			elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY):
 				scene_to_spawn = enemy_fast_scene
-			elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_CUTE_ENEMY):
-				scene_to_spawn = enemy_cute_scene
-			elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_CUTE_ENEMY + GameConstants.PROB_ELITE_ENEMY):
+			elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_TREE_ENEMY):
+				scene_to_spawn = enemy_tree_scene
+			elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_TREE_ENEMY + GameConstants.PROB_ELITE_ENEMY):
 				scene_to_spawn = enemy_elite_scene
 			
 		var e := scene_to_spawn.instantiate()
