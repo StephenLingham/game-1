@@ -23,6 +23,9 @@ const TEXTURE_CUTE = preload("res://assets/Enemies/enemy4-cropped.png")
 @onready var sprite: Sprite2D = $Sprite2D
 
 func _ready() -> void:
+	# Hide sprite immediately to prevent 'scaling flash'
+	sprite.hide()
+	
 	add_to_group("enemies")
 	target = get_tree().get_first_node_in_group("player")
 	
@@ -63,6 +66,9 @@ func _ready() -> void:
 			attack_cooldown = GameConstants.ENEMY_NORMAL_ATTACK_COOLDOWN
 			xp_drop_min = GameConstants.ENEMY_NORMAL_XP_MIN
 			xp_drop_max = GameConstants.ENEMY_NORMAL_XP_MAX
+	
+	# Show configured sprite
+	sprite.show()
 	
 	# Apply difficulty multipliers
 	health = int(health * GameState.run_difficulty_health_mult)
