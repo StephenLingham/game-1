@@ -63,6 +63,15 @@ func _refresh_ui() -> void:
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc.modulate = Color(0.8, 0.8, 0.9)
+		
+		if is_unlocked and cdata.has("texture"):
+			var tex_rect = TextureRect.new()
+			tex_rect.texture = load(cdata.texture)
+			tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			tex_rect.custom_minimum_size = Vector2(0, 120)
+			vbox.add_child(tex_rect)
+			
 		vbox.add_child(desc)
 		
 		if is_unlocked:

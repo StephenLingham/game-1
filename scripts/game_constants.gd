@@ -231,61 +231,73 @@ const CHARACTERS: Dictionary = {
 	"starter": {
 		"name": "Alaric the Apprentice",
 		"desc": "A balanced wizard starting his journey.",
+		"texture": "res://assets/Characters/character3.png",
 		"traits": []
 	},
 	"speed_damage": {
 		"name": "Zephyros the Swift",
 		"desc": "Damage scales with speed. Gains speed over time, but halved on hit.",
+		"texture": "res://assets/Characters/character2.png",
 		"traits": ["speed_damage_scaling", "speed_gain_over_time"]
 	},
 	"tank": {
 		"name": "Grogun the Titan",
 		"desc": "Very slow but extremely durable.",
+		"texture": "res://assets/Characters/character1.png",
 		"traits": ["high_armor_health", "slowness"]
 	},
 	"glass_cannon": {
 		"name": "Mordred the Maleficent",
 		"desc": "Max health decreases but damage increases on every level up.",
+		"texture": "res://assets/Characters/character1.png",
 		"traits": ["damage_up_hp_down_on_level"]
 	},
 	"chaos": {
 		"name": "Kaos the Herald",
 		"desc": "Enemies spawn faster as he grows in power.",
+		"texture": "res://assets/Characters/character1.png",
 		"traits": ["spawn_rate_on_level"]
 	},
 	"echo": {
 		"name": "Mystra the Echo",
 		"desc": "Has the rare ability to carry duplicate auras.",
+		"texture": "res://assets/Characters/character1.png",
 		"traits": ["duplicate_auras"]
 	},
 	"polymath": {
 		"name": "Octavius the Polymath",
 		"desc": "Can master 8 abilities instead of 6.",
+		"texture": "res://assets/Characters/character1.png",
 		"traits": ["extra_slots"]
 	},
 	"singular_force": {
 		"name": "Solon the Singular",
 		"desc": "Can only hold one ability, but it deals 6x damage.",
+		"texture": "res://assets/Characters/character1.png",
 		"traits": ["single_ability_damage"]
 	},
 	"singular_volley": {
 		"name": "Volos the Voluminous",
 		"desc": "Only one ability, but it gains an extra projectile every level.",
+		"texture": "res://assets/Characters/character1.png",
 		"traits": ["single_ability_projectiles"]
 	},
 	"singular_luck": {
 		"name": "Fortuno the Favored",
 		"desc": "Only one ability, but chests appear 5x as often.",
+		"texture": "res://assets/Characters/character1.png",
 		"traits": ["single_ability_chests"]
 	},
 	"vampire": {
 		"name": "Sanguis the Eternal",
 		"desc": "Starts with massive health. Speed decreases but lifesteal increases as he levels.",
+		"texture": "res://assets/Characters/character1.png",
 		"traits": ["high_hp_vampire"]
 	},
 	"passive_master": {
 		"name": "Thornius the Reactive",
 		"desc": "High thorns and regen. Can't use weapons, but masters auras.",
+		"texture": "res://assets/Characters/character1.png",
 		"traits": ["no_weapons_auras_only"]
 	}
 }

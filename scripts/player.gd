@@ -55,25 +55,20 @@ func _ready() -> void:
 	refresh_stats()
 	health = max_health
 	
-	# Character visual changes: Circle, no gun
+	# Load character texture
+	var char_id = GameState.current_character
+	var char_data = GameConstants.CHARACTERS.get(char_id, GameConstants.CHARACTERS["starter"])
+	if char_data.has("texture"):
+		sprite.texture = load(char_data.texture)
+		# Adjust scale if needed. Many character assets are large.
+		# A good default scale for these assets might be 0.05 or similar.
+		sprite.scale = Vector2(0.05, 0.05)
+	
+	# Hide old visual nodes if they exist
 	var gun = get_node_or_null("Sprite2D/Gun")
 	if gun: gun.visible = false
-	
 	var body = get_node_or_null("Sprite2D/Body")
-	if body:
-		# We can't easily turn ColorRect into a circle without a shader or Polygon2D.
-		# I'll replace it with a Polygon2D.
-		var poly = Polygon2D.new()
-		var pts = []
-		var segments = 32
-		var radius = 16.0
-		for i in range(segments):
-			var a = i * TAU / segments
-			pts.append(Vector2.RIGHT.rotated(a) * radius)
-		poly.polygon = PackedVector2Array(pts)
-		poly.color = body.color
-		body.get_parent().add_child(poly)
-		body.visible = false
+	if body: body.visible = false
 	
 	# Reset muzzle to center
 	muzzle.position = Vector2.ZERO
@@ -181,6 +176,10 @@ func _physics_process(delta: float) -> void:
 		if input_dir.length() > 1.0:
 			input_dir = input_dir.normalized()
 		velocity = input_dir * speed
+		
+		# Flip sprite based on direction
+		if input_dir.x != 0:
+			sprite.flip_h = input_dir.x > 0
 	elif _has_click_target:
 		var to_target := _click_target - global_position
 		if to_target.length() <= 4.0:
@@ -188,6 +187,9 @@ func _physics_process(delta: float) -> void:
 			velocity = Vector2.ZERO
 		else:
 			velocity = to_target.normalized() * speed
+			# Flip sprite based on direction
+			if velocity.x != 0:
+				sprite.flip_h = velocity.x > 0
 	else:
 		velocity = Vector2.ZERO
 	move_and_slide()
