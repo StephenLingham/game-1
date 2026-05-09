@@ -194,6 +194,9 @@ func _spawn_tick() -> void:
 
 		e.global_position = spawn_pos
 		game.get_node("EnemyContainer").add_child(e)
+		# Reset physics interpolation so the enemy doesn't flash at its
+		# default (large) scale for a single frame on spawn.
+		e.reset_physics_interpolation()
 
 func _spawn_powerup() -> void:
 	if powerup_scene == null: return
