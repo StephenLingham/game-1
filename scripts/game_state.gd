@@ -58,6 +58,10 @@ var run_lifesteal: float = 0.0
 var run_extra_projectiles: int = 0
 var run_extra_bounces: int = 0
 
+# Per-weapon trait accumulations (float values, floored when used)
+# Structure: { "weapon_id": { "damage": 0.0, "crit_chance": 0.0, "projectiles": 0.0, "bounces": 0.0, "size": 0.0 } }
+var run_weapon_traits: Dictionary = {}
+
 signal level_up(new_level: int)
 
 
@@ -184,6 +188,7 @@ func reset_run() -> void:
 	run_lifesteal = 0.0
 	run_extra_projectiles = 0
 	run_extra_bounces = 0
+	run_weapon_traits = {}
 	
 	_apply_initial_character_traits()
 
@@ -233,6 +238,84 @@ func get_projectiles() -> int:
 func get_bounces() -> int:
 	var blvl = min(perm_bounces_level, 10)
 	return GameConstants.BASE_BOUNCES + blvl + run_extra_bounces
+
+# --- PER-WEAPON TRAIT SYSTEM ---
+
+func get_weapon_trait(weapon_id: String, trait_name: String) -> float:
+	return run_weapon_traits.get(weapon_id, {}).get(trait_name, 0.0)
+
+func add_weapon_trait(weapon_id: String, trait_name: String, amount: float) -> void:
+	if not run_weapon_traits.has(weapon_id):
+		run_weapon_traits[weapon_id] = {}
+	var current: float = run_weapon_traits[weapon_id].get(trait_name, 0.0)
+	run_weapon_traits[weapon_id][trait_name] = current + amount
+
+## Returns the total projectile count for a weapon, respecting its trait bonus.
+## Fractional accumulations are floored. Minimum is always 1.
+func get_weapon_projectiles(weapon_id: String) -> int:
+	var trait_bonus := get_weapon_trait(weapon_id, "projectiles")
+	return max(1, int(floor(float(GameConstants.BASE_PROJECTILES) + trait_bonus)))
+
+## Returns bounce count for a weapon from its trait bonus. Fractional values are floored.
+func get_weapon_bounces(weapon_id: String) -> int:
+	var trait_bonus := get_weapon_trait(weapon_id, "bounces")
+	return max(0, int(floor(float(GameConstants.BASE_BOUNCES) + trait_bonus)))
+
+## Returns a size multiplier (e.g. 1.30 = +30% radius) for area-based weapon attacks.
+func get_weapon_size_multiplier(weapon_id: String) -> float:
+	return 1.0 + get_weapon_trait(weapon_id, "size")
+
+## Returns flat damage bonus accumulated for this weapon via its damage trait.
+func get_weapon_damage_bonus(weapon_id: String) -> int:
+	return int(round(get_weapon_trait(weapon_id, "damage")))
+
+## Returns extra crit chance (0.0-1.0) accumulated for this weapon via its crit_chance trait.
+func get_weapon_crit_chance_bonus(weapon_id: String) -> float:
+	return get_weapon_trait(weapon_id, "crit_chance")
+
+## Roll a random rarity using weighted selection.
+func roll_rarity() -> String:
+	var weights: Array = GameConstants.RARITY_WEIGHTS
+	var total := 0
+	for w in weights: total += w
+	var roll := randi() % total
+	var cumulative := 0
+	for i in range(GameConstants.RARITIES.size()):
+		cumulative += weights[i]
+		if roll < cumulative:
+			return GameConstants.RARITIES[i]
+	return "common"
+
+## Roll a full trait upgrade for a weapon: returns { trait, rarity, value, display_text }
+func roll_weapon_upgrade(weapon_id: String) -> Dictionary:
+	var traits: Array = GameConstants.WEAPON_TRAITS.get(weapon_id, [])
+	if traits.is_empty():
+		return {}
+	var trait_name: String = traits[randi() % traits.size()]
+	var rarity: String = roll_rarity()
+	var mult: float = GameConstants.RARITY_MULTIPLIERS[rarity]
+	var value: float
+	match trait_name:
+		"damage":      value = GameConstants.TRAIT_BASE_DAMAGE * mult
+		"crit_chance": value = GameConstants.TRAIT_BASE_CRIT_CHANCE * mult
+		"projectiles": value = GameConstants.TRAIT_BASE_PROJECTILES * mult
+		"bounces":     value = GameConstants.TRAIT_BASE_BOUNCES * mult
+		"size":        value = GameConstants.TRAIT_BASE_SIZE * mult
+		_:             value = 0.0
+	var display: String
+	match trait_name:
+		"damage":      display = "+%d Damage" % int(round(value))
+		"crit_chance": display = "+%d%% Crit Chance" % int(round(value * 100.0))
+		"projectiles": display = "+%.1f Projectiles (→%d)" % [value, int(floor(get_weapon_trait(weapon_id, "projectiles") + value)) + GameConstants.BASE_PROJECTILES]
+		"bounces":     display = "+%.1f Bounces (→%d)" % [value, int(floor(get_weapon_trait(weapon_id, "bounces") + value))]
+		"size":        display = "+%d%% Area Size" % int(round(value * 100.0))
+		_:             display = ""
+	return {
+		"trait":   trait_name,
+		"rarity":  rarity,
+		"value":   value,
+		"display": display
+	}
 
 
 # --- HELPER GETTERS (Backward Compatibility) ---

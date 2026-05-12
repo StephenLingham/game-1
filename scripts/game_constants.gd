@@ -26,7 +26,7 @@ const PERM_COST_INCREMENT: int = 0
 const ZAP_MAX_LEVEL: int = 5
 const ZAP_DAMAGE_PER_UPGRADE: int = 0
 const ZAP_ATK_SPD_PER_UPGRADE: float = 0.15
-const ZAP_BASE_DAMAGE: int = 20
+const ZAP_BASE_DAMAGE: int = 100
 const ZAP_SECOND_WEAPON_DAMAGE: int = 100
 
 # --- WAVES & SPAWN SETTINGS ---
@@ -150,7 +150,7 @@ const TURRET_FIRE_RATE: float = 0.5
 
 # Machine Gun
 const MG_BASE_COOLDOWN: float = 0.15
-const MG_DAMAGE: int = 50
+const MG_DAMAGE: int = 100
 const MG_MAX_LEVEL: int = 5
 
 # Floor Spikes
@@ -167,23 +167,90 @@ const ICE_FREEZE_DURATION: float = 2.0
 
 # --- NEW WEAPONS STATS ---
 const ARCANE_MISSILE_DAMAGE: int = 100
-const FIREBALL_DAMAGE: int = 60
-const ICE_SHARD_DAMAGE: int = 30
+const FIREBALL_DAMAGE: int = 100
+const FIREBALL_BASE_BLAST_RADIUS: float = 80.0
+const ICE_SHARD_DAMAGE: int = 100
 const METEOR_DAMAGE: int = 150
-const FROZEN_ORB_DAMAGE: int = 25
-const LIGHTNING_BOLT_DAMAGE: int = 35
-const ICE_BOLT_DAMAGE: int = 30
-const FIRE_BOLT_DAMAGE: int = 45
-const ARCANE_BOLT_DAMAGE: int = 40
-const LIGHTNING_FORK_DAMAGE: int = 30
-const BLIZZARD_DAMAGE: int = 20
-const ARCANE_ORBS_DAMAGE: int = 50
-const ARCANE_FIELD_DAMAGE: int = 15
-const FIRE_TRAIL_DAMAGE: int = 10
+const METEOR_BASE_RADIUS: float = 80.0
+const FROZEN_ORB_DAMAGE: int = 100
+const LIGHTNING_BOLT_DAMAGE: int = 100
+const ICE_BOLT_DAMAGE: int = 100
+const FIRE_BOLT_DAMAGE: int = 100
+const ARCANE_BOLT_DAMAGE: int = 100
+const LIGHTNING_FORK_DAMAGE: int = 100
+const BLIZZARD_DAMAGE: int = 100
+const BLIZZARD_BASE_RADIUS: float = 250.0
+const ARCANE_ORBS_DAMAGE: int = 100
+const ARCANE_FIELD_DAMAGE: int = 100
+const ARCANE_FIELD_BASE_RADIUS: float = 150.0
+const FIRE_TRAIL_DAMAGE: int = 100
 
 # --- GLOBAL PROJECTILE STATS ---
 const BASE_PROJECTILES: int = 1
 const BASE_BOUNCES: int = 0
+
+# --- WEAPON TRAITS ---
+# Each weapon's list of upgradeable traits shown in the shop
+const WEAPON_TRAITS: Dictionary = {
+	"zap":            ["damage"],
+	"arcane_missile": ["damage", "projectiles"],
+	"fireball":       ["damage", "size", "projectiles"],
+	"ice_shard":      ["damage", "crit_chance"],
+	"meteor":         ["damage", "size"],
+	"frozen_orb":     ["size", "damage"],
+	"lightning_bolt": ["projectiles", "bounces"],
+	"ice_bolt":       ["projectiles", "bounces"],
+	"fire_bolt":      ["projectiles", "bounces"],
+	"arcane_bolt":    ["projectiles", "bounces"],
+	"lightning_fork": ["damage", "crit_chance"],
+	"blizzard":       ["size", "damage"],
+	"arcane_orbs":    ["damage", "crit_chance"],
+	"arcane_field":   ["size", "damage"],
+	"fire_trail":     ["damage", "size"],
+	"shotgun":        ["projectiles", "damage"],
+	"sniper":         ["damage", "crit_chance"],
+	"rocket":         ["size", "damage"],
+	"bouncing_disk":  ["bounces", "damage"],
+	"machine_gun":    ["damage", "crit_chance"],
+	"floor_spikes":   ["damage", "size"],
+	"turret":         ["damage", "crit_chance"],
+	"ice_wave":       ["size"],
+	"spike_ball":     ["damage", "size"],
+	"orbs":           ["damage", "crit_chance"],
+}
+
+# --- RARITY SYSTEM ---
+const RARITIES: Array = ["common", "uncommon", "rare", "epic", "legendary"]
+const RARITY_NAMES: Dictionary = {
+	"common":    "Common",
+	"uncommon":  "Uncommon",
+	"rare":      "Rare",
+	"epic":      "Epic",
+	"legendary": "Legendary"
+}
+const RARITY_COLORS: Dictionary = {
+	"common":    Color(0.9, 0.9, 0.9),
+	"uncommon":  Color(0.3, 0.85, 0.3),
+	"rare":      Color(0.3, 0.55, 1.0),
+	"epic":      Color(0.75, 0.3, 1.0),
+	"legendary": Color(1.0, 0.82, 0.1)
+}
+# Cumulative weights — common = 50%, uncommon = 25%, rare = 15%, epic = 7%, legendary = 3%
+const RARITY_WEIGHTS: Array = [50, 25, 15, 7, 3]
+const RARITY_MULTIPLIERS: Dictionary = {
+	"common":    1.0,
+	"uncommon":  1.4,
+	"rare":      1.8,
+	"epic":      2.4,
+	"legendary": 3.0
+}
+
+# --- TRAIT BASE VALUES (at Common rarity) ---
+const TRAIT_BASE_DAMAGE: float      = 25.0  # flat damage added
+const TRAIT_BASE_CRIT_CHANCE: float = 0.05  # +5% crit chance
+const TRAIT_BASE_PROJECTILES: float = 1.0   # fractional; floored when firing
+const TRAIT_BASE_BOUNCES: float     = 1.0   # fractional; floored when applied
+const TRAIT_BASE_SIZE: float        = 0.10  # +10% area radius
 
 # --- AURA SETTINGS ---
 const AURA_MAX_LEVEL: int = 5

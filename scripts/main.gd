@@ -369,7 +369,14 @@ func _generate_shop_options() -> void:
 	
 	pool.shuffle()
 	for i in range(min(GameConstants.SHOP_OPTIONS_COUNT, pool.size())):
-		current_shop_options.append(pool[i])
+		var opt = pool[i].duplicate()
+		# Roll a trait upgrade for this weapon if it has traits
+		if GameConstants.WEAPON_TRAITS.has(opt.id):
+			var upgrade_roll = GameState.roll_weapon_upgrade(opt.id)
+			opt["upgrade_roll"] = upgrade_roll
+		else:
+			opt["upgrade_roll"] = {}
+		current_shop_options.append(opt)
 
 func _refresh_shop_ui() -> void:
 	var abi_count = 0
@@ -474,20 +481,60 @@ func _refresh_shop_ui() -> void:
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
 		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-		vbox.add_theme_constant_override("separation", 10)
-		vbox.custom_minimum_size = Vector2(240, 140) # Ensure fixed height so buttons align
+		vbox.add_theme_constant_override("separation", 8)
+		vbox.custom_minimum_size = Vector2(240, 170)
 		panel.add_child(vbox)
 		
+		# --- Rarity data ---
+		var upgrade_roll: Dictionary = abi.get("upgrade_roll", {})
+		var has_roll := not upgrade_roll.is_empty()
+		var rarity: String = upgrade_roll.get("rarity", "common")
+		var rarity_color: Color = GameConstants.RARITY_COLORS.get(rarity, Color.WHITE)
+		
+		# Apply rarity-tinted background to the panel
+		if has_roll:
+			var sb = StyleBoxFlat.new()
+			sb.bg_color = Color(rarity_color.r * 0.15, rarity_color.g * 0.15, rarity_color.b * 0.15, 1.0)
+			sb.border_width_left = 3
+			sb.border_width_top = 3
+			sb.border_width_right = 3
+			sb.border_width_bottom = 3
+			sb.border_color = rarity_color
+			sb.corner_radius_top_left = 8
+			sb.corner_radius_top_right = 8
+			sb.corner_radius_bottom_left = 8
+			sb.corner_radius_bottom_right = 8
+			panel.add_theme_stylebox_override("panel", sb)
+		
+		# --- Weapon name & level ---
 		var lbl = Label.new()
 		lbl.text = abi.name + " (Lvl %d)" % level
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.add_theme_font_size_override("font_size", 22)
+		lbl.add_theme_font_size_override("font_size", 20)
 		vbox.add_child(lbl)
 		
+		# --- Rarity badge ---
+		if has_roll:
+			var rarity_lbl = Label.new()
+			var rarity_name: String = GameConstants.RARITY_NAMES.get(rarity, "Common")
+			rarity_lbl.text = "★  %s" % rarity_name.to_upper()
+			rarity_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			rarity_lbl.add_theme_font_size_override("font_size", 16)
+			rarity_lbl.modulate = rarity_color
+			vbox.add_child(rarity_lbl)
+			
+			# --- Trait stat line ---
+			var stat_lbl = Label.new()
+			stat_lbl.text = upgrade_roll.get("display", "")
+			stat_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			stat_lbl.add_theme_font_size_override("font_size", 18)
+			stat_lbl.modulate = Color.WHITE
+			vbox.add_child(stat_lbl)
+		
+		# --- Upgrade button ---
 		var buy_btn = Button.new()
 		var max_lvl = _get_max_level(abi.id)
 		
-		# Separate limit checks
 		var is_limit_reached = false
 		if level == 0:
 			var cur_abi = 0
@@ -509,19 +556,18 @@ func _refresh_shop_ui() -> void:
 			buy_btn.disabled = true
 		else:
 			var prefix = "Select" if level == 0 else "Upgrade"
-			buy_btn.text = "%s" % prefix
-			buy_btn.pressed.connect(_buy_ability.bind(abi.id))
+			buy_btn.text = prefix
+			buy_btn.pressed.connect(_buy_ability.bind(abi.id, abi.get("upgrade_roll", {})))
 			
 		buy_btn.custom_minimum_size = Vector2(180, 40)
 		vbox.add_child(buy_btn)
 		
-		# Add Description for Auras and maybe weapons too if we want
+		# Aura description (non-weapon)
 		var desc_lbl = Label.new()
 		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc_lbl.modulate = Color(0.8, 0.8, 0.8)
 		desc_lbl.add_theme_font_size_override("font_size", 14)
-		
 		if abi.id.begins_with("aura_"):
 			var aura_data = GameConstants.AURAS[abi.id]
 			var val = aura_data.value
@@ -529,7 +575,6 @@ func _refresh_shop_ui() -> void:
 				desc_lbl.text = aura_data.desc % int(val * 100)
 			else:
 				desc_lbl.text = aura_data.desc % val
-		
 		vbox.add_child(desc_lbl)
 		upgrades_box.add_child(panel)
 
@@ -570,12 +615,15 @@ func _get_max_level(id: String) -> int:
 	return 5
 
 
-func _buy_ability(id: String) -> void:
+func _buy_ability(id: String, upgrade_roll: Dictionary = {}) -> void:
 	var level = GameState.run_abilities.get(id, 0)
 	
 	if level < _get_max_level(id):
 		GameState.run_abilities[id] = level + 1
 		GameState.record_ability_upgrade(id, level + 1)
+		# Apply the rolled trait bonus if any
+		if not upgrade_roll.is_empty():
+			GameState.add_weapon_trait(id, upgrade_roll["trait"], upgrade_roll["value"])
 		_close_shop()
 
 

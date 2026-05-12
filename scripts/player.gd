@@ -326,11 +326,18 @@ func _fire_weapon(id: String, target: Node2D) -> void:
 func _fire_projectile_weapon(id: String, target: Node2D, color: Color, explode: bool = false) -> void:
 	if not is_instance_valid(target): return
 	
-	var count = GameState.get_projectiles()
-	if id == "zap": count = 1 # Zap doesn't benefit
+	# Determine projectile count: per-weapon trait if available, else global or fixed
+	var count: int
+	var weapon_trait_list: Array = GameConstants.WEAPON_TRAITS.get(id, [])
+	if "projectiles" in weapon_trait_list:
+		count = GameState.get_weapon_projectiles(id)
+	elif id == "zap":
+		count = 1
+	else:
+		count = GameState.get_projectiles()
 	
 	var dir = (target.global_position - global_position).normalized()
-	var base_damage = _get_weapon_base_damage(id)
+	var effective_base = _get_weapon_base_damage(id) + GameState.get_weapon_damage_bonus(id)
 	
 	for i in range(count):
 		var b = bullet_scene.instantiate()
@@ -342,12 +349,19 @@ func _fire_projectile_weapon(id: String, target: Node2D, color: Color, explode: 
 		b.modulate = color
 		b.weapon_source = id
 		
-		var res = _get_final_damage(base_damage)
+		var res = _get_final_damage_for_weapon(effective_base, id)
 		b.damage = res.damage
 		if "is_crit" in b: b.is_crit = res.is_crit
 		
 		if _can_weapon_bounce(id):
-			b.bounces_left = GameState.get_bounces()
+			if "bounces" in weapon_trait_list:
+				b.bounces_left = GameState.get_weapon_bounces(id)
+			else:
+				b.bounces_left = GameState.get_bounces()
+		
+		# Fireball explosion: set area radius on bullet
+		if explode:
+			b.area_radius = GameConstants.FIREBALL_BASE_BLAST_RADIUS * GameState.get_weapon_size_multiplier(id)
 		
 		get_tree().current_scene.add_child(b)
 
@@ -375,13 +389,16 @@ func _can_weapon_bounce(id: String) -> bool:
 
 func _fire_meteor() -> void:
 	var count = GameState.get_projectiles()
+	var size_mult = GameState.get_weapon_size_multiplier("meteor")
+	var radius = GameConstants.METEOR_BASE_RADIUS * size_mult
+	var effective_dmg = _get_weapon_base_damage("meteor") + GameState.get_weapon_damage_bonus("meteor")
 	for i in range(count):
 		var pos = global_position + Vector2(randf_range(-400, 400), randf_range(-400, 400))
 		# Visual circle for meteor impact
 		var circle = Polygon2D.new()
 		var pts = []
 		for j in range(32):
-			pts.append(Vector2.RIGHT.rotated(j * TAU / 32) * 60.0)
+			pts.append(Vector2.RIGHT.rotated(j * TAU / 32) * radius)
 		circle.polygon = PackedVector2Array(pts)
 		circle.color = Color(1.0, 0.4, 0.0, 0.5)
 		circle.global_position = pos
@@ -389,7 +406,7 @@ func _fire_meteor() -> void:
 		
 		var timer = get_tree().create_timer(0.5)
 		timer.timeout.connect(func():
-			_apply_area_damage(pos, 80.0, GameConstants.METEOR_DAMAGE, "meteor")
+			_apply_area_damage_for_weapon(pos, radius, effective_dmg, "meteor")
 			circle.queue_free()
 		)
 
@@ -406,18 +423,22 @@ func _fire_frozen_orb(target: Node2D) -> void:
 	get_tree().current_scene.add_child(orb)
 
 func _fire_blizzard() -> void:
-	# Simplified: Multiple projectiles fall around player
+	var size_mult = GameState.get_weapon_size_multiplier("blizzard")
+	var spawn_range = GameConstants.BLIZZARD_BASE_RADIUS * size_mult
 	var count = GameState.get_projectiles() * 3
+	var effective_dmg = _get_weapon_base_damage("blizzard") + GameState.get_weapon_damage_bonus("blizzard")
 	for i in range(count):
-		var pos = global_position + Vector2(randf_range(-250, 250), randf_range(-250, 250))
-		_apply_area_damage(pos, 40.0, GameConstants.BLIZZARD_DAMAGE, "blizzard")
+		var pos = global_position + Vector2(randf_range(-spawn_range, spawn_range), randf_range(-spawn_range, spawn_range))
+		_apply_area_damage_for_weapon(pos, 40.0, effective_dmg, "blizzard")
 
 func _update_arcane_orbs() -> void:
 	# Handled via child nodes in player usually, but I'll skip for brevity or implement if needed
 	pass
 
 func _trigger_arcane_field() -> void:
-	_apply_area_damage(global_position, 150.0, GameConstants.ARCANE_FIELD_DAMAGE, "arcane_field")
+	var radius = GameConstants.ARCANE_FIELD_BASE_RADIUS * GameState.get_weapon_size_multiplier("arcane_field")
+	var effective_dmg = _get_weapon_base_damage("arcane_field") + GameState.get_weapon_damage_bonus("arcane_field")
+	_apply_area_damage_for_weapon(global_position, radius, effective_dmg, "arcane_field")
 
 func _leave_fire_trail() -> void:
 	var fire = spikes_scene.instantiate() # Reuse floor spikes for trail
@@ -433,6 +454,15 @@ func _apply_area_damage(pos: Vector2, radius: float, base_dmg: int, source: Stri
 			e.take_damage(res.damage, source, res.is_crit)
 			GameState.run_damage_stats[source] = GameState.run_damage_stats.get(source, 0) + res.damage
 
+## Weapon-trait-aware area damage: includes per-weapon crit chance bonus.
+func _apply_area_damage_for_weapon(pos: Vector2, radius: float, effective_dmg: int, source: String) -> void:
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for e in enemies:
+		if is_instance_valid(e) and pos.distance_to(e.global_position) <= radius:
+			var res = _get_final_damage_for_weapon(effective_dmg, source)
+			e.take_damage(res.damage, source, res.is_crit)
+			GameState.run_damage_stats[source] = GameState.run_damage_stats.get(source, 0) + res.damage
+
 func get_damage() -> int:
 	var dmg := float(base_damage + GameState.get_zap_damage_bonus())
 	dmg *= GameState.get_damage_multiplier()
@@ -441,6 +471,15 @@ func get_damage() -> int:
 func _get_final_damage(base_dmg: int) -> Dictionary:
 	var dmg = GameState.get_total_damage(base_dmg)
 	var is_crit = randf() < GameState.get_crit_chance()
+	if is_crit:
+		dmg = int(round(float(dmg) * GameState.get_crit_multiplier()))
+	return {"damage": dmg, "is_crit": is_crit}
+
+## Includes per-weapon crit chance bonus on top of the global crit chance.
+func _get_final_damage_for_weapon(base_dmg: int, weapon_id: String) -> Dictionary:
+	var dmg = GameState.get_total_damage(base_dmg)
+	var crit_chance = GameState.get_crit_chance() + GameState.get_weapon_crit_chance_bonus(weapon_id)
+	var is_crit = randf() < crit_chance
 	if is_crit:
 		dmg = int(round(float(dmg) * GameState.get_crit_multiplier()))
 	return {"damage": dmg, "is_crit": is_crit}
@@ -505,7 +544,8 @@ func fire(target: Node2D) -> void:
 		bullet.rotation = bullet_dir.angle()
 		bullet.direction = bullet_dir
 		
-		var res = _get_final_damage(GameConstants.ZAP_BASE_DAMAGE)
+		var zap_dmg = GameConstants.ZAP_BASE_DAMAGE + GameState.get_weapon_damage_bonus("zap")
+		var res = _get_final_damage_for_weapon(zap_dmg, "zap")
 		bullet.damage = res.damage
 		if "is_crit" in bullet: bullet.is_crit = res.is_crit
 		bullet.weapon_source = "zap"
@@ -533,7 +573,8 @@ func _fire_shotgun(target: Node2D) -> void:
 		bullet.global_position = muzzle.global_position
 		bullet.rotation = angle
 		bullet.direction = Vector2.RIGHT.rotated(angle)
-		var res = _get_final_damage(base_damage)
+		var shotgun_dmg = base_damage + GameState.get_weapon_damage_bonus("shotgun")
+		var res = _get_final_damage_for_weapon(shotgun_dmg, "shotgun")
 		bullet.damage = res.damage
 		if "is_crit" in bullet: bullet.is_crit = res.is_crit
 		bullet.weapon_source = "shotgun"
@@ -574,7 +615,8 @@ func _fire_sniper() -> void:
 		_create_crosshair_effect(target.global_position)
 		# Instantly kill enemy
 		if target.has_method("take_damage"):
-			var res = _get_final_damage(GameConstants.SNIPER_DAMAGE)
+			var sniper_dmg = GameConstants.SNIPER_DAMAGE + GameState.get_weapon_damage_bonus("sniper")
+			var res = _get_final_damage_for_weapon(sniper_dmg, "sniper")
 			var actual_dmg = target.take_damage(res.damage, "sniper", res.is_crit)
 			GameState.run_damage_stats["sniper"] = GameState.run_damage_stats.get("sniper", 0) + actual_dmg
 
@@ -648,7 +690,8 @@ func _fire_spike_ball(target: Node2D) -> void:
 		dir = (target.global_position - global_position).normalized()
 	
 	ball.direction = dir
-	var res = _get_final_damage(GameConstants.SPIKE_BALL_BASE_DAMAGE)
+	var spike_dmg = GameConstants.SPIKE_BALL_BASE_DAMAGE + GameState.get_weapon_damage_bonus("spike_ball")
+	var res = _get_final_damage_for_weapon(spike_dmg, "spike_ball")
 	ball.damage = res.damage
 	if "is_crit" in ball: ball.is_crit = res.is_crit
 	var lvl = GameState.run_abilities.get("spike_ball", 0)
@@ -673,10 +716,11 @@ func _fire_rocket() -> void:
 		var rocket = rocket_scene.instantiate()
 		rocket.global_position = muzzle.global_position
 		rocket.target = target
-		var res = _get_final_damage(GameConstants.ROCKET_DAMAGE)
+		var rocket_dmg = GameConstants.ROCKET_DAMAGE + GameState.get_weapon_damage_bonus("rocket")
+		var res = _get_final_damage_for_weapon(rocket_dmg, "rocket")
 		rocket.damage = res.damage
 		if "is_crit" in rocket: rocket.is_crit = res.is_crit
-		rocket.blast_radius = GameState.get_rocket_blast_radius()
+		rocket.blast_radius = GameState.get_rocket_blast_radius() * GameState.get_weapon_size_multiplier("rocket")
 		
 		# Initial direction towards target
 		var dir = (target.global_position - muzzle.global_position).normalized()
@@ -710,8 +754,9 @@ func _fire_disk() -> void:
 	var disk = disk_scene.instantiate()
 	disk.global_position = global_position
 	var lvl = GameState.run_abilities.get("bouncing_disk", 1)
-	disk.bounces_left = lvl # Increase with each upgrade
-	var res = _get_final_damage(GameConstants.DISK_BASE_DAMAGE)
+	disk.bounces_left = GameState.get_weapon_bounces("bouncing_disk") if GameState.get_weapon_bounces("bouncing_disk") > 0 else lvl
+	var disk_dmg = GameConstants.DISK_BASE_DAMAGE + GameState.get_weapon_damage_bonus("bouncing_disk")
+	var res = _get_final_damage_for_weapon(disk_dmg, "bouncing_disk")
 	disk.damage = res.damage
 	if "is_crit" in disk: disk.is_crit = res.is_crit
 	get_tree().current_scene.add_child(disk)
@@ -719,7 +764,8 @@ func _fire_disk() -> void:
 func _drop_spikes() -> void:
 	var spikes = spikes_scene.instantiate()
 	spikes.global_position = global_position + Vector2(randf_range(-50, 50), randf_range(-50, 50))
-	var res = _get_final_damage(GameConstants.SPIKES_BASE_DAMAGE)
+	var spike_dmg = GameConstants.SPIKES_BASE_DAMAGE + GameState.get_weapon_damage_bonus("floor_spikes")
+	var res = _get_final_damage_for_weapon(spike_dmg, "floor_spikes")
 	spikes.damage = res.damage
 	if "is_crit" in spikes: spikes.is_crit = res.is_crit
 	get_tree().current_scene.add_child(spikes)
@@ -727,7 +773,7 @@ func _drop_spikes() -> void:
 func _place_turret() -> void:
 	var t = turret_scene.instantiate()
 	t.global_position = global_position + Vector2.RIGHT.rotated(randf() * TAU) * 100.0
-	t.damage = GameConstants.TURRET_DAMAGE
+	t.damage = GameConstants.TURRET_DAMAGE + GameState.get_weapon_damage_bonus("turret")
 	get_tree().current_scene.add_child(t)
 
 func _trigger_ice_wave() -> void:
@@ -765,7 +811,8 @@ func _fire_machine_gun(target: Node2D) -> void:
 	var dir = (target.global_position - global_position).normalized()
 	b.direction = dir
 	b.rotation = dir.angle()
-	var res = _get_final_damage(GameConstants.MG_DAMAGE)
+	var mg_dmg = GameConstants.MG_DAMAGE + GameState.get_weapon_damage_bonus("machine_gun")
+	var res = _get_final_damage_for_weapon(mg_dmg, "machine_gun")
 	b.damage = res.damage
 	if "is_crit" in b: b.is_crit = res.is_crit
 	b.weapon_source = "machine_gun"
