@@ -294,6 +294,43 @@ const CHEST_SPAWN_INTERVAL_MAX: float = 15.0
 # --- GEM DROP SETTINGS ---
 const GEM_DROP_TIMES: Array = [30.0, 90.0, 150.0, 210.0, 270.0]
 
+# --- PRESENT SETTINGS ---
+const PRESENT_COUNT: int = 10
+const PRESENT_RARITY_VALUES: Dictionary = {
+	"common":    0.1,
+	"uncommon":  0.5,
+	"rare":      2.0,
+	"epic":      5.0,
+	"legendary": 10.0
+}
+const PRESENT_STATS: Dictionary = {
+	"damage": {
+		"display": "+%.1f Damage",
+		"weight": 2.0, # Common: +0.2, Legendary: +20
+		"internal_stat": "damage_bonus"
+	},
+	"crit_chance": {
+		"display": "+%.1f%% Crit Chance",
+		"weight": 0.01, # Common: +0.1%, Legendary: +10%
+		"internal_stat": "crit_chance"
+	},
+	"max_health": {
+		"display": "+%.0f Max Health",
+		"weight": 10.0, # Common: +1, Legendary: +100
+		"internal_stat": "max_health"
+	},
+	"speed": {
+		"display": "+%.1f%% Speed",
+		"weight": 0.01, # Common: +0.1%, Legendary: +10%
+		"internal_stat": "speed_multiplier"
+	},
+	"atk_speed": {
+		"display": "+%.1f%% Atk Speed",
+		"weight": 0.01, # Common: +0.1%, Legendary: +10%
+		"internal_stat": "atkspd_multiplier"
+	}
+}
+
 # --- UNLOCKS ---
 const UNLOCK_KILLS_NEEDED: int = 50
 const DEBUG_UNLOCK_ALL_WEAPONS: bool = false

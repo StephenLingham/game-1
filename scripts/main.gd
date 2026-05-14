@@ -180,6 +180,7 @@ func _ready() -> void:
 
 	_setup_arena()
 	$UI/HUD/GemsLabel.hide()
+	_spawn_initial_presents()
 	wave_controller.start_run()
 
 func _exit_tree() -> void:
@@ -286,6 +287,26 @@ func _setup_arena() -> void:
 		var cam = player.get_node("Camera2D") as Camera2D
 		cam.reset_smoothing() # Snap instantly
 		cam.force_update_scroll()
+
+func _spawn_initial_presents() -> void:
+	var floor_rect := $ArenaFloor as TextureRect
+	var arena_rect = Rect2(floor_rect.position, floor_rect.size)
+	var padding = 200.0
+	
+	var present_script = load("res://scripts/present_pickup.gd")
+	
+	for i in range(GameConstants.PRESENT_COUNT):
+		var p = present_script.new()
+		
+		var rx = randf_range(arena_rect.position.x + padding, arena_rect.end.x - padding)
+		var ry = randf_range(arena_rect.position.y + padding, arena_rect.end.y - padding)
+		p.position = Vector2(rx, ry)
+		
+		# Ensure they don't spawn too close to the player center (where they start)
+		if p.position.distance_to(arena_rect.get_center()) < 300.0:
+			p.position += (p.position - arena_rect.get_center()).normalized() * 300.0
+			
+		add_child(p)
 
 func _process(_delta: float) -> void:
 	lvl_xp_label.text = "Level: %d" % GameState.run_level
