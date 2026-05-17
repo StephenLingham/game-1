@@ -185,6 +185,13 @@ func _ready() -> void:
 	_spawn_initial_powerups()
 	_spawn_initial_gem()
 	wave_controller.start_run()
+	
+	# Spawn dynamic Minimap and Full Screen Map overlay with Fog of War
+	var minimap_script = load("res://scripts/minimap.gd")
+	var minimap = Control.new()
+	minimap.set_script(minimap_script)
+	minimap.name = "Minimap"
+	$UI.add_child(minimap)
 
 func _exit_tree() -> void:
 	if is_instance_valid(item_popup_panel):
