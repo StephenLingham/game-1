@@ -34,7 +34,7 @@ const TOTAL_WAVES: int = 10
 const WAVE_SECONDS: float = 30.0
 
 # --- ARENA SETTINGS ---
-const ARENA_SIZE_MULTIPLIER: float = 2.0
+const ARENA_SIZE_MULTIPLIER: float = 10.0
 
 const WAVE_BASE_SPAWN_WAIT: float = 0.75
 const WAVE_MIN_SPAWN_WAIT: float = 0.25
@@ -288,14 +288,13 @@ const POWERUP_ATK_SPEED_BOOST_MULTIPLIER: float = 10.0
 const POWERUP_ATK_SPEED_BOOST_DURATION: float = 3.0
 const POWERUP_GEM_AWARD_AMOUNT: int = 1
 const POWERUP_ICON_SCALE: float = 0.07
-const CHEST_SPAWN_INTERVAL_MIN: float = 10.0
-const CHEST_SPAWN_INTERVAL_MAX: float = 15.0
+const CHEST_STARTING_COUNT: int = 10
 
 # --- GEM DROP SETTINGS ---
 const GEM_DROP_TIMES: Array = [30.0, 90.0, 150.0, 210.0, 270.0]
 
 # --- PRESENT SETTINGS ---
-const PRESENT_COUNT: int = 10
+const PRESENT_COUNT: int = 20
 const PRESENT_RARITY_VALUES: Dictionary = {
 	"common":    0.1,
 	"uncommon":  0.5,

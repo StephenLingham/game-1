@@ -20,7 +20,6 @@ var spawning: bool = false
 @onready var game: Node = get_tree().current_scene
 
 var powerup_spawn_timer: float = 0.0
-var chest_spawn_timer: float = 0.0
 var run_total_time: float = 0.0
 var gem_intervals_spawned: Array = []
 
@@ -64,7 +63,6 @@ func _next_wave() -> void:
 
 
 	powerup_spawn_timer = randf_range(GameConstants.POWERUP_SPAWN_INTERVAL_MIN, GameConstants.POWERUP_SPAWN_INTERVAL_MAX)
-	chest_spawn_timer = randf_range(GameConstants.CHEST_SPAWN_INTERVAL_MIN, GameConstants.CHEST_SPAWN_INTERVAL_MAX)
 
 
 	game.on_wave_started(wave)
@@ -85,17 +83,6 @@ func _process(delta: float) -> void:
 			_spawn_powerup()
 			# Spawn every 8-12 seconds
 			powerup_spawn_timer = randf_range(GameConstants.POWERUP_SPAWN_INTERVAL_MIN, GameConstants.POWERUP_SPAWN_INTERVAL_MAX)
-
-	# Chest spawning
-	if spawning:
-		chest_spawn_timer -= delta
-		if chest_spawn_timer <= 0:
-			_spawn_chest()
-			# Spawn interval scaling for character traits
-			var mult = 1.0
-			if GameState.current_character == "singular_luck":
-				mult = 0.2 # 5x more often = 0.2x interval
-			chest_spawn_timer = randf_range(GameConstants.CHEST_SPAWN_INTERVAL_MIN, GameConstants.CHEST_SPAWN_INTERVAL_MAX) * mult
 
 	# Interval-based gem spawning
 	if spawning:
@@ -218,20 +205,6 @@ func _spawn_powerup() -> void:
 	p.global_position = spawn_pos
 	game.get_node("PickupContainer").add_child(p)
 
-func _spawn_chest() -> void:
-	if chest_scene == null: return
-	
-	var c = chest_scene.instantiate()
-	
-	# Spawn randomly within the arena bounds
-	var margin := 150.0
-	var spawn_pos := Vector2(
-		randf_range(arena_rect.position.x + margin, arena_rect.position.x + arena_rect.size.x - margin),
-		randf_range(arena_rect.position.y + margin, arena_rect.position.y + arena_rect.size.y - margin)
-	)
-	
-	c.global_position = spawn_pos
-	game.get_node("PickupContainer").add_child(c)
 
 func _spawn_gem() -> void:
 	if powerup_scene == null: return
