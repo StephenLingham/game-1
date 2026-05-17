@@ -16,17 +16,38 @@ var area_radius: float = 0.0
 var is_frozen_orb_shard: bool = false
 var _frozen_orb_timer: float = 0.0
 var _frozen_orb_angle: float = 0.0
+var _exploded: bool = false
 
 func _ready() -> void:
 	add_to_group("projectiles")
+	_setup_visuals()
+
+func _setup_visuals() -> void:
+	var cr = get_node_or_null("ColorRect")
+	if cr:
+		if weapon_source == "frozen_orb":
+			if not is_frozen_orb_shard:
+				cr.visible = false
+				queue_redraw()
+			else:
+				# Shard base color to white so modulation is pure blue
+				cr.color = Color.WHITE
+		elif weapon_source != "zap":
+			# Set base color to white for all other elemental weapons so their modulations are pure and beautiful!
+			cr.color = Color.WHITE
+
+func _draw() -> void:
+	if weapon_source == "frozen_orb" and not is_frozen_orb_shard:
+		# Draw a premium, beautiful glowing icy circle!
+		draw_circle(Vector2.ZERO, 10.0, Color(0.0, 0.5, 1.0, 0.4)) # Outer glow
+		draw_circle(Vector2.ZERO, 7.0, Color(0.2, 0.7, 1.0, 0.8)) # Mid layer
+		draw_circle(Vector2.ZERO, 4.0, Color(0.8, 0.95, 1.0, 1.0)) # Icy white core
 
 func _physics_process(delta: float) -> void:
 	position += direction * speed * delta
 	time_alive += delta
 	if time_alive >= lifetime:
-		if weapon_source == "frozen_orb" and not is_frozen_orb_shard:
-			_explode_frozen_orb()
-		queue_free()
+		_orb_free()
 
 	if weapon_source == "frozen_orb" and not is_frozen_orb_shard:
 		_frozen_orb_timer -= delta
@@ -45,7 +66,7 @@ func _on_body_entered(body: Node2D) -> void:
 				if is_instance_valid(e) and global_position.distance_to(e.global_position) <= area_radius:
 					var actual = e.take_damage(damage, weapon_source, is_crit)
 					GameState.run_damage_stats[weapon_source] = GameState.run_damage_stats.get(weapon_source, 0) + actual
-			queue_free()
+			_orb_free()
 		else:
 			var actual_dmg = body.take_damage(damage, weapon_source, is_crit)
 			GameState.run_damage_stats[weapon_source] = GameState.run_damage_stats.get(weapon_source, 0) + actual_dmg
@@ -55,9 +76,16 @@ func _on_body_entered(body: Node2D) -> void:
 				last_hit_enemy = body
 				_redirect_to_next_enemy(body.global_position)
 			else:
-				queue_free()
+				_orb_free()
 	elif body.is_in_group("walls"):
-		queue_free()
+		_orb_free()
+
+func _orb_free() -> void:
+	if _exploded: return
+	_exploded = true
+	if weapon_source == "frozen_orb" and not is_frozen_orb_shard:
+		_explode_frozen_orb()
+	queue_free()
 
 func _can_weapon_bounce(source: String) -> bool:
 	var bouncers = ["lightning_bolt", "ice_bolt", "fire_bolt", "arcane_bolt", "bouncing_disk"]
@@ -101,7 +129,7 @@ func _shoot_frozen_orb_shards() -> void:
 		shard.damage = max(1, int(damage * 0.4))
 		shard.is_crit = is_crit
 		shard.lifetime = 0.8
-		get_tree().current_scene.add_child(shard)
+		get_tree().current_scene.call_deferred("add_child", shard)
 		
 	_frozen_orb_angle += 0.35
 
@@ -123,4 +151,4 @@ func _explode_frozen_orb() -> void:
 		shard.damage = max(1, int(damage * 0.6))
 		shard.is_crit = is_crit
 		shard.lifetime = 1.0
-		get_tree().current_scene.add_child(shard)
+		get_tree().current_scene.call_deferred("add_child", shard)
