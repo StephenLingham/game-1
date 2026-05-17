@@ -62,8 +62,8 @@ var run_extra_bounces: int = 0
 # Structure: { "weapon_id": { "damage": 0.0, "crit_chance": 0.0, "projectiles": 0.0, "bounces": 0.0, "size": 0.0 } }
 var run_weapon_traits: Dictionary = {}
 
-# Bonuses from collected presents
-var run_present_bonuses: Dictionary = {}
+# Bonuses from collected gifts
+var run_gift_bonuses: Dictionary = {}
 
 signal level_up(new_level: int)
 
@@ -192,7 +192,7 @@ func reset_run() -> void:
 	run_extra_projectiles = 0
 	run_extra_bounces = 0
 	run_weapon_traits = {}
-	run_present_bonuses = {}
+	run_gift_bonuses = {}
 	
 	_apply_initial_character_traits()
 
@@ -418,7 +418,7 @@ func get_damage_multiplier() -> float:
 		"singular_force":
 			mult *= 6.0
 	
-	mult += run_present_bonuses.get("damage_multiplier", 0.0)
+	mult += run_gift_bonuses.get("damage_multiplier", 0.0)
 	
 	return mult
 
@@ -431,7 +431,7 @@ func get_atkspd_multiplier() -> float:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		mult += stats.get("atkspd_multiplier", 0.0)
 	
-	mult += run_present_bonuses.get("atkspd_multiplier", 0.0)
+	mult += run_gift_bonuses.get("atkspd_multiplier", 0.0)
 	return mult
 
 
@@ -453,7 +453,7 @@ func get_total_damage(base: int) -> int:
 		bonus_flat += stats.get("damage", 0)
 		
 	var dmg = float(base + get_zap_damage_bonus() + bonus_flat)
-	dmg += run_present_bonuses.get("damage_bonus", 0.0)
+	dmg += run_gift_bonuses.get("damage_bonus", 0.0)
 	dmg *= get_damage_multiplier()
 	return int(round(dmg))
 
@@ -478,7 +478,7 @@ func get_max_health() -> int:
 		"passive_master":
 			final_hp = int(final_hp * 1.5)
 			
-	final_hp += int(run_present_bonuses.get("max_health", 0.0))
+	final_hp += int(run_gift_bonuses.get("max_health", 0.0))
 	return final_hp
 
 
@@ -500,7 +500,7 @@ func get_crit_chance() -> float:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("crit_chance", 0.0)
 	
-	bonus += run_present_bonuses.get("crit_chance", 0.0)
+	bonus += run_gift_bonuses.get("crit_chance", 0.0)
 	return base + bonus
 
 
@@ -593,7 +593,7 @@ func get_speed_multiplier(include_dynamic: bool = true) -> float:
 		"vampire":
 			mult = max(0.4, mult - (run_level - 1) * 0.02) # Decreases as level increases
 			
-	mult += run_present_bonuses.get("speed_multiplier", 0.0)
+	mult += run_gift_bonuses.get("speed_multiplier", 0.0)
 	return mult
 
 func get_ability_limit() -> int:

@@ -4,21 +4,21 @@ var rarity: String = "common"
 var stat_key: String = "damage"
 var stat_value: float = 0.0
 
-const TEXTURE_PATH = "res://assets/present.png"
+const TEXTURE_PATH = "res://assets/gift.png"
 const FLOATING_TEXT_SCENE = preload("res://scripts/floating_text.gd") # We'll instantiate the script directly or create a scene
 
 func _ready() -> void:
-	add_to_group("presents")
+	add_to_group("gifts")
 	
 	# Randomize rarity and stat if not set
 	if rarity == "common": # Default value
 		rarity = GameState.roll_rarity()
 	
-	var stats_keys = GameConstants.PRESENT_STATS.keys()
+	var stats_keys = GameConstants.GIFT_STATS.keys()
 	stat_key = stats_keys[randi() % stats_keys.size()]
 	
-	var base_amount = GameConstants.PRESENT_RARITY_VALUES[rarity]
-	var stat_data = GameConstants.PRESENT_STATS[stat_key]
+	var base_amount = GameConstants.GIFT_RARITY_VALUES[rarity]
+	var stat_data = GameConstants.GIFT_STATS[stat_key]
 	stat_value = base_amount * stat_data["weight"]
 	
 	# Visuals
@@ -40,7 +40,7 @@ func _setup_visuals() -> void:
 		# Fallback if image is missing
 		sprite.texture = preload("res://icon.svg")
 		sprite.modulate = Color.RED
-		push_warning("Present: Could not find texture at " + TEXTURE_PATH)
+		push_warning("Gift: Could not find texture at " + TEXTURE_PATH)
 		
 	sprite.scale = Vector2(0.03, 0.03) # 0.25 of 0.12
 	sprite.z_index = 5 # Above grass
@@ -59,11 +59,11 @@ func _on_body_entered(body: Node2D) -> void:
 
 func _collect() -> void:
 	# Apply stat boost
-	var stat_data = GameConstants.PRESENT_STATS[stat_key]
+	var stat_data = GameConstants.GIFT_STATS[stat_key]
 	var internal_stat = stat_data["internal_stat"]
 	
-	var current = GameState.run_present_bonuses.get(internal_stat, 0.0)
-	GameState.run_present_bonuses[internal_stat] = current + stat_value
+	var current = GameState.run_gift_bonuses.get(internal_stat, 0.0)
+	GameState.run_gift_bonuses[internal_stat] = current + stat_value
 	
 	# Refresh player stats if needed
 	var player = get_tree().get_first_node_in_group("player")
@@ -76,7 +76,7 @@ func _collect() -> void:
 	queue_free()
 
 func _show_floating_text() -> void:
-	var stat_data = GameConstants.PRESENT_STATS[stat_key]
+	var stat_data = GameConstants.GIFT_STATS[stat_key]
 	var display_text = ""
 	
 	if stat_key == "crit_chance" or stat_key == "speed" or stat_key == "atk_speed":

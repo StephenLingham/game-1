@@ -180,7 +180,7 @@ func _ready() -> void:
 
 	_setup_arena()
 	$UI/HUD/GemsLabel.hide()
-	_spawn_initial_presents()
+	_spawn_initial_gifts()
 	_spawn_initial_chests()
 	wave_controller.start_run()
 
@@ -289,16 +289,16 @@ func _setup_arena() -> void:
 		cam.reset_smoothing() # Snap instantly
 		cam.force_update_scroll()
 
-func _spawn_initial_presents() -> void:
+func _spawn_initial_gifts() -> void:
 	var floor_rect := $ArenaFloor as TextureRect
 	var arena_rect = Rect2(floor_rect.position, floor_rect.size)
 	var padding = 200.0
 	
-	var present_script = load("res://scripts/present_pickup.gd")
-	var count = int(GameConstants.PRESENT_COUNT * GameConstants.ARENA_SIZE_MULTIPLIER)
+	var gift_script = load("res://scripts/gift_pickup.gd")
+	var count = int(GameConstants.GIFT_COUNT * GameConstants.ARENA_SIZE_MULTIPLIER)
 	
 	for i in range(count):
-		var p = present_script.new()
+		var p = gift_script.new()
 		
 		var rx = randf_range(arena_rect.position.x + padding, arena_rect.end.x - padding)
 		var ry = randf_range(arena_rect.position.y + padding, arena_rect.end.y - padding)

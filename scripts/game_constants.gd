@@ -293,16 +293,16 @@ const CHEST_STARTING_COUNT: int = 10
 # --- GEM DROP SETTINGS ---
 const GEM_DROP_TIMES: Array = [30.0, 90.0, 150.0, 210.0, 270.0]
 
-# --- PRESENT SETTINGS ---
-const PRESENT_COUNT: int = 20
-const PRESENT_RARITY_VALUES: Dictionary = {
+# --- GIFT SETTINGS ---
+const GIFT_COUNT: int = 20
+const GIFT_RARITY_VALUES: Dictionary = {
 	"common":    0.1,
 	"uncommon":  0.5,
 	"rare":      2.0,
 	"epic":      5.0,
 	"legendary": 10.0
 }
-const PRESENT_STATS: Dictionary = {
+const GIFT_STATS: Dictionary = {
 	"damage": {
 		"display": "+%.1f Damage",
 		"weight": 2.0, # Common: +0.2, Legendary: +20
