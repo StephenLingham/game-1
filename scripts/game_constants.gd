@@ -21,6 +21,7 @@ const XP_INCREMENT: int = 50 # Additive for next level
 # --- PERMANENT UPGRADES ---
 const PERM_LEVEL_COST: int = 1
 const PERM_COST_INCREMENT: int = 0
+const MAX_PERM_UPGRADE_LEVEL: int = 100
 
 # --- ZAP ABILITY SETTINGS ---
 const ZAP_MAX_LEVEL: int = 5
@@ -280,8 +281,6 @@ const SHOP_BANISH_COUNT: int = 3
 const PICKUP_EXPLOSION_RADIUS_MULTIPLIER: float = 0.5
 const PICKUP_EXPLOSION_EXPAND_TIME: float = 0.5
 const PICKUP_EXPLOSION_DAMAGE: int = 2000
-const POWERUP_SPAWN_INTERVAL_MIN: float = 4
-const POWERUP_SPAWN_INTERVAL_MAX: float = 8
 const POWERUP_SPEED_BOOST_MULTIPLIER: float = 1.6
 const POWERUP_SPEED_BOOST_DURATION: float = 7.0
 const POWERUP_ATK_SPEED_BOOST_MULTIPLIER: float = 10.0
@@ -289,12 +288,11 @@ const POWERUP_ATK_SPEED_BOOST_DURATION: float = 3.0
 const POWERUP_GEM_AWARD_AMOUNT: int = 1
 const POWERUP_ICON_SCALE: float = 0.07
 const CHEST_STARTING_COUNT: int = 10
-
-# --- GEM DROP SETTINGS ---
-const GEM_DROP_TIMES: Array = [30.0, 90.0, 150.0, 210.0, 270.0]
+const POWERUP_STARTING_COUNT: int = 10
 
 # --- GIFT SETTINGS ---
 const GIFT_COUNT: int = 20
+const GIFT_XP_AMOUNT: int = 15
 const GIFT_RARITY_VALUES: Dictionary = {
 	"common":    0.1,
 	"uncommon":  0.5,

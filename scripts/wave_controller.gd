@@ -19,9 +19,7 @@ var spawning: bool = false
 @onready var spawn_timer: Timer = $SpawnTimer
 @onready var game: Node = get_tree().current_scene
 
-var powerup_spawn_timer: float = 0.0
-var run_total_time: float = 0.0
-var gem_intervals_spawned: Array = []
+
 
 
 var arena_rect: Rect2
@@ -62,7 +60,7 @@ func _next_wave() -> void:
 	spawn_timer.start()
 
 
-	powerup_spawn_timer = randf_range(GameConstants.POWERUP_SPAWN_INTERVAL_MIN, GameConstants.POWERUP_SPAWN_INTERVAL_MAX)
+
 
 
 	game.on_wave_started(wave)
@@ -75,23 +73,6 @@ func _process(delta: float) -> void:
 
 	if wave_time_left <= 0.0:
 		_end_wave()
-	
-	# Powerup spawning
-	if spawning:
-		powerup_spawn_timer -= delta
-		if powerup_spawn_timer <= 0:
-			_spawn_powerup()
-			# Spawn every 8-12 seconds
-			powerup_spawn_timer = randf_range(GameConstants.POWERUP_SPAWN_INTERVAL_MIN, GameConstants.POWERUP_SPAWN_INTERVAL_MAX)
-
-	# Interval-based gem spawning
-	if spawning:
-		run_total_time += delta
-		for drop_time in GameConstants.GEM_DROP_TIMES:
-			if run_total_time >= drop_time and not gem_intervals_spawned.has(drop_time):
-				if gem_intervals_spawned.size() < 5:
-					_spawn_gem()
-					gem_intervals_spawned.append(drop_time)
 
 
 func _end_wave() -> void:
@@ -185,44 +166,5 @@ func _spawn_tick() -> void:
 		# default (large) scale for a single frame on spawn.
 		e.reset_physics_interpolation()
 
-func _spawn_powerup() -> void:
-	if powerup_scene == null: return
-	
-	var p = powerup_scene.instantiate()
-	
-	
-	# Randomly pick from: MAGNET, SPEED, HEAL, ROCKET, ATK_SPEED (No GEMS here)
-	var types = [0, 1, 2, 3, 5]
-	p.type = types.pick_random()
-	
-	# Spawn randomly within the arena bounds (with some margin)
-	var margin := 100.0
-	var spawn_pos := Vector2(
-		randf_range(arena_rect.position.x + margin, arena_rect.position.x + arena_rect.size.x - margin),
-		randf_range(arena_rect.position.y + margin, arena_rect.position.y + arena_rect.size.y - margin)
-	)
-	
-	p.global_position = spawn_pos
-	game.get_node("PickupContainer").add_child(p)
-
-
-func _spawn_gem() -> void:
-	if powerup_scene == null: return
-	var p = powerup_scene.instantiate()
-	p.type = 4 # GEM
-	
-	# Spawn near player but not on top
-	var player = game.player
-	var offset = Vector2(randf_range(-200, 200), randf_range(-200, 200))
-	if offset.length() < 100: offset = offset.normalized() * 100
-	
-	var spawn_pos = player.global_position + offset
-	# Clamp to arena
-	var safety := 45.0
-	spawn_pos.x = clamp(spawn_pos.x, arena_rect.position.x + safety, arena_rect.position.x + arena_rect.size.x - safety)
-	spawn_pos.y = clamp(spawn_pos.y, arena_rect.position.y + safety, arena_rect.position.y + arena_rect.size.y - safety)
-	
-	p.global_position = spawn_pos
-	game.get_node("PickupContainer").add_child(p)
 
 

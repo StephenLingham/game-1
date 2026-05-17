@@ -418,6 +418,13 @@ func _fire_frozen_orb(target: Node2D) -> void:
 	orb.scale = Vector2(2, 2)
 	orb.modulate = Color.CYAN
 	orb.weapon_source = "frozen_orb"
+	
+	var effective_base = GameConstants.FROZEN_ORB_DAMAGE + GameState.get_weapon_damage_bonus("frozen_orb")
+	var res = _get_final_damage_for_weapon(effective_base, "frozen_orb")
+	orb.damage = res.damage
+	if "is_crit" in orb:
+		orb.is_crit = res.is_crit
+		
 	if is_instance_valid(target):
 		orb.direction = (target.global_position - global_position).normalized()
 	get_tree().current_scene.add_child(orb)

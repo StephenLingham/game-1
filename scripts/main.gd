@@ -182,6 +182,8 @@ func _ready() -> void:
 	$UI/HUD/GemsLabel.hide()
 	_spawn_initial_gifts()
 	_spawn_initial_chests()
+	_spawn_initial_powerups()
+	_spawn_initial_gem()
 	wave_controller.start_run()
 
 func _exit_tree() -> void:
@@ -329,6 +331,42 @@ func _spawn_initial_chests() -> void:
 		c.global_position = Vector2(rx, ry)
 		
 		get_node("PickupContainer").add_child(c)
+
+func _spawn_initial_powerups() -> void:
+	var floor_rect := $ArenaFloor as TextureRect
+	var arena_rect = Rect2(floor_rect.position, floor_rect.size)
+	var padding = 100.0
+	
+	var powerup_scene = load("res://scenes/PowerupPickup.tscn")
+	var count = int(GameConstants.POWERUP_STARTING_COUNT * GameConstants.ARENA_SIZE_MULTIPLIER)
+	
+	# Randomly pick from: MAGNET, SPEED, HEAL, ROCKET, ATK_SPEED (Exclude GEM type 4)
+	var types = [0, 1, 2, 3, 5]
+	
+	for i in range(count):
+		var p = powerup_scene.instantiate()
+		p.type = types.pick_random()
+		
+		var rx = randf_range(arena_rect.position.x + padding, arena_rect.end.x - padding)
+		var ry = randf_range(arena_rect.position.y + padding, arena_rect.end.y - padding)
+		p.global_position = Vector2(rx, ry)
+		
+		get_node("PickupContainer").add_child(p)
+
+func _spawn_initial_gem() -> void:
+	var floor_rect := $ArenaFloor as TextureRect
+	var arena_rect = Rect2(floor_rect.position, floor_rect.size)
+	var padding = 100.0
+	
+	var powerup_scene = load("res://scenes/PowerupPickup.tscn")
+	var p = powerup_scene.instantiate()
+	p.type = 4 # GEM
+	
+	var rx = randf_range(arena_rect.position.x + padding, arena_rect.end.x - padding)
+	var ry = randf_range(arena_rect.position.y + padding, arena_rect.end.y - padding)
+	p.global_position = Vector2(rx, ry)
+	
+	get_node("PickupContainer").add_child(p)
 
 func _process(_delta: float) -> void:
 	lvl_xp_label.text = "Level: %d" % GameState.run_level

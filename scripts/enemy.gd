@@ -93,8 +93,8 @@ func _physics_process(delta: float) -> void:
 		
 		# Flip sprite based on direction
 		if velocity.x != 0:
-			if enemy_type == "Tree":
-				# enemy6 faces right by default, so flip when moving left
+			if enemy_type == "Tree" or enemy_type == "Elite":
+				# Faces right by default, so flip when moving left
 				sprite.flip_h = velocity.x < 0
 			else:
 				# Other enemies face left by default, so flip when moving right

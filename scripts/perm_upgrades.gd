@@ -60,7 +60,7 @@ func _refresh_ui() -> void:
 		vbox.add_child(desc)
 		
 		var btn = Button.new()
-		if level >= 10:
+		if level >= GameConstants.MAX_PERM_UPGRADE_LEVEL:
 			btn.text = "MAX LEVEL"
 			btn.disabled = true
 		else:

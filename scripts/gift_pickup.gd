@@ -65,6 +65,9 @@ func _collect() -> void:
 	var current = GameState.run_gift_bonuses.get(internal_stat, 0.0)
 	GameState.run_gift_bonuses[internal_stat] = current + stat_value
 	
+	# Award a small amount of XP
+	GameState.add_xp(GameConstants.GIFT_XP_AMOUNT)
+	
 	# Refresh player stats if needed
 	var player = get_tree().get_first_node_in_group("player")
 	if player and player.has_method("refresh_stats"):
