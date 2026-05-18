@@ -84,11 +84,11 @@ func _process(_delta: float) -> void:
 	var p_col = int(local_pos.x / cell_size)
 	var p_row = int(local_pos.y / cell_size)
 	
-	var radius_cells = 3 # Cells to check around the player
+	var radius_cells = 5 # Cells to check around the player (increased from 3)
 	for x in range(max(0, p_col - radius_cells), min(cols, p_col + radius_cells + 1)):
 		for y in range(max(0, p_row - radius_cells), min(rows, p_row + radius_cells + 1)):
 			var cell_center = arena_rect.position + Vector2(x + 0.5, y + 0.5) * cell_size
-			if player_pos.distance_to(cell_center) < 420.0: # Vision radius
+			if player_pos.distance_to(cell_center) < 560.0: # Vision radius (increased from 420.0 for slightly larger area)
 				fog_grid[x][y] = true
 				
 	queue_redraw()
@@ -126,7 +126,7 @@ func _draw_minimap() -> void:
 	for g in get_tree().get_nodes_in_group("gifts"):
 		if is_instance_valid(g):
 			var pos = mm_center + (g.global_position - player_pos) * minimap_scale
-			if pos.distance_to(mm_center) <= minimap_radius and is_uncovered(g.global_position):
+			if pos.distance_to(mm_center) <= minimap_radius: # Fog of war does not apply to circular minimap
 				draw_circle(pos, 3.5, Color(0.9, 0.0, 0.9, 1.0)) # Bright purple/magenta
 				draw_circle(pos, 5.0, Color(0.9, 0.0, 0.9, 0.3)) # Outer glow
 				
@@ -134,7 +134,7 @@ func _draw_minimap() -> void:
 	for c in get_tree().get_nodes_in_group("chests"):
 		if is_instance_valid(c):
 			var pos = mm_center + (c.global_position - player_pos) * minimap_scale
-			if pos.distance_to(mm_center) <= minimap_radius and is_uncovered(c.global_position):
+			if pos.distance_to(mm_center) <= minimap_radius: # Fog of war does not apply to circular minimap
 				draw_circle(pos, 3.5, Color(1.0, 0.75, 0.0, 1.0)) # Bright gold/yellow
 				draw_circle(pos, 5.0, Color(1.0, 0.75, 0.0, 0.3))
 				
@@ -142,7 +142,7 @@ func _draw_minimap() -> void:
 	for p in get_tree().get_nodes_in_group("powerups"):
 		if is_instance_valid(p):
 			var pos = mm_center + (p.global_position - player_pos) * minimap_scale
-			if pos.distance_to(mm_center) <= minimap_radius and is_uncovered(p.global_position):
+			if pos.distance_to(mm_center) <= minimap_radius: # Fog of war does not apply to circular minimap
 				if "type" in p and p.type == 4: # GEM type
 					draw_circle(pos, 3.5, Color(1.0, 0.25, 0.25, 1.0)) # Bright ruby red
 					draw_circle(pos, 5.0, Color(1.0, 0.25, 0.25, 0.3))

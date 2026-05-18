@@ -35,7 +35,7 @@ const TOTAL_WAVES: int = 10
 const WAVE_SECONDS: float = 30.0
 
 # --- ARENA SETTINGS ---
-const ARENA_SIZE_MULTIPLIER: float = 10.0
+const ARENA_SIZE_MULTIPLIER: float = 30.0
 
 const WAVE_BASE_SPAWN_WAIT: float = 0.75
 const WAVE_MIN_SPAWN_WAIT: float = 0.25
