@@ -24,6 +24,7 @@ const TEXTURE_ELITE = preload("res://assets/Enemies/enemy5.png")
 @onready var sprite: Sprite2D = $Sprite2D
 
 func _ready() -> void:
+	z_index = 10 # Render on top of gifts (z_index=5), chests and pickups (z_index=0)
 	add_to_group("enemies")
 	target = get_tree().get_first_node_in_group("player")
 	

@@ -94,6 +94,8 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 func is_uncovered(world_pos: Vector2) -> bool:
+	if not GameConstants.ENABLE_LARGE_MAP_FOG_OF_WAR:
+		return true
 	if not is_initialized: return false
 	var local_pos = world_pos - arena_rect.position
 	var col = int(local_pos.x / cell_size)
@@ -180,13 +182,14 @@ func _draw_full_map() -> void:
 	draw_rect(bounds_rect, Color(0.12, 0.12, 0.15, 1.0))
 	
 	# Draw Fog of War
-	for x in range(cols):
-		for y in range(rows):
-			if not fog_grid[x][y]:
-				var mapped_cell_pos = bounds_rect.position + Vector2(x, y) * cell_size * fm_scale
-				var mapped_cell_size = Vector2(cell_size, cell_size) * fm_scale
-				# Draw dark gray fog overlay
-				draw_rect(Rect2(mapped_cell_pos, mapped_cell_size), Color(0.03, 0.03, 0.05, 0.95))
+	if GameConstants.ENABLE_LARGE_MAP_FOG_OF_WAR:
+		for x in range(cols):
+			for y in range(rows):
+				if not fog_grid[x][y]:
+					var mapped_cell_pos = bounds_rect.position + Vector2(x, y) * cell_size * fm_scale
+					var mapped_cell_size = Vector2(cell_size, cell_size) * fm_scale
+					# Draw dark gray fog overlay
+					draw_rect(Rect2(mapped_cell_pos, mapped_cell_size), Color(0.03, 0.03, 0.05, 0.95))
 				
 	# Subtle grid borders
 	draw_rect(bounds_rect, Color(0.2, 0.4, 0.5, 0.4), false, 1.5)

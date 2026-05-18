@@ -145,11 +145,11 @@ func _show_weapons() -> void:
 		
 		# Sealing
 		var total_upgrades = GameState.lifetime_upgrades.get(id, 0)
-		if is_unlocked and total_upgrades >= 5:
+		if is_unlocked and total_upgrades >= 20:
 			_add_seal_button(id, vbox, "weapons")
 		elif is_unlocked:
 			var prog = Label.new()
-			prog.text = "Lifetime Upgrades: %d / 5" % total_upgrades
+			prog.text = "Lifetime Upgrades: %d / 20" % total_upgrades
 			prog.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			prog.modulate = Color(0.5, 0.5, 0.5)
 			prog.add_theme_font_size_override("font_size", 12)

@@ -426,6 +426,9 @@ const ZEPHYROS_MAX_SPEED_BONUS: float = 2.0
 # --- SEALING ---
 const MIN_UNSEALED_COUNT: int = 6
 
+# --- MAP SETTINGS ---
+const ENABLE_LARGE_MAP_FOG_OF_WAR: bool = false
+
 # --- ITEMS ---
 const ITEMS: Dictionary = {
 	"nuclear_giraffe": {
