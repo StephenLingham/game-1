@@ -69,8 +69,8 @@ const ALL_ABILITIES = [
 	{"id": "aura_spawn_rate", "name": "Chaos Aura", "is_aura": true}
 ]
 
-@onready var lbl_wave: Label = $UI/HUD/HUDTopRow/WaveLabel
-@onready var lbl_time: Label = $UI/HUD/HUDTopRow/TimeLabel
+@onready var lbl_wave: Label = $UI/HUD/HUDTopRow/CenterInfo/WaveLabel
+@onready var lbl_time: Label = $UI/HUD/HUDTopRow/CenterInfo/TimeLabel
 @onready var hp_bar: ProgressBar = $UI/HUD/HUDTopRow/HPBarContainer/HPBar
 @onready var hp_label: Label = $UI/HUD/HUDTopRow/HPBarContainer/HPBar/HPLabel
 

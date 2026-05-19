@@ -53,6 +53,7 @@ const PROB_FAST_ENEMY: float = 0.20
 const PROB_BIG_ENEMY: float = 0.10
 const PROB_TREE_ENEMY: float = 0.20
 const PROB_ELITE_ENEMY: float = 0.10
+const PROB_GOLEM_ENEMY: float = 0.15
 
 # --- ENEMY SETTINGS ---
 const ENEMY_NORMAL_SPRITE_SCALE: float = 0.07
@@ -94,6 +95,14 @@ const ENEMY_ELITE_DAMAGE: int = 25
 const ENEMY_ELITE_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_ELITE_XP_MIN: int = 20
 const ENEMY_ELITE_XP_MAX: int = 30
+
+const ENEMY_GOLEM_SPRITE_SCALE: float = 0.12
+const ENEMY_GOLEM_SPEED: float = 40.0
+const ENEMY_GOLEM_HEALTH: int = 1500
+const ENEMY_GOLEM_DAMAGE: int = 40
+const ENEMY_GOLEM_ATTACK_COOLDOWN: float = 1.5
+const ENEMY_GOLEM_XP_MIN: int = 80
+const ENEMY_GOLEM_XP_MAX: int = 120
 
 # --- COLLECTION SETTINGS ---
 const BASE_COLLECTION_RADIUS: float = 50.0

@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 signal enemy_killed
 
-@export_enum("Normal", "Fast", "Big", "Tree", "Elite") var enemy_type: String = "Normal"
+@export_enum("Normal", "Fast", "Big", "Tree", "Elite", "Golem") var enemy_type: String = "Normal"
 
 var speed: float
 var health: int
@@ -20,6 +20,7 @@ const TEXTURE_FAST = preload("res://assets/Enemies/enemy2-cropped.png")
 const TEXTURE_BIG = preload("res://assets/Enemies/enemy3-cropped.png")
 const TEXTURE_TREE = preload("res://assets/Enemies/enemy6.png")
 const TEXTURE_ELITE = preload("res://assets/Enemies/enemy5.png")
+const TEXTURE_GOLEM = preload("res://assets/Enemies/stone-golem-3.png")
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -65,6 +66,15 @@ func _ready() -> void:
 			attack_cooldown = GameConstants.ENEMY_ELITE_ATTACK_COOLDOWN
 			xp_drop_min = GameConstants.ENEMY_ELITE_XP_MIN
 			xp_drop_max = GameConstants.ENEMY_ELITE_XP_MAX
+		"Golem":
+			sprite.texture = TEXTURE_GOLEM
+			sprite.scale = Vector2.ONE * GameConstants.ENEMY_GOLEM_SPRITE_SCALE
+			speed = GameConstants.ENEMY_GOLEM_SPEED
+			health = GameConstants.ENEMY_GOLEM_HEALTH
+			damage = GameConstants.ENEMY_GOLEM_DAMAGE
+			attack_cooldown = GameConstants.ENEMY_GOLEM_ATTACK_COOLDOWN
+			xp_drop_min = GameConstants.ENEMY_GOLEM_XP_MIN
+			xp_drop_max = GameConstants.ENEMY_GOLEM_XP_MAX
 		_, "Normal":
 			sprite.texture = TEXTURE_NORMAL
 			sprite.scale = Vector2.ONE * GameConstants.ENEMY_NORMAL_SPRITE_SCALE

@@ -105,23 +105,34 @@ func _spawn_tick() -> void:
 		var rand_val := randf()
 		var scene_to_spawn := enemy_scene
 		
+		var is_golem = false
 		# Wave-specific spawning
 		if wave == 1:
 			scene_to_spawn = enemy_tree_scene
 		elif wave == 3:
 			scene_to_spawn = enemy_elite_scene
 		else:
-			# Probability logic for Wave 2+
-			if rand_val < GameConstants.PROB_BIG_ENEMY:
-				scene_to_spawn = enemy_big_scene
-			elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY):
-				scene_to_spawn = enemy_fast_scene
-			elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_TREE_ENEMY):
-				scene_to_spawn = enemy_tree_scene
-			elif rand_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_TREE_ENEMY + GameConstants.PROB_ELITE_ENEMY):
-				scene_to_spawn = enemy_elite_scene
+			if wave >= 8 and rand_val < GameConstants.PROB_GOLEM_ENEMY:
+				scene_to_spawn = enemy_scene
+				is_golem = true
+			else:
+				var check_val = rand_val
+				if wave >= 8:
+					check_val = randf()
+				
+				# Probability logic for Wave 2+
+				if check_val < GameConstants.PROB_BIG_ENEMY:
+					scene_to_spawn = enemy_big_scene
+				elif check_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY):
+					scene_to_spawn = enemy_fast_scene
+				elif check_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_TREE_ENEMY):
+					scene_to_spawn = enemy_tree_scene
+				elif check_val < (GameConstants.PROB_BIG_ENEMY + GameConstants.PROB_FAST_ENEMY + GameConstants.PROB_TREE_ENEMY + GameConstants.PROB_ELITE_ENEMY):
+					scene_to_spawn = enemy_elite_scene
 			
 		var e := scene_to_spawn.instantiate()
+		if is_golem:
+			e.enemy_type = "Golem"
 
 		# Get the current screen center and dimensions
 		var cam := get_viewport().get_camera_2d()
