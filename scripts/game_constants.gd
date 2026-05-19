@@ -7,6 +7,11 @@ class_name GameConstants extends RefCounted
 
 const GAME_VERSION: String = "v0.13.0"
 
+# --- INITIAL SPAWN COUNTS ---
+const CHEST_STARTING_COUNT: int = 7
+const POWERUP_STARTING_COUNT: int = 7
+const GIFT_COUNT: int = 20
+
 # --- PLAYER STATS ---
 const PLAYER_SPEED: float = 300.0
 const PLAYER_FIRE_RATE: float = 0.50
@@ -24,7 +29,7 @@ const PERM_COST_INCREMENT: int = 0
 const MAX_PERM_UPGRADE_LEVEL: int = 100
 
 # --- ZAP ABILITY SETTINGS ---
-const ZAP_MAX_LEVEL: int = 5
+const ZAP_MAX_LEVEL: int = 20
 const ZAP_DAMAGE_PER_UPGRADE: int = 0
 const ZAP_ATK_SPD_PER_UPGRADE: float = 0.15
 const ZAP_BASE_DAMAGE: int = 100
@@ -104,7 +109,7 @@ const ORB_BASE_ROTATE_SPEED: float = 2.5
 const ORB_UPGRADE_ROTATE_SPEED: float = 4.5
 const ORB_RADIUS: float = 100.0
 const ORB_DAMAGE: int = 100
-const ORB_MAX_LEVEL: int = 6
+const ORB_MAX_LEVEL: int = 20
 
 # --- SPIKE BALL ABILITY SETTINGS ---
 const SPIKE_BALL_BASE_DAMAGE: int = 750
@@ -112,25 +117,25 @@ const SPIKE_BALL_BASE_DISTANCE: float = 500.0
 const SPIKE_BALL_DISTANCE_PER_LEVEL: float = 200.0
 const SPIKE_BALL_BASE_COOLDOWN: float = 2.5
 const SPIKE_BALL_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.4
-const SPIKE_BALL_MAX_LEVEL: int = 5
+const SPIKE_BALL_MAX_LEVEL: int = 20
 
 # --- SHOTGUN ABILITY SETTINGS ---
 const SHOTGUN_BASE_COOLDOWN: float = 1.0
 const SHOTGUN_SPREAD_ANGLE: float = 45.0
-const SHOTGUN_MAX_LEVEL: int = 4
+const SHOTGUN_MAX_LEVEL: int = 20
 
 # --- SNIPER ABILITY SETTINGS ---
 const SNIPER_BASE_COOLDOWN: float = 2.0
 const SNIPER_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.4
 const SNIPER_DAMAGE: int = 2000
-const SNIPER_MAX_LEVEL: int = 5
+const SNIPER_MAX_LEVEL: int = 20
 
 # --- ROCKET LAUNCHER ABILITY SETTINGS ---
 const ROCKET_BASE_COOLDOWN: float = 4.0
 const ROCKET_COOLDOWN_REDUCTION_PER_LEVEL: float = 0.5
 const ROCKET_BASE_BLAST_RADIUS: float = 150.0
 const ROCKET_BLAST_RADIUS_PER_LEVEL: float = 30.0
-const ROCKET_MAX_LEVEL: int = 5
+const ROCKET_MAX_LEVEL: int = 20
 const ROCKET_SPEED: float = 400.0
 const ROCKET_TURN_SPEED: float = 5.0
 const ROCKET_DAMAGE: int = 500
@@ -139,31 +144,31 @@ const ROCKET_TARGET_RADIUS: float = 600.0
 # Bouncing Disk
 const DISK_BASE_COOLDOWN: float = 3.0
 const DISK_BASE_DAMAGE: int = 600
-const DISK_MAX_LEVEL: int = 5
+const DISK_MAX_LEVEL: int = 20
 const DISK_SPEED: float = 500.0
 
 # Turret
 const TURRET_BASE_COOLDOWN: float = 8.0
 const TURRET_COOLDOWN_REDUCTION: float = 1.0
-const TURRET_MAX_LEVEL: int = 5
+const TURRET_MAX_LEVEL: int = 20
 const TURRET_DAMAGE: int = 250
 const TURRET_FIRE_RATE: float = 0.5
 
 # Machine Gun
 const MG_BASE_COOLDOWN: float = 0.15
 const MG_DAMAGE: int = 100
-const MG_MAX_LEVEL: int = 5
+const MG_MAX_LEVEL: int = 20
 
 # Floor Spikes
 const SPIKES_BASE_COOLDOWN: float = 2.0
 const SPIKES_BASE_DAMAGE: int = 500
-const SPIKES_MAX_LEVEL: int = 5
+const SPIKES_MAX_LEVEL: int = 20
 
 # Ice Wave
 const ICE_BASE_COOLDOWN: float = 6.0
 const ICE_BASE_RADIUS: float = 200.0
 const ICE_RADIUS_INCREMENT: float = 100.0
-const ICE_MAX_LEVEL: int = 5
+const ICE_MAX_LEVEL: int = 20
 const ICE_FREEZE_DURATION: float = 2.0
 
 # --- NEW WEAPONS STATS ---
@@ -254,7 +259,7 @@ const TRAIT_BASE_BOUNCES: float     = 1.0   # fractional; floored when applied
 const TRAIT_BASE_SIZE: float        = 0.10  # +10% area radius
 
 # --- AURA SETTINGS ---
-const AURA_MAX_LEVEL: int = 5
+const AURA_MAX_LEVEL: int = 20
 const AURA_MAX_COUNT: int = 6
 
 # Aura Stat Values (per level)
@@ -287,11 +292,7 @@ const POWERUP_ATK_SPEED_BOOST_MULTIPLIER: float = 10.0
 const POWERUP_ATK_SPEED_BOOST_DURATION: float = 3.0
 const POWERUP_GEM_AWARD_AMOUNT: int = 1
 const POWERUP_ICON_SCALE: float = 0.07
-const CHEST_STARTING_COUNT: int = 10
-const POWERUP_STARTING_COUNT: int = 10
-
 # --- GIFT SETTINGS ---
-const GIFT_COUNT: int = 20
 const GIFT_XP_AMOUNT: int = 15
 const GIFT_RARITY_VALUES: Dictionary = {
 	"common":    0.1,

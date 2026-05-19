@@ -36,6 +36,7 @@ var weapon_tab: Button
 var aura_tab: Button
 var item_tab: Button
 var char_tab: Button
+var slots_tab: Button
 
 func _ready() -> void:
 	back_btn.pressed.connect(_on_back_pressed)
@@ -70,6 +71,12 @@ func _ready() -> void:
 	char_tab.pressed.connect(_on_view_changed.bind("characters"))
 	hbox.add_child(char_tab)
 	
+	slots_tab = Button.new()
+	slots_tab.text = "Slots"
+	slots_tab.custom_minimum_size = Vector2(180, 40)
+	slots_tab.pressed.connect(_on_view_changed.bind("slots"))
+	hbox.add_child(slots_tab)
+	
 	_refresh_ui()
 
 func _on_view_changed(view: String) -> void:
@@ -88,12 +95,14 @@ func _refresh_ui() -> void:
 	aura_tab.modulate = Color.WHITE if current_view == "auras" else Color(0.6, 0.6, 0.6)
 	item_tab.modulate = Color.WHITE if current_view == "items" else Color(0.6, 0.6, 0.6)
 	char_tab.modulate = Color.WHITE if current_view == "characters" else Color(0.6, 0.6, 0.6)
+	slots_tab.modulate = Color.WHITE if current_view == "slots" else Color(0.6, 0.6, 0.6)
 	
 	match current_view:
 		"weapons": _show_weapons()
 		"auras": _show_auras()
 		"items": _show_items()
 		"characters": _show_characters()
+		"slots": _show_slots()
 
 func _show_weapons() -> void:
 	for id in WEAPONS:
@@ -416,3 +425,96 @@ func _on_seal_toggled(id: String, category: String) -> void:
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")
+
+func _show_slots() -> void:
+	# Show Weapon slots progress
+	var weapon_panel = PanelContainer.new()
+	weapon_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var wvbox = VBoxContainer.new()
+	wvbox.add_theme_constant_override("separation", 15)
+	wvbox.custom_minimum_size = Vector2(320, 240)
+	weapon_panel.add_child(wvbox)
+	
+	var wtitle = Label.new()
+	wtitle.text = "Weapon Slots"
+	wtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	wtitle.add_theme_font_size_override("font_size", 24)
+	wtitle.modulate = Color.CYAN
+	wvbox.add_child(wtitle)
+	
+	var w_unlocked_count = GameState.unlocked_items.size()
+	var current_w_slots = 1 + int(floor(w_unlocked_count / 4.0))
+	current_w_slots = min(4, current_w_slots)
+	
+	var w_slots_lbl = Label.new()
+	w_slots_lbl.text = "Active Weapon Slots: %d / 4" % current_w_slots
+	w_slots_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	w_slots_lbl.add_theme_font_size_override("font_size", 20)
+	wvbox.add_child(w_slots_lbl)
+	
+	var w_prog_lbl = Label.new()
+	w_prog_lbl.text = "Weapons Unlocked: %d" % w_unlocked_count
+	w_prog_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	w_prog_lbl.add_theme_font_size_override("font_size", 16)
+	wvbox.add_child(w_prog_lbl)
+	
+	# Breakdown / milestones
+	var w_breakdown = Label.new()
+	w_breakdown.text = "Milestones:\n• 1 Slot: Unlocked by default %s\n• 2 Slots: Unlock 4 weapons %s\n• 3 Slots: Unlock 8 weapons %s\n• 4 Slots: Unlock 12 weapons %s" % [
+		"✓",
+		"✓" if w_unlocked_count >= 4 else "(Locked)",
+		"✓" if w_unlocked_count >= 8 else "(Locked)",
+		"✓" if w_unlocked_count >= 12 else "(Locked)"
+	]
+	w_breakdown.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	w_breakdown.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	w_breakdown.modulate = Color(0.8, 0.9, 0.9)
+	wvbox.add_child(w_breakdown)
+	
+	grid.add_child(weapon_panel)
+
+	# Show Aura slots progress
+	var aura_panel = PanelContainer.new()
+	aura_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var avbox = VBoxContainer.new()
+	avbox.add_theme_constant_override("separation", 15)
+	avbox.custom_minimum_size = Vector2(320, 240)
+	aura_panel.add_child(avbox)
+	
+	var atitle = Label.new()
+	atitle.text = "Aura Slots"
+	atitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	atitle.add_theme_font_size_override("font_size", 24)
+	atitle.modulate = Color.MAGENTA
+	avbox.add_child(atitle)
+	
+	var a_unlocked_count = GameState.unlocked_auras.size()
+	var current_a_slots = 1 + int(floor(a_unlocked_count / 3.0))
+	current_a_slots = min(4, current_a_slots)
+	
+	var a_slots_lbl = Label.new()
+	a_slots_lbl.text = "Active Aura Slots: %d / 4" % current_a_slots
+	a_slots_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	a_slots_lbl.add_theme_font_size_override("font_size", 20)
+	avbox.add_child(a_slots_lbl)
+	
+	var a_prog_lbl = Label.new()
+	a_prog_lbl.text = "Auras Unlocked: %d" % a_unlocked_count
+	a_prog_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	a_prog_lbl.add_theme_font_size_override("font_size", 16)
+	avbox.add_child(a_prog_lbl)
+	
+	# Breakdown / milestones
+	var a_breakdown = Label.new()
+	a_breakdown.text = "Milestones:\n• 1 Slot: Unlocked by default %s\n• 2 Slots: Unlock 3 auras %s\n• 3 Slots: Unlock 6 auras %s\n• 4 Slots: Unlock 9 auras %s" % [
+		"✓",
+		"✓" if a_unlocked_count >= 3 else "(Locked)",
+		"✓" if a_unlocked_count >= 6 else "(Locked)",
+		"✓" if a_unlocked_count >= 9 else "(Locked)"
+	]
+	a_breakdown.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	a_breakdown.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	a_breakdown.modulate = Color(0.9, 0.8, 0.9)
+	avbox.add_child(a_breakdown)
+	
+	grid.add_child(aura_panel)

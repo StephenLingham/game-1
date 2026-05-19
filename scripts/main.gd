@@ -458,8 +458,9 @@ func _generate_shop_options() -> void:
 	pool.shuffle()
 	for i in range(min(GameConstants.SHOP_OPTIONS_COUNT, pool.size())):
 		var opt = pool[i].duplicate()
-		# Roll a trait upgrade for this weapon if it has traits
-		if GameConstants.WEAPON_TRAITS.has(opt.id):
+		# Only roll a trait upgrade if the player already owns this weapon/ability
+		var level = GameState.run_abilities.get(opt.id, 0)
+		if level > 0 and GameConstants.WEAPON_TRAITS.has(opt.id):
 			var upgrade_roll = GameState.roll_weapon_upgrade(opt.id)
 			opt["upgrade_roll"] = upgrade_roll
 		else:
@@ -684,23 +685,7 @@ func _refresh_shop_ui() -> void:
 	footer_box.add_child(reroll_btn)
 
 func _get_max_level(id: String) -> int:
-	match id:
-		"zap": return GameConstants.ZAP_MAX_LEVEL
-		"orbs": return GameConstants.ORB_MAX_LEVEL
-		"spike_ball": return GameConstants.SPIKE_BALL_MAX_LEVEL
-		"shotgun": return GameConstants.SHOTGUN_MAX_LEVEL
-		"sniper": return GameConstants.SNIPER_MAX_LEVEL
-		"rocket": return GameConstants.ROCKET_MAX_LEVEL
-		"bouncing_disk": return GameConstants.DISK_MAX_LEVEL
-		"floor_spikes": return GameConstants.SPIKES_MAX_LEVEL
-		"turret": return GameConstants.TURRET_MAX_LEVEL
-		"machine_gun": return GameConstants.MG_MAX_LEVEL
-		"ice_wave": return GameConstants.ICE_MAX_LEVEL
-	
-	if id.begins_with("aura_"):
-		return GameConstants.AURA_MAX_LEVEL
-		
-	return 5
+	return 20
 
 
 func _buy_ability(id: String, upgrade_roll: Dictionary = {}) -> void:

@@ -601,12 +601,13 @@ func get_ability_limit() -> int:
 		"polymath": return 8 + perm_extra_slots_level
 		"singular_force", "singular_volley", "singular_luck": return 1
 	
-	var base_slots = 1
-	var extra_from_level = int(floor(run_level / 5.0)) # One new slot every 5 levels
-	return base_slots + extra_from_level + perm_extra_slots_level
+	var base_slots = 1 + int(floor(unlocked_items.size() / 4.0))
+	base_slots = min(4, base_slots)
+	return base_slots + perm_extra_slots_level
 
 func get_aura_limit() -> int:
-	return GameConstants.AURA_MAX_COUNT
+	var base_slots = 1 + int(floor(unlocked_auras.size() / 3.0))
+	return min(4, base_slots)
 
 func _get_aura_bonus(stat_name: String) -> float:
 	var total = 0.0
@@ -729,22 +730,7 @@ func record_ability_upgrade(id: String, level: int) -> void:
 	save()
 
 func _is_ability_at_max(id: String, level: int) -> bool:
-	# Keep in sync with Main.gd _get_max_level
-	match id:
-		"zap": return level >= GameConstants.ZAP_MAX_LEVEL
-		"orbs": return level >= GameConstants.ORB_MAX_LEVEL
-		"spike_ball": return level >= GameConstants.SPIKE_BALL_MAX_LEVEL
-		"shotgun": return level >= GameConstants.SHOTGUN_MAX_LEVEL
-		"sniper": return level >= GameConstants.SNIPER_MAX_LEVEL
-		"rocket": return level >= GameConstants.ROCKET_MAX_LEVEL
-		"bouncing_disk": return level >= GameConstants.DISK_MAX_LEVEL
-		"floor_spikes": return level >= GameConstants.SPIKES_MAX_LEVEL
-		"turret": return level >= GameConstants.TURRET_MAX_LEVEL
-		"machine_gun": return level >= GameConstants.MG_MAX_LEVEL
-		"ice_wave": return level >= GameConstants.ICE_MAX_LEVEL
-	if id.begins_with("aura_"):
-		return level >= GameConstants.AURA_MAX_LEVEL
-	return level >= 5
+	return level >= 20
 
 func is_item_unlocked(id: String) -> bool:
 	if GameConstants.DEBUG_UNLOCK_ALL_WEAPONS:

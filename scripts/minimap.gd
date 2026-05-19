@@ -144,11 +144,16 @@ func _draw_minimap() -> void:
 	for p in get_tree().get_nodes_in_group("powerups"):
 		if is_instance_valid(p):
 			var pos = mm_center + (p.global_position - player_pos) * minimap_scale
-			if pos.distance_to(mm_center) <= minimap_radius: # Fog of war does not apply to circular minimap
-				if "type" in p and p.type == 4: # GEM type
-					draw_circle(pos, 3.5, Color(1.0, 0.25, 0.25, 1.0)) # Bright ruby red
-					draw_circle(pos, 5.0, Color(1.0, 0.25, 0.25, 0.3))
-				else: # Standard Powerup Pickup
+			var is_gem = ("type" in p and p.type == 4)
+			if is_gem:
+				# If gem is out of range, clamp it to the minimap border so it serves as a pointer
+				var to_gem = pos - mm_center
+				if to_gem.length() > minimap_radius:
+					pos = mm_center + to_gem.normalized() * (minimap_radius - 4.0)
+				draw_circle(pos, 3.5, Color(1.0, 0.25, 0.25, 1.0)) # Bright ruby red
+				draw_circle(pos, 5.0, Color(1.0, 0.25, 0.25, 0.3))
+			else:
+				if pos.distance_to(mm_center) <= minimap_radius: # Fog of war does not apply to circular minimap
 					draw_circle(pos, 3.5, Color(0.0, 0.85, 1.0, 1.0)) # Electric cyan
 					draw_circle(pos, 5.0, Color(0.0, 0.85, 1.0, 0.3))
 
@@ -215,15 +220,17 @@ func _draw_full_map() -> void:
 			
 	# 3. Powerups / Gems (Cyan / Red)
 	for p in get_tree().get_nodes_in_group("powerups"):
-		if is_instance_valid(p) and is_uncovered(p.global_position):
-			var local_offset = p.global_position - arena_rect.position
-			var pos = bounds_rect.position + local_offset * fm_scale
-			if "type" in p and p.type == 4: # GEM type
-				draw_circle(pos, 4.5, Color(1.0, 0.25, 0.25, 1.0))
-				draw_circle(pos, 6.0, Color(1.0, 0.25, 0.25, 0.3))
-			else:
-				draw_circle(pos, 4.5, Color(0.0, 0.85, 1.0, 1.0))
-				draw_circle(pos, 6.0, Color(0.0, 0.85, 1.0, 0.3))
+		if is_instance_valid(p):
+			var is_gem = ("type" in p and p.type == 4)
+			if is_gem or is_uncovered(p.global_position):
+				var local_offset = p.global_position - arena_rect.position
+				var pos = bounds_rect.position + local_offset * fm_scale
+				if is_gem:
+					draw_circle(pos, 4.5, Color(1.0, 0.25, 0.25, 1.0))
+					draw_circle(pos, 6.0, Color(1.0, 0.25, 0.25, 0.3))
+				else:
+					draw_circle(pos, 4.5, Color(0.0, 0.85, 1.0, 1.0))
+					draw_circle(pos, 6.0, Color(0.0, 0.85, 1.0, 0.3))
 
 	# Draw player pulsing green dot
 	var local_offset = player_pos - arena_rect.position

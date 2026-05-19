@@ -342,7 +342,15 @@ func _fire_projectile_weapon(id: String, target: Node2D, color: Color, explode: 
 	for i in range(count):
 		var b = bullet_scene.instantiate()
 		b.global_position = global_position
-		var spread = 0.2 * (i - (count - 1) / 2.0) if count > 1 else 0.0
+		var spread: float
+		if i == 0:
+			spread = 0.0
+		else:
+			var multiplier = int(floor((i + 1) / 2.0))
+			if i % 2 == 1:
+				spread = 0.2 * multiplier
+			else:
+				spread = -0.2 * multiplier
 		var bullet_dir = dir.rotated(spread)
 		b.direction = bullet_dir
 		b.rotation = bullet_dir.angle()
@@ -546,7 +554,15 @@ func fire(target: Node2D) -> void:
 		var bullet := bullet_scene.instantiate() as Area2D
 		bullet.global_position = muzzle.global_position
 		# Spread them slightly if extra
-		var spread = 0.2 * (i - (count - 1) / 2.0) if count > 1 else 0.0
+		var spread: float
+		if i == 0:
+			spread = 0.0
+		else:
+			var multiplier = int(floor((i + 1) / 2.0))
+			if i % 2 == 1:
+				spread = 0.2 * multiplier
+			else:
+				spread = -0.2 * multiplier
 		var bullet_dir = dir.rotated(spread)
 		bullet.rotation = bullet_dir.angle()
 		bullet.direction = bullet_dir
@@ -575,7 +591,16 @@ func _fire_shotgun(target: Node2D) -> void:
 		step = spread / (count - 1)
 	
 	for i in range(count):
-		var angle := start_angle + step * i
+		var angle: float
+		if i == 0:
+			angle = base_rot
+		else:
+			var step_val = spread / (count - 1) if count > 1 else 0.0
+			var multiplier = int(floor((i + 1) / 2.0))
+			if i % 2 == 1:
+				angle = base_rot + step_val * multiplier
+			else:
+				angle = base_rot - step_val * multiplier
 		var bullet := bullet_scene.instantiate() as Area2D
 		bullet.global_position = muzzle.global_position
 		bullet.rotation = angle
