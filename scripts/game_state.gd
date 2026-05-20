@@ -279,7 +279,13 @@ func get_weapon_crit_chance_bonus(weapon_id: String) -> float:
 
 ## Roll a random rarity using weighted selection.
 func roll_rarity() -> String:
-	var weights: Array = GameConstants.RARITY_WEIGHTS
+	var weights: Array = GameConstants.RARITY_WEIGHTS.duplicate()
+	var luck = get_luck()
+	# Scale rarity weights of rare, epic, and legendary based on luck
+	weights[2] = int(round(weights[2] * luck))
+	weights[3] = int(round(weights[3] * (luck * 1.2)))
+	weights[4] = int(round(weights[4] * (luck * 1.5)))
+	
 	var total := 0
 	for w in weights: total += w
 	var roll := randi() % total
@@ -443,7 +449,9 @@ func get_pickup_radius() -> float:
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("pickup_radius", 0.0)
+	bonus += run_gift_bonuses.get("pickup_radius", 0.0)
 	return base + perm + bonus
+
 
 
 func get_total_damage(base: int) -> int:
@@ -501,7 +509,7 @@ func get_crit_chance() -> float:
 		bonus += stats.get("crit_chance", 0.0)
 	
 	bonus += run_gift_bonuses.get("crit_chance", 0.0)
-	return base + bonus
+	return (base + bonus) * get_luck()
 
 
 func get_crit_multiplier() -> float:
@@ -595,6 +603,13 @@ func get_speed_multiplier(include_dynamic: bool = true) -> float:
 			
 	mult += run_gift_bonuses.get("speed_multiplier", 0.0)
 	return mult
+
+
+func get_luck() -> float:
+	var base := 1.0
+	var bonus := _get_aura_bonus("luck")
+	bonus += run_gift_bonuses.get("luck", 0.0)
+	return base + bonus
 
 func get_ability_limit() -> int:
 	match current_character:

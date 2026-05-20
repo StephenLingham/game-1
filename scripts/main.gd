@@ -66,7 +66,8 @@ const ALL_ABILITIES = [
 	{"id": "aura_thorns", "name": "Spike Aura", "is_aura": true},
 	{"id": "aura_speed", "name": "Haste Aura", "is_aura": true},
 	{"id": "aura_xp_drop", "name": "Learning Aura", "is_aura": true},
-	{"id": "aura_spawn_rate", "name": "Chaos Aura", "is_aura": true}
+	{"id": "aura_spawn_rate", "name": "Chaos Aura", "is_aura": true},
+	{"id": "aura_luck", "name": "Luck Aura", "is_aura": true}
 ]
 
 @onready var lbl_wave: Label = $UI/HUD/HUDTopRow/CenterInfo/WaveLabel

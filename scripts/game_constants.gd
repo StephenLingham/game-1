@@ -12,6 +12,10 @@ const CHEST_STARTING_COUNT: int = 7
 const POWERUP_STARTING_COUNT: int = 7
 const GIFT_COUNT: int = 20
 
+# --- FEATURE FLAGS ---
+const FEATURE_GIFTS_GIVE_RANDOM_STAT: bool = false
+
+
 # --- PLAYER STATS ---
 const PLAYER_SPEED: float = 300.0
 const PLAYER_FIRE_RATE: float = 0.50
@@ -303,6 +307,10 @@ const POWERUP_GEM_AWARD_AMOUNT: int = 1
 const POWERUP_ICON_SCALE: float = 0.07
 # --- GIFT SETTINGS ---
 const GIFT_XP_AMOUNT: int = 15
+const GIFT_PICKUP_RADIUS_BOOST: float = 5.0
+const GIFT_LUCK_BOOST: float = 0.05
+
+
 const GIFT_RARITY_VALUES: Dictionary = {
 	"common":    0.1,
 	"uncommon":  0.5,
@@ -335,8 +343,14 @@ const GIFT_STATS: Dictionary = {
 		"display": "+%.1f%% Atk Speed",
 		"weight": 0.01, # Common: +0.1%, Legendary: +10%
 		"internal_stat": "atkspd_multiplier"
+	},
+	"pickup_radius": {
+		"display": "+%.1f Pickup Radius",
+		"weight": 5.0, # Common: +0.5, Legendary: +50
+		"internal_stat": "pickup_radius"
 	}
 }
+
 
 # --- UNLOCKS ---
 const UNLOCK_KILLS_NEEDED: int = 50
@@ -605,5 +619,11 @@ const AURAS: Dictionary = {
 		"stat": "spawn_rate_multiplier",
 		"value": AURA_SPAWN_BOOST,
 		"desc": "Increases enemy spawn rate by %d%% per level (more XP!)."
+	},
+	"aura_luck": {
+		"name": "Luck Aura",
+		"stat": "luck",
+		"value": 0.10,
+		"desc": "Increases overall luck by %d%% per level."
 	}
 }
