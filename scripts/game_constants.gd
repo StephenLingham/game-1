@@ -274,6 +274,8 @@ const TRAIT_BASE_SIZE: float        = 0.10  # +10% area radius
 # --- AURA SETTINGS ---
 const AURA_MAX_LEVEL: int = 20
 const AURA_MAX_COUNT: int = 6
+const AURA_UNLOCK_UPGRADES_NEEDED: int = 20
+
 
 # Aura Stat Values (per level)
 const AURA_DAMAGE_BOOST: float = 0.1 # +10%
@@ -289,6 +291,9 @@ const AURA_THORNS_BOOST: float = 0.1 # +10% thorns
 const AURA_SPAWN_BOOST: float = 0.1  # +10% spawn rate
 const AURA_XP_BOOST: float = 0.1    # +10% XP drop
 const AURA_SPEED_BOOST: float = 0.10  # +10% movement speed
+const AURA_PROJECTILES_BOOST: float = 1.0 # +1.0 projectiles per level by default
+const AURA_BOUNCES_BOOST: float = 1.0     # +1.0 bounces per level by default
+
 
 # --- SHOP SETTINGS ---
 const SHOP_OPTIONS_COUNT: int = 3
@@ -625,5 +630,18 @@ const AURAS: Dictionary = {
 		"stat": "luck",
 		"value": 0.10,
 		"desc": "Increases overall luck by %d%% per level."
+	},
+	"aura_projectiles": {
+		"name": "Volley Aura",
+		"stat": "projectiles",
+		"value": AURA_PROJECTILES_BOOST,
+		"desc": "Increases global projectile count by +%.1f per level (more for higher rarity)."
+	},
+	"aura_bounces": {
+		"name": "Ricochet Aura",
+		"stat": "bounces",
+		"value": AURA_BOUNCES_BOOST,
+		"desc": "Increases global weapon bounces by +%.1f per level (more for higher rarity)."
 	}
 }
+

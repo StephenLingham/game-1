@@ -50,6 +50,7 @@ var run_reroll_count: int = 3
 var run_banished_abilities: Array = []
 var run_banish_count: int = 2
 var run_items: Array = [] # [item_id, item_id, ...]
+var run_aura_rarity_bonuses: Dictionary = {}
 
 
 # Character specific run state
@@ -193,6 +194,7 @@ func reset_run() -> void:
 	run_extra_bounces = 0
 	run_weapon_traits = {}
 	run_gift_bonuses = {}
+	run_aura_rarity_bonuses = {}
 	
 	_apply_initial_character_traits()
 
@@ -237,11 +239,14 @@ func _apply_character_level_up_traits() -> void:
 
 func get_projectiles() -> int:
 	var plvl = min(perm_projectiles_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
-	return GameConstants.BASE_PROJECTILES + plvl + run_extra_projectiles
+	var aura_bonus = _get_aura_bonus("projectiles")
+	return int(floor(float(GameConstants.BASE_PROJECTILES + plvl + run_extra_projectiles) + aura_bonus))
 
 func get_bounces() -> int:
 	var blvl = min(perm_bounces_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
-	return GameConstants.BASE_BOUNCES + blvl + run_extra_bounces
+	var aura_bonus = _get_aura_bonus("bounces")
+	return int(floor(float(GameConstants.BASE_BOUNCES + blvl + run_extra_bounces) + aura_bonus))
+
 
 # --- PER-WEAPON TRAIT SYSTEM ---
 
@@ -326,6 +331,31 @@ func roll_weapon_upgrade(weapon_id: String) -> Dictionary:
 		"value":   value,
 		"display": display
 	}
+
+func roll_aura_rarity_upgrade(aura_id: String) -> Dictionary:
+	var aura_data: Dictionary = GameConstants.AURAS.get(aura_id, {})
+	if aura_data.is_empty():
+		return {}
+	var rarity: String = roll_rarity()
+	var mult: float = GameConstants.RARITY_MULTIPLIERS[rarity]
+	var base: float = aura_data.value
+	var value: float = base * mult
+	var stat: String = aura_data.stat
+	var display: String
+	if stat.ends_with("_multiplier") or stat.ends_with("_percent") or stat.ends_with("_chance") or stat == "thorns_percentage" or stat == "spawn_rate_multiplier" or stat == "luck":
+		display = "+%d%% %s" % [int(round(value * 100)), aura_data.name]
+	else:
+		display = "+%.2f %s" % [value, aura_data.name]
+	return {
+		"trait": "aura_boost",
+		"rarity": rarity,
+		"value": value,
+		"display": display
+	}
+
+func add_aura_rarity_bonus(aura_id: String, value: float) -> void:
+	var current: float = run_aura_rarity_bonuses.get(aura_id, 0.0)
+	run_aura_rarity_bonuses[aura_id] = current + value
 
 
 # --- HELPER GETTERS (Backward Compatibility) ---
@@ -627,11 +657,14 @@ func get_aura_limit() -> int:
 func _get_aura_bonus(stat_name: String) -> float:
 	var total = 0.0
 	for aura_id in GameConstants.AURAS:
-		var level = run_abilities.get(aura_id, 0)
-		if level > 0:
+		if run_abilities.get(aura_id, 0) > 0:
 			var aura_data = GameConstants.AURAS[aura_id]
 			if aura_data.stat == stat_name:
-				total += aura_data.value * level
+				# Use rarity-accumulated bonus if available, else fall back to flat level*value
+				if run_aura_rarity_bonuses.has(aura_id):
+					total += run_aura_rarity_bonuses[aura_id]
+				else:
+					total += aura_data.value * run_abilities[aura_id]
 	return total
 
 func add_run_item(item_id: String) -> void:
@@ -818,7 +851,7 @@ func _check_unlocks() -> void:
 				if current_total >= should_have_total:
 					break
 	
-	# Aura chain: previous at max level unlocks next
+	# Aura chain: previous upgraded 20 times in total unlocks next
 	var aura_chain = GameConstants.AURAS.keys()
 	
 	# Initial aura unlock: Kill 100 enemies with Zap
@@ -831,14 +864,7 @@ func _check_unlocks() -> void:
 		var current = aura_chain[i]
 		var next = aura_chain[i+1]
 		if unlocked_auras.has(current):
-			# Use a separate tracking for max level achieved? 
-			# User says "get the previous one to max level in a chain".
-			# We can check lifetime_kills or a new lifetime_max_levels dict.
-			# But and easier way is to check if we ever reached max level in a run and recorded it.
-			# Let's add a lifetime_max_levels or just check record_ability_upgrade.
-			# Actually, the user says "you need to get the previous one to max level".
-			# I'll check a new dictionary `aura_max_levels_reached`.
-			if aura_max_levels_reached.get(current, 0) >= GameConstants.AURA_MAX_LEVEL:
+			if lifetime_upgrades.get(current, 0) >= GameConstants.AURA_UNLOCK_UPGRADES_NEEDED:
 				if not unlocked_auras.has(next) and not run_unlocked_items.has(next):
 					run_unlocked_items.append(next)
 

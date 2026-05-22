@@ -283,7 +283,7 @@ func _show_auras() -> void:
 			var precursor = _get_aura_precursor(id)
 			if precursor != "":
 				var prec_name = auras[precursor].name
-				desc.text = "Unlock by reaching Max Level with %s" % prec_name
+				desc.text = "Upgrade %s %d times in total to unlock" % [prec_name, GameConstants.AURA_UNLOCK_UPGRADES_NEEDED]
 			else:
 				desc.text = "Kill 100 enemies with Zap to unlock"
 				
@@ -295,9 +295,9 @@ func _show_auras() -> void:
 		if not is_unlocked:
 			var precursor = _get_aura_precursor(id)
 			if precursor != "":
-				var max_reached = GameState.aura_max_levels_reached.get(precursor, 0)
+				var upgrades = GameState.lifetime_upgrades.get(precursor, 0)
 				var progress = Label.new()
-				progress.text = "Max Level Progress: %d / %d" % [max_reached, GameConstants.AURA_MAX_LEVEL]
+				progress.text = "Total Upgrades Progress: %d / %d" % [upgrades, GameConstants.AURA_UNLOCK_UPGRADES_NEEDED]
 				progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 				progress.modulate = Color.CYAN
 				vbox.add_child(progress)

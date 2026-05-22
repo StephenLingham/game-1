@@ -67,7 +67,9 @@ const ALL_ABILITIES = [
 	{"id": "aura_speed", "name": "Haste Aura", "is_aura": true},
 	{"id": "aura_xp_drop", "name": "Learning Aura", "is_aura": true},
 	{"id": "aura_spawn_rate", "name": "Chaos Aura", "is_aura": true},
-	{"id": "aura_luck", "name": "Luck Aura", "is_aura": true}
+	{"id": "aura_luck", "name": "Luck Aura", "is_aura": true},
+	{"id": "aura_projectiles", "name": "Volley Aura", "is_aura": true},
+	{"id": "aura_bounces", "name": "Ricochet Aura", "is_aura": true}
 ]
 
 @onready var lbl_wave: Label = $UI/HUD/HUDTopRow/CenterInfo/WaveLabel
@@ -459,11 +461,13 @@ func _generate_shop_options() -> void:
 	pool.shuffle()
 	for i in range(min(GameConstants.SHOP_OPTIONS_COUNT, pool.size())):
 		var opt = pool[i].duplicate()
-		# Only roll a trait upgrade if the player already owns this weapon/ability
+		# Only roll a rarity upgrade if the player already owns the ability (level > 0)
 		var level = GameState.run_abilities.get(opt.id, 0)
-		if level > 0 and GameConstants.WEAPON_TRAITS.has(opt.id):
-			var upgrade_roll = GameState.roll_weapon_upgrade(opt.id)
-			opt["upgrade_roll"] = upgrade_roll
+		if level > 0 and opt.id.begins_with("aura_"):
+			# All auras get a rarity roll on every upgrade after first purchase
+			opt["upgrade_roll"] = GameState.roll_aura_rarity_upgrade(opt.id)
+		elif level > 0 and GameConstants.WEAPON_TRAITS.has(opt.id):
+			opt["upgrade_roll"] = GameState.roll_weapon_upgrade(opt.id)
 		else:
 			opt["upgrade_roll"] = {}
 		current_shop_options.append(opt)
@@ -695,8 +699,16 @@ func _buy_ability(id: String, upgrade_roll: Dictionary = {}) -> void:
 	if level < _get_max_level(id):
 		GameState.run_abilities[id] = level + 1
 		GameState.record_ability_upgrade(id, level + 1)
-		# Apply the rolled trait bonus if any
-		if not upgrade_roll.is_empty():
+		if id.begins_with("aura_"):
+			if not upgrade_roll.is_empty():
+				# Upgrade (level > 0): apply the rarity-scaled value
+				GameState.add_aura_rarity_bonus(id, upgrade_roll["value"])
+			else:
+				# First purchase (level 0→1): apply flat base value at Common
+				var aura_data = GameConstants.AURAS.get(id, {})
+				if not aura_data.is_empty():
+					GameState.add_aura_rarity_bonus(id, aura_data.value)
+		elif not upgrade_roll.is_empty():
 			GameState.add_weapon_trait(id, upgrade_roll["trait"], upgrade_roll["value"])
 		_close_shop()
 
