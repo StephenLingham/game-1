@@ -665,10 +665,13 @@ func _refresh_shop_ui() -> void:
 		if abi.id.begins_with("aura_"):
 			var aura_data = GameConstants.AURAS[abi.id]
 			var val = aura_data.value
-			if aura_data.stat.ends_with("_multiplier") or aura_data.stat.ends_with("_percent") or aura_data.stat.ends_with("_chance") or aura_data.stat == "thorns_percentage" or aura_data.stat == "gem_drop_chance_bonus" or aura_data.stat == "spawn_rate_multiplier":
-				desc_lbl.text = aura_data.desc % int(val * 100)
+			if aura_data.desc != "":
+				if aura_data.stat.ends_with("_multiplier") or aura_data.stat.ends_with("_percent") or aura_data.stat.ends_with("_chance") or aura_data.stat == "thorns_percentage" or aura_data.stat == "gem_drop_chance_bonus" or aura_data.stat == "spawn_rate_multiplier":
+					desc_lbl.text = aura_data.desc % int(val * 100)
+				else:
+					desc_lbl.text = aura_data.desc % val
 			else:
-				desc_lbl.text = aura_data.desc % val
+				desc_lbl.visible = false
 		vbox.add_child(desc_lbl)
 		upgrades_box.add_child(panel)
 

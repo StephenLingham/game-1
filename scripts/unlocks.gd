@@ -275,10 +275,13 @@ func _show_auras() -> void:
 		var desc = Label.new()
 		if is_unlocked:
 			var val = aura_data.value
-			if aura_data.stat.ends_with("_multiplier") or aura_data.stat.ends_with("_percent") or aura_data.stat.ends_with("_chance") or aura_data.stat == "thorns_percentage" or aura_data.stat == "gem_drop_chance_bonus" or aura_data.stat == "spawn_rate_multiplier":
-				desc.text = aura_data.desc % int(val * 100)
+			if aura_data.desc != "":
+				if aura_data.stat.ends_with("_multiplier") or aura_data.stat.ends_with("_percent") or aura_data.stat.ends_with("_chance") or aura_data.stat == "thorns_percentage" or aura_data.stat == "gem_drop_chance_bonus" or aura_data.stat == "spawn_rate_multiplier":
+					desc.text = aura_data.desc % int(val * 100)
+				else:
+					desc.text = aura_data.desc % val
 			else:
-				desc.text = aura_data.desc % val
+				desc.visible = false
 		else:
 			var precursor = _get_aura_precursor(id)
 			if precursor != "":

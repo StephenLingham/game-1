@@ -342,10 +342,11 @@ func roll_aura_rarity_upgrade(aura_id: String) -> Dictionary:
 	var value: float = base * mult
 	var stat: String = aura_data.stat
 	var display: String
+	var display_name: String = aura_data.get("display_name", aura_data.name)
 	if stat.ends_with("_multiplier") or stat.ends_with("_percent") or stat.ends_with("_chance") or stat == "thorns_percentage" or stat == "spawn_rate_multiplier" or stat == "luck":
-		display = "+%d%% %s" % [int(round(value * 100)), aura_data.name]
+		display = "+%d%% %s" % [int(round(value * 100)), display_name]
 	else:
-		display = "+%.2f %s" % [value, aura_data.name]
+		display = "+%.2f %s" % [value, display_name]
 	return {
 		"trait": "aura_boost",
 		"rarity": rarity,

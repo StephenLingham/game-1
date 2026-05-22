@@ -549,9 +549,10 @@ const ITEMS: Dictionary = {
 const AURAS: Dictionary = {
 	"aura_damage": {
 		"name": "Power Aura",
+		"display_name": "Damage",
 		"stat": "damage_multiplier",
 		"value": AURA_DAMAGE_BOOST,
-		"desc": "Increases overall damage bonus by %d%% per level."
+		"desc": ""
 	},
 	"aura_atkspd": {
 		"name": "Swiftness Aura",
@@ -644,4 +645,3 @@ const AURAS: Dictionary = {
 		"desc": "Increases global weapon bounces by +%.1f per level (more for higher rarity)."
 	}
 }
-
