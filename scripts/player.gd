@@ -440,11 +440,20 @@ func _fire_frozen_orb(target: Node2D) -> void:
 func _fire_blizzard() -> void:
 	var size_mult = GameState.get_weapon_size_multiplier("blizzard")
 	var spawn_range = GameConstants.BLIZZARD_BASE_RADIUS * size_mult
-	var count = GameState.get_projectiles() * 3
+	var strike_radius = 40.0 * size_mult
+	var count = max(1, GameState.get_projectiles() * 3)
 	var effective_dmg = _get_weapon_base_damage("blizzard") + GameState.get_weapon_damage_bonus("blizzard")
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var nearby_enemies: Array[Node2D] = []
+	for enemy in enemies:
+		if is_instance_valid(enemy) and global_position.distance_to(enemy.global_position) <= spawn_range:
+			nearby_enemies.append(enemy)
 	for i in range(count):
 		var pos = global_position + Vector2(randf_range(-spawn_range, spawn_range), randf_range(-spawn_range, spawn_range))
-		_apply_area_damage_for_weapon(pos, 40.0, effective_dmg, "blizzard")
+		if not nearby_enemies.is_empty():
+			var target_enemy = nearby_enemies[randi() % nearby_enemies.size()]
+			pos = target_enemy.global_position + Vector2(randf_range(-strike_radius, strike_radius), randf_range(-strike_radius, strike_radius))
+		_apply_blizzard_hit(pos, strike_radius, effective_dmg)
 
 func _update_arcane_orbs() -> void:
 	# Handled via child nodes in player usually, but I'll skip for brevity or implement if needed
@@ -477,6 +486,35 @@ func _apply_area_damage_for_weapon(pos: Vector2, radius: float, effective_dmg: i
 			var res = _get_final_damage_for_weapon(effective_dmg, source)
 			e.take_damage(res.damage, source, res.is_crit)
 			GameState.run_damage_stats[source] = GameState.run_damage_stats.get(source, 0) + res.damage
+
+func _apply_blizzard_hit(pos: Vector2, radius: float, effective_dmg: int) -> void:
+	_show_blizzard_strike(pos, radius)
+	_apply_area_damage_for_weapon(pos, radius, effective_dmg, "blizzard")
+
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for e in enemies:
+		if is_instance_valid(e) and pos.distance_to(e.global_position) <= radius and e.has_method("freeze"):
+			e.freeze(GameConstants.ICE_FREEZE_DURATION)
+
+func _show_blizzard_strike(pos: Vector2, radius: float) -> void:
+	var circle := Polygon2D.new()
+	var pts := []
+	for i in range(24):
+		var angle := i * TAU / 24.0
+		var wobble := randf_range(0.82, 1.08)
+		pts.append(Vector2.RIGHT.rotated(angle) * radius * wobble)
+	circle.polygon = PackedVector2Array(pts)
+	circle.color = Color(0.75, 0.9, 1.0, 0.32)
+	circle.global_position = pos
+	circle.scale = Vector2(0.45, 0.45)
+	circle.rotation = randf_range(-0.35, 0.35)
+	circle.add_to_group("projectiles")
+	get_tree().current_scene.add_child(circle)
+
+	var tween := create_tween()
+	tween.tween_property(circle, "scale", Vector2.ONE, 0.12)
+	tween.parallel().tween_property(circle, "modulate:a", 0.0, 0.28)
+	tween.tween_callback(circle.queue_free)
 
 func get_damage() -> int:
 	var dmg := float(base_damage + GameState.get_zap_damage_bonus())
