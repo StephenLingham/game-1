@@ -6,22 +6,9 @@ extends Control
 @onready var reset_btn: Button = $VBox/Footer/Reset
 
 const UPGRADES = [
-	{"id": "damage", "name": "Damage", "desc": "+1% Damage per level"},
-	{"id": "atkspd", "name": "Attack Speed", "desc": "+1% Attack Speed per level"},
-	{"id": "pickup_radius", "name": "Magnet", "desc": "+1 Magnet Radius per level"},
-	{"id": "max_health", "name": "Max Health", "desc": "+1 Health per level"},
-	{"id": "regen", "name": "Health Regen", "desc": "+0.1 HP/sec per level"},
-	{"id": "crit", "name": "Crit Chance", "desc": "+1% Crit Chance per level"},
-	{"id": "crit_damage", "name": "Crit Damage", "desc": "+1% Crit Multiplier per level"},
-	{"id": "armor", "name": "Armor (Flat)", "desc": "+1 Flat damage reduction per level"},
-	{"id": "armor_percent", "name": "Armor (%)", "desc": "+1% Total damage reduction per level"},
-	{"id": "thorns", "name": "Thorns", "desc": "+1% Thorns damage reflected"},
-	{"id": "spawn_rate", "name": "Spawn Rate", "desc": "+1% Enemy spawn rate"},
-	{"id": "gold_drop", "name": "XP Multiplier", "desc": "+1% XP gained from all sources per level"},
-	{"id": "speed", "name": "Movement Speed", "desc": "+1% Speed per level"},
-	{"id": "projectiles", "name": "Projectiles", "desc": "+1 Projectile per level (Selected weapons)"},
-	{"id": "bounces", "name": "Bounces", "desc": "+1 Bounce per level (Selected weapons)"},
-	{"id": "extra_slots", "name": "Extra Slots", "desc": "+1 Ability Slot per level"}
+	{"id": "spawn_rate", "name": "Chaos", "desc": "+1% enemy spawn rate"},
+	{"id": "gold_drop", "name": "Learning", "desc": "+1% XP gained"},
+	{"id": "luck", "name": "Luck", "desc": "+1% luck"}
 ]
 
 func _ready() -> void:

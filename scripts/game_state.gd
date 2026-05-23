@@ -31,6 +31,7 @@ var perm_crit_level: int = 0
 var perm_armor_level: int = 0
 var perm_armor_percent_level: int = 0
 var perm_gold_drop_level: int = 0
+var perm_luck_level: int = 0
 var perm_speed_level: int = 0
 var perm_thorns_level: int = 0
 var perm_spawn_rate_level: int = 0
@@ -164,6 +165,7 @@ func _reset_all_perm_levels() -> void:
 	perm_armor_level = 0
 	perm_armor_percent_level = 0
 	perm_gold_drop_level = 0
+	perm_luck_level = 0
 	perm_speed_level = 0
 	perm_thorns_level = 0
 	perm_spawn_rate_level = 0
@@ -637,7 +639,8 @@ func get_speed_multiplier(include_dynamic: bool = true) -> float:
 
 
 func get_luck() -> float:
-	var base := 1.0
+	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_luck_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
+	var base := 1.0 + float(lvl) * 0.01
 	var bonus := _get_aura_bonus("luck")
 	bonus += run_gift_bonuses.get("luck", 0.0)
 	return base + bonus
@@ -695,6 +698,7 @@ func reset_gems() -> void:
 	spent += _calculate_spent(perm_armor_level)
 	spent += _calculate_spent(perm_armor_percent_level)
 	spent += _calculate_spent(perm_gold_drop_level)
+	spent += _calculate_spent(perm_luck_level)
 	spent += _calculate_spent(perm_speed_level)
 	spent += _calculate_spent(perm_thorns_level)
 	spent += _calculate_spent(perm_spawn_rate_level)
@@ -714,6 +718,7 @@ func reset_gems() -> void:
 	perm_armor_level = 0
 	perm_armor_percent_level = 0
 	perm_gold_drop_level = 0
+	perm_luck_level = 0
 	perm_speed_level = 0
 	perm_thorns_level = 0
 	perm_spawn_rate_level = 0
@@ -881,6 +886,7 @@ func save() -> void:
 		"perm_armor_level": perm_armor_level,
 		"perm_armor_percent_level": perm_armor_percent_level,
 		"perm_gold_drop_level": perm_gold_drop_level,
+		"perm_luck_level": perm_luck_level,
 		"perm_speed_level": perm_speed_level,
 		"perm_thorns_level": perm_thorns_level,
 		"perm_spawn_rate_level": perm_spawn_rate_level,
@@ -926,6 +932,7 @@ func load_save() -> void:
 	perm_armor_level = int(parsed.get("perm_armor_level", 0))
 	perm_armor_percent_level = int(parsed.get("perm_armor_percent_level", 0))
 	perm_gold_drop_level = int(parsed.get("perm_gold_drop_level", 0))
+	perm_luck_level = int(parsed.get("perm_luck_level", 0))
 	perm_speed_level = int(parsed.get("perm_speed_level", 0))
 	perm_thorns_level = int(parsed.get("perm_thorns_level", 0))
 	perm_spawn_rate_level = int(parsed.get("perm_spawn_rate_level", 0))
