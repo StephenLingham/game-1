@@ -1,5 +1,12 @@
 extends Area2D
 
+const BOLT_TEXTURES := {
+	"lightning_bolt": preload("res://assets/Weapons/lightning_bolt_projectile.png"),
+	"ice_bolt": preload("res://assets/Weapons/ice_bolt_projectile.png"),
+	"fire_bolt": preload("res://assets/Weapons/fire_bolt_projectile.png"),
+	"arcane_bolt": preload("res://assets/Weapons/arcane_bolt_projectile.png")
+}
+
 @export var speed: float = 800.0
 @export var lifetime: float = 2.0
 @export var damage: int = 1
@@ -24,17 +31,35 @@ func _ready() -> void:
 
 func _setup_visuals() -> void:
 	var cr = get_node_or_null("ColorRect")
+	var sprite = get_node_or_null("Sprite2D")
+	if sprite:
+		sprite.visible = false
 	if cr:
 		if weapon_source == "frozen_orb":
 			if not is_frozen_orb_shard:
 				cr.visible = false
+				if sprite:
+					sprite.visible = false
 				queue_redraw()
 			else:
 				# Shard base color to white so modulation is pure blue
 				cr.color = Color.WHITE
+				if sprite:
+					sprite.visible = false
+		elif BOLT_TEXTURES.has(weapon_source):
+			cr.visible = false
+			if sprite:
+				sprite.texture = BOLT_TEXTURES[weapon_source]
+				sprite.visible = true
 		elif weapon_source != "zap":
 			# Set base color to white for all other elemental weapons so their modulations are pure and beautiful!
 			cr.color = Color.WHITE
+			if sprite:
+				sprite.visible = false
+		else:
+			cr.visible = true
+			if sprite:
+				sprite.visible = false
 
 func _draw() -> void:
 	if weapon_source == "frozen_orb" and not is_frozen_orb_shard:

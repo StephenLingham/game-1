@@ -24,6 +24,13 @@ var reroll_btn: Button
 var banish_active: bool = false
 var current_shop_options: Array = []
 
+const SHOP_WEAPON_ICONS := {
+	"lightning_bolt": preload("res://assets/Weapons/lightning_bolt_projectile.png"),
+	"ice_bolt": preload("res://assets/Weapons/ice_bolt_projectile.png"),
+	"fire_bolt": preload("res://assets/Weapons/fire_bolt_projectile.png"),
+	"arcane_bolt": preload("res://assets/Weapons/arcane_bolt_projectile.png")
+}
+
 const ALL_ABILITIES = [
 	{"id": "zap", "name": "Zap", "weapon": true},
 	{"id": "arcane_missile", "name": "Arcane Missile", "weapon": true},
@@ -532,7 +539,7 @@ func _refresh_shop_ui() -> void:
 		var vbox = VBoxContainer.new()
 		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 		vbox.add_theme_constant_override("separation", 10)
-		vbox.custom_minimum_size = Vector2(160, 80)
+		vbox.custom_minimum_size = Vector2(160, 120)
 		panel.add_child(vbox)
 		
 		var lbl = Label.new()
@@ -542,6 +549,10 @@ func _refresh_shop_ui() -> void:
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.add_theme_font_size_override("font_size", 18)
 		vbox.add_child(lbl)
+		
+		var owned_icon = _create_shop_weapon_icon(abi_id, 0.6)
+		if owned_icon:
+			vbox.add_child(owned_icon)
 		
 		if abi_id.begins_with("aura_"):
 			panel.self_modulate = Color(1.0, 0.8, 1.0, 0.5)
@@ -576,7 +587,7 @@ func _refresh_shop_ui() -> void:
 		var vbox = VBoxContainer.new()
 		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 		vbox.add_theme_constant_override("separation", 8)
-		vbox.custom_minimum_size = Vector2(240, 170)
+		vbox.custom_minimum_size = Vector2(240, 210)
 		panel.add_child(vbox)
 		
 		# --- Rarity data ---
@@ -606,6 +617,10 @@ func _refresh_shop_ui() -> void:
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.add_theme_font_size_override("font_size", 20)
 		vbox.add_child(lbl)
+		
+		var shop_icon = _create_shop_weapon_icon(abi.id)
+		if shop_icon:
+			vbox.add_child(shop_icon)
 		
 		# --- Rarity badge ---
 		if has_roll:
@@ -694,6 +709,16 @@ func _refresh_shop_ui() -> void:
 
 func _get_max_level(id: String) -> int:
 	return 20
+
+func _create_shop_weapon_icon(weapon_id: String, scale: float = 0.75) -> TextureRect:
+	if not SHOP_WEAPON_ICONS.has(weapon_id):
+		return null
+	var icon := TextureRect.new()
+	icon.texture = SHOP_WEAPON_ICONS[weapon_id]
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.custom_minimum_size = Vector2(64, 40) * scale
+	return icon
 
 
 func _buy_ability(id: String, upgrade_roll: Dictionary = {}) -> void:

@@ -1,6 +1,10 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/bullet.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Weapons/lightning_bolt_projectile.png" id="2_lightning"]
+[ext_resource type="Texture2D" path="res://assets/Weapons/ice_bolt_projectile.png" id="3_ice"]
+[ext_resource type="Texture2D" path="res://assets/Weapons/fire_bolt_projectile.png" id="4_fire"]
+[ext_resource type="Texture2D" path="res://assets/Weapons/arcane_bolt_projectile.png" id="5_arcane"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
 size = Vector2(14, 4)
@@ -16,6 +20,11 @@ offset_top = -2.0
 offset_right = 7.0
 offset_bottom = 2.0
 color = Color(1, 0.85, 0.1, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("2_lightning")
+scale = Vector2(0.65, 0.65)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_1")
