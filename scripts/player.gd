@@ -336,22 +336,29 @@ func _fire_projectile_weapon(id: String, target: Node2D, color: Color, explode: 
 	else:
 		count = GameState.get_projectiles()
 	
-	var dir = (target.global_position - global_position).normalized()
 	var effective_base = _get_weapon_base_damage(id) + GameState.get_weapon_damage_bonus(id)
+	var bolt_targets := _get_bolt_targets(count) if _is_multi_target_bolt_weapon(id) else []
 	
 	for i in range(count):
 		var b = bullet_scene.instantiate()
 		b.global_position = global_position
-		var spread: float
-		if i == 0:
-			spread = 0.0
+		var bullet_dir: Vector2
+		if not bolt_targets.is_empty():
+			var assigned_target: Node2D = bolt_targets[i]
+			bullet_dir = (assigned_target.global_position - global_position).normalized()
+			b.launch_delay = 0.035 * float(i)
 		else:
-			var multiplier = int(floor((i + 1) / 2.0))
-			if i % 2 == 1:
-				spread = 0.2 * multiplier
+			var dir = (target.global_position - global_position).normalized()
+			var spread: float
+			if i == 0:
+				spread = 0.0
 			else:
-				spread = -0.2 * multiplier
-		var bullet_dir = dir.rotated(spread)
+				var multiplier = int(floor((i + 1) / 2.0))
+				if i % 2 == 1:
+					spread = 0.2 * multiplier
+				else:
+					spread = -0.2 * multiplier
+			bullet_dir = dir.rotated(spread)
 		b.direction = bullet_dir
 		b.rotation = bullet_dir.angle()
 		b.modulate = color
@@ -372,6 +379,20 @@ func _fire_projectile_weapon(id: String, target: Node2D, color: Color, explode: 
 			b.area_radius = GameConstants.FIREBALL_BASE_BLAST_RADIUS * GameState.get_weapon_size_multiplier(id)
 		
 		get_tree().current_scene.add_child(b)
+
+func _is_multi_target_bolt_weapon(id: String) -> bool:
+	return id in ["lightning_bolt", "ice_bolt", "fire_bolt", "arcane_bolt"]
+
+func _get_bolt_targets(count: int) -> Array:
+	var visible_enemies = _get_visible_enemies()
+	if visible_enemies.is_empty():
+		return []
+	
+	visible_enemies.sort_custom(func(a, b): return global_position.distance_squared_to(a.global_position) < global_position.distance_squared_to(b.global_position))
+	var targets: Array = []
+	for i in range(count):
+		targets.append(visible_enemies[i % visible_enemies.size()])
+	return targets
 
 func _get_weapon_base_damage(id: String) -> int:
 	match id:

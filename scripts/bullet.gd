@@ -19,15 +19,23 @@ var bounces_left: int = 0
 var last_hit_enemy: Node2D = null
 ## When > 0, hitting an enemy triggers an area explosion at that radius (e.g. fireball)
 var area_radius: float = 0.0
+var launch_delay: float = 0.0
 
 var is_frozen_orb_shard: bool = false
 var _frozen_orb_timer: float = 0.0
 var _frozen_orb_angle: float = 0.0
 var _exploded: bool = false
+var _has_launched: bool = false
 
 func _ready() -> void:
 	add_to_group("projectiles")
 	_setup_visuals()
+	if launch_delay > 0.0:
+		visible = false
+		set_deferred("monitoring", false)
+		set_deferred("monitorable", false)
+	else:
+		_has_launched = true
 
 func _setup_visuals() -> void:
 	var cr = get_node_or_null("ColorRect")
@@ -69,6 +77,15 @@ func _draw() -> void:
 		draw_circle(Vector2.ZERO, 4.0, Color(0.8, 0.95, 1.0, 1.0)) # Icy white core
 
 func _physics_process(delta: float) -> void:
+	if not _has_launched:
+		launch_delay -= delta
+		if launch_delay > 0.0:
+			return
+		_has_launched = true
+		visible = true
+		set_deferred("monitoring", true)
+		set_deferred("monitorable", true)
+
 	position += direction * speed * delta
 	time_alive += delta
 	if time_alive >= lifetime:

@@ -10,14 +10,13 @@ const FLOATING_TEXT_SCENE = preload("res://scripts/floating_text.gd") # We'll in
 func _ready() -> void:
 	add_to_group("gifts")
 	
-	# Randomize rarity and stat if not set
-	if rarity == "common": # Default value
-		rarity = GameState.roll_rarity()
+	# Gifts currently use a single common tier.
+	rarity = "common"
 	
 	var stats_keys = GameConstants.GIFT_STATS.keys()
 	stat_key = stats_keys[randi() % stats_keys.size()]
 	
-	var base_amount = GameConstants.GIFT_RARITY_VALUES[rarity]
+	var base_amount = GameConstants.GIFT_RARITY_VALUES["common"]
 	var stat_data = GameConstants.GIFT_STATS[stat_key]
 	stat_value = base_amount * stat_data["weight"]
 	
@@ -89,7 +88,7 @@ func _collect() -> void:
 
 
 func _show_floating_text() -> void:
-	var rarity_color = GameConstants.RARITY_COLORS[rarity]
+	var text_color = Color.WHITE
 	var ft_script = load("res://scripts/floating_text.gd")
 	var luck_percent = GameConstants.GIFT_LUCK_BOOST * 100.0
 	var luck_text = "+%.0f%% Luck" % luck_percent
@@ -103,7 +102,7 @@ func _show_floating_text() -> void:
 			var ft = Node2D.new()
 			ft.set_script(ft_script)
 			ft.text = display_text
-			ft.color = rarity_color
+			ft.color = text_color
 			ft.global_position = global_position
 			get_tree().current_scene.add_child(ft)
 			
@@ -111,7 +110,7 @@ func _show_floating_text() -> void:
 			var ft_luck = Node2D.new()
 			ft_luck.set_script(ft_script)
 			ft_luck.text = luck_text
-			ft_luck.color = rarity_color
+			ft_luck.color = text_color
 			ft_luck.global_position = global_position + Vector2(0, 25)
 			get_tree().current_scene.add_child(ft_luck)
 		else:
@@ -126,7 +125,7 @@ func _show_floating_text() -> void:
 			var ft1 = Node2D.new()
 			ft1.set_script(ft_script)
 			ft1.text = display_text
-			ft1.color = rarity_color
+			ft1.color = text_color
 			ft1.global_position = global_position
 			get_tree().current_scene.add_child(ft1)
 			
@@ -134,7 +133,7 @@ func _show_floating_text() -> void:
 			var ft2 = Node2D.new()
 			ft2.set_script(ft_script)
 			ft2.text = GameConstants.GIFT_STATS["pickup_radius"]["display"] % GameConstants.GIFT_PICKUP_RADIUS_BOOST
-			ft2.color = rarity_color
+			ft2.color = text_color
 			ft2.global_position = global_position + Vector2(0, 25)
 			get_tree().current_scene.add_child(ft2)
 			
@@ -142,7 +141,7 @@ func _show_floating_text() -> void:
 			var ft3 = Node2D.new()
 			ft3.set_script(ft_script)
 			ft3.text = luck_text
-			ft3.color = rarity_color
+			ft3.color = text_color
 			ft3.global_position = global_position + Vector2(0, 50)
 			get_tree().current_scene.add_child(ft3)
 	else:
@@ -152,14 +151,14 @@ func _show_floating_text() -> void:
 		var ft = Node2D.new()
 		ft.set_script(ft_script)
 		ft.text = display_text
-		ft.color = rarity_color
+		ft.color = text_color
 		ft.global_position = global_position
 		get_tree().current_scene.add_child(ft)
 		
 		var ft_luck = Node2D.new()
 		ft_luck.set_script(ft_script)
 		ft_luck.text = luck_text
-		ft_luck.color = rarity_color
+		ft_luck.color = text_color
 		ft_luck.global_position = global_position + Vector2(0, 25)
 		get_tree().current_scene.add_child(ft_luck)
 

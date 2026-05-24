@@ -26,6 +26,7 @@ func _refresh_ui() -> void:
 	for upg in UPGRADES:
 		var level = GameState.get("perm_" + upg.id + "_level")
 		var cost = GameState.get_perm_cost(level)
+		var next_level = min(level + 1, GameConstants.MAX_PERM_UPGRADE_LEVEL)
 		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
@@ -40,7 +41,11 @@ func _refresh_ui() -> void:
 		vbox.add_child(title)
 		
 		var desc = Label.new()
-		desc.text = upg.desc
+		desc.text = "%s\nCurrent: %s   ->   Next: %s" % [
+			upg.desc,
+			_format_upgrade_bonus(upg.id, level),
+			_format_upgrade_bonus(upg.id, next_level)
+		]
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc.modulate = Color(0.8, 0.8, 0.9)
@@ -61,6 +66,14 @@ func _refresh_ui() -> void:
 func _buy_upgrade(id: String) -> void:
 	if GameState.buy_perm_upgrade(id):
 		_refresh_ui()
+
+func _format_upgrade_bonus(id: String, level: int) -> String:
+	var clamped_level = min(level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
+	match id:
+		"spawn_rate", "gold_drop", "luck":
+			return "+%d%%" % clamped_level
+		_:
+			return str(clamped_level)
 
 func _on_reset_pressed() -> void:
 	GameState.reset_gems()
