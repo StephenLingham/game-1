@@ -5,7 +5,7 @@ class_name GameConstants extends RefCounted
 # Edit these variables to adjust gameplay!
 # ==========================================
 
-const GAME_VERSION: String = "v0.14.0"
+const GAME_VERSION: String = "v0.15.0"
 
 # --- INITIAL SPAWN COUNTS ---
 const CHEST_STARTING_COUNT: int = 7
