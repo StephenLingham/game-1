@@ -15,7 +15,6 @@ const GIFT_COUNT: int = 20
 # --- FEATURE FLAGS ---
 const FEATURE_GIFTS_GIVE_RANDOM_STAT: bool = false
 
-
 # --- PLAYER STATS ---
 const PLAYER_SPEED: float = 300.0
 const PLAYER_FIRE_RATE: float = 0.50
@@ -44,7 +43,7 @@ const TOTAL_WAVES: int = 10
 const WAVE_SECONDS: float = 30.0
 
 # --- ARENA SETTINGS ---
-const ARENA_SIZE_MULTIPLIER: float = 30.0
+const ARENA_SIZE_MULTIPLIER: float = 25.0
 
 const WAVE_BASE_SPAWN_WAIT: float = 0.75
 const WAVE_MIN_SPAWN_WAIT: float = 0.25
@@ -369,8 +368,8 @@ const DEBUG_RESET_ALL_DATA: bool = false
 # --- CHARACTERS ---
 const CHARACTERS: Dictionary = {
 	"starter": {
-		"name": "Alaric the Apprentice",
-		"desc": "A balanced wizard starting his journey.",
+		"name": "Alaric",
+		"desc": "A wizard. With magic.",
 		"texture": "res://assets/Characters/character3.png",
 		"traits": []
 	},
@@ -456,7 +455,9 @@ const ZEPHYROS_MAX_SPEED_BONUS: float = 2.0
 const MIN_UNSEALED_COUNT: int = 6
 
 # --- MAP SETTINGS ---
-const ENABLE_LARGE_MAP_FOG_OF_WAR: bool = false
+const ENABLE_LARGE_MAP_FOG_OF_WAR: bool = true
+const LARGE_MAP_FOG_REVEAL_RADIUS: float = 2000
+const LARGE_MAP_FOG_REVEAL_CELLS: int = 20
 
 # --- ITEMS ---
 const ITEMS: Dictionary = {
