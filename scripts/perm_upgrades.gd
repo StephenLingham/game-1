@@ -1,6 +1,6 @@
 extends Control
 
-@onready var gems_label: Label = $VBox/Header/GemsLabel
+@onready var crystals_label: Label = $VBox/Header/GemsLabel
 @onready var grid: GridContainer = $VBox/Scroll/Grid
 @onready var back_btn: Button = $VBox/Footer/Back
 @onready var reset_btn: Button = $VBox/Footer/Reset
@@ -18,7 +18,7 @@ func _ready() -> void:
 
 
 func _refresh_ui() -> void:
-	gems_label.text = "Gems: %d" % GameState.gems
+	crystals_label.text = "Crystals: %d" % GameState.crystals
 	
 	for child in grid.get_children():
 		child.queue_free()
@@ -56,8 +56,8 @@ func _refresh_ui() -> void:
 			btn.text = "MAX LEVEL"
 			btn.disabled = true
 		else:
-			btn.text = "Upgrade: %d Gems" % cost
-			btn.disabled = GameState.gems < cost
+			btn.text = "Upgrade: %d Crystals" % cost
+			btn.disabled = GameState.crystals < cost
 		btn.pressed.connect(_buy_upgrade.bind(upg.id))
 		vbox.add_child(btn)
 		
@@ -76,7 +76,7 @@ func _format_upgrade_bonus(id: String, level: int) -> String:
 			return str(clamped_level)
 
 func _on_reset_pressed() -> void:
-	GameState.reset_gems()
+	GameState.reset_crystals()
 	_refresh_ui()
 
 func _on_back_pressed() -> void:

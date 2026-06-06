@@ -3,7 +3,12 @@ extends Node
 
 const SAVE_PATH := "user://save.json"
 
-var gems: int = 0
+var crystals: int = 0
+var gems: int:
+	get:
+		return crystals
+	set(value):
+		crystals = value
 
 # Unlocks
 var unlocked_items: Array = ["zap"] # Abilities the player CAN see in shop
@@ -79,7 +84,12 @@ var run_level_name: String = "Level 1"
 # Run statistics (reset per run)
 var run_enemies_killed: int = 0
 var run_xp_collected: int = 0
-var run_gems_collected: int = 0
+var run_crystals_collected: int = 0
+var run_gems_collected: int:
+	get:
+		return run_crystals_collected
+	set(value):
+		run_crystals_collected = value
 var run_damage_stats: Dictionary = {} # ability_id -> damage
 
 func _ready() -> void:
@@ -88,7 +98,7 @@ func _ready() -> void:
 	var changed := false
 	if GameConstants.DEBUG_RESET_ALL_DATA:
 		# Reset EVERYTHING
-		gems = 0
+		crystals = 0
 		unlocked_items = ["zap"]
 		unlocked_auras = []
 		unlocked_treasure_items = []
@@ -112,10 +122,10 @@ func _ready() -> void:
 	
 	
 	if GameConstants.DEBUG_RESET_GEMS:
-		gems = 0
+		crystals = 0
 		_reset_all_perm_levels()
 		changed = true
-		print("DEBUG: Gems & Upgrades reset.")
+		print("DEBUG: Crystals & Upgrades reset.")
 	
 	# Initial 5 items if none unlocked yet
 	if unlocked_treasure_items.size() < 5:
@@ -138,7 +148,7 @@ func _ready() -> void:
 		save()
 
 func reset_all_data() -> void:
-	gems = 0
+	crystals = 0
 	unlocked_items = ["zap"]
 	unlocked_auras = []
 	unlocked_treasure_items = []
@@ -184,7 +194,7 @@ func reset_run() -> void:
 	
 	run_enemies_killed = 0
 	run_xp_collected = 0
-	run_gems_collected = 0
+	run_crystals_collected = 0
 	run_damage_stats = {}
 	run_unlocked_items = []
 	run_items = []
@@ -681,13 +691,16 @@ func add_run_item(item_id: String) -> void:
 
 
 
-func award_gems(amount: int) -> void:
-	gems += max(amount, 0)
-	run_gems_collected += max(amount, 0)
+func award_crystals(amount: int) -> void:
+	crystals += max(amount, 0)
+	run_crystals_collected += max(amount, 0)
 	save()
 
-func reset_gems() -> void:
-	# Calculate total gems spent
+func award_gems(amount: int) -> void:
+	award_crystals(amount)
+
+func reset_crystals() -> void:
+	# Calculate total crystals spent
 	var spent := 0
 	spent += _calculate_spent(perm_damage_level)
 	spent += _calculate_spent(perm_atkspd_level)
@@ -706,7 +719,7 @@ func reset_gems() -> void:
 	spent += _calculate_spent(perm_projectiles_level)
 	spent += _calculate_spent(perm_bounces_level)
 	
-	gems += spent
+	crystals += spent
 	
 	# Reset levels
 	perm_damage_level = 0
@@ -728,6 +741,9 @@ func reset_gems() -> void:
 	
 	save()
 
+func reset_gems() -> void:
+	reset_crystals()
+
 func _calculate_spent(level: int) -> int:
 	var total := 0
 	for i in range(level):
@@ -745,8 +761,8 @@ func buy_perm_upgrade(property: String) -> bool:
 	if current_level >= GameConstants.MAX_PERM_UPGRADE_LEVEL:
 		return false
 	
-	if gems >= cost:
-		gems -= cost
+	if crystals >= cost:
+		crystals -= cost
 		set(level_var, current_level + 1)
 		save()
 		return true
@@ -876,7 +892,8 @@ func _check_unlocks() -> void:
 
 func save() -> void:
 	var data := {
-		"gems": gems,
+		"crystals": crystals,
+		"gems": crystals,
 		"perm_damage_level": perm_damage_level,
 		"perm_atkspd_level": perm_atkspd_level,
 		"perm_pickup_radius_level": perm_pickup_radius_level,
@@ -922,7 +939,7 @@ func load_save() -> void:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return
 	
-	gems = int(parsed.get("gems", 0))
+	crystals = int(parsed.get("crystals", parsed.get("gems", 0)))
 	perm_damage_level = int(parsed.get("perm_damage_level", 0))
 	perm_atkspd_level = int(parsed.get("perm_atkspd_level", 0))
 	perm_pickup_radius_level = int(parsed.get("perm_pickup_radius_level", 0))

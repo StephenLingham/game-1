@@ -1,6 +1,6 @@
 extends Area2D
 
-enum Type { MAGNET, SPEED, HEAL, ROCKET, GEM, ATK_SPEED }
+enum Type { MAGNET, SPEED, HEAL, ROCKET, CRYSTAL, ATK_SPEED }
 
 @export var type: Type = Type.MAGNET
 
@@ -8,7 +8,7 @@ var _tex_magnet = preload("res://assets/powerup_magnet_2.png")
 var _tex_speed = preload("res://assets/powerup_speed_2.png")
 var _tex_heal = preload("res://assets/powerup_heal_2.png")
 var _tex_explosion = preload("res://assets/powerup_explosion_2.png")
-var _tex_gem = preload("res://assets/gem_icon.png")
+var _tex_crystal = preload("res://assets/gem_icon.png")
 
 func _ready() -> void:
 	add_to_group("powerups")
@@ -23,7 +23,7 @@ func _ready() -> void:
 			Type.SPEED: tex = _tex_speed
 			Type.HEAL: tex = _tex_heal
 			Type.ROCKET: tex = _tex_explosion
-			Type.GEM: tex = _tex_gem
+			Type.CRYSTAL: tex = _tex_crystal
 			Type.ATK_SPEED:
 				if ResourceLoader.exists("res://assets/powerup_atkspeed.png"):
 					tex = load("res://assets/powerup_atkspeed.png")
@@ -64,8 +64,8 @@ func collect(player: Node) -> void:
 				return # Prevent collection
 		Type.ROCKET:
 			player.trigger_rocket_blast()
-		Type.GEM:
-			GameState.award_gems(GameConstants.POWERUP_GEM_AWARD_AMOUNT)
+		Type.CRYSTAL:
+			GameState.award_crystals(GameConstants.POWERUP_CRYSTAL_AWARD_AMOUNT)
 		Type.ATK_SPEED:
 			if player.has_method("apply_atk_speed_boost"):
 				player.apply_atk_speed_boost(GameConstants.POWERUP_ATK_SPEED_BOOST_MULTIPLIER, GameConstants.POWERUP_ATK_SPEED_BOOST_DURATION)
@@ -100,7 +100,7 @@ func _spawn_collect_effect() -> void:
 		Type.SPEED: particles.color = Color(0, 1, 1)
 		Type.HEAL: particles.color = Color(0, 1, 0)
 		Type.ROCKET: particles.color = Color(1, 0.2, 0)
-		Type.GEM: particles.color = Color(0.8, 0, 1)
+		Type.CRYSTAL: particles.color = Color(0.8, 0, 1)
 		Type.ATK_SPEED: particles.color = Color(1, 0, 0)
 		
 	get_tree().current_scene.add_child(particles)

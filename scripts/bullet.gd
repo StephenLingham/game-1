@@ -99,7 +99,13 @@ func _physics_process(delta: float) -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies"):
-		if body == last_hit_enemy: return # Prevent double hit
+		if body == last_hit_enemy:
+			return # Prevent double hit
+		
+		if weapon_source == "frozen_orb" and not is_frozen_orb_shard:
+			var frozen_actual: int = body.take_damage(damage, weapon_source, is_crit)
+			GameState.run_damage_stats[weapon_source] = GameState.run_damage_stats.get(weapon_source, 0) + frozen_actual
+			return
 		
 		if area_radius > 0.0:
 			# Area explosion (e.g. fireball) — damage all enemies within radius
@@ -120,7 +126,8 @@ func _on_body_entered(body: Node2D) -> void:
 			else:
 				_orb_free()
 	elif body.is_in_group("walls"):
-		_orb_free()
+		if weapon_source != "frozen_orb" or is_frozen_orb_shard:
+			_orb_free()
 
 func _orb_free() -> void:
 	if _exploded: return

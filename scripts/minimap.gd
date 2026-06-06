@@ -8,7 +8,7 @@ var fog_grid: Array = []
 var arena_rect: Rect2
 var player: Node2D = null
 var is_initialized: bool = false
-var gem_marker_texture: Texture2D = preload("res://assets/gem_icon.png")
+var crystal_marker_texture: Texture2D = preload("res://assets/gem_icon.png")
 
 # Circular Minimap Properties
 var minimap_radius: float = 80.0
@@ -104,7 +104,7 @@ func is_uncovered(world_pos: Vector2) -> bool:
 		return fog_grid[col][row]
 	return false
 
-func _is_gem_pickup(node: Object) -> bool:
+func _is_crystal_pickup(node: Object) -> bool:
 	return is_instance_valid(node) and node.get("type") == 4
 
 func _draw() -> void:
@@ -134,6 +134,14 @@ func _draw_minimap() -> void:
 			if pos.distance_to(mm_center) <= minimap_radius: # Fog of war does not apply to circular minimap
 				draw_circle(pos, 3.5, Color(0.9, 0.0, 0.9, 1.0)) # Bright purple/magenta
 				draw_circle(pos, 5.0, Color(0.9, 0.0, 0.9, 0.3)) # Outer glow
+
+	# 1b. Charge Shrines (Blue)
+	for s in get_tree().get_nodes_in_group("shrines"):
+		if is_instance_valid(s):
+			var pos = mm_center + (s.global_position - player_pos) * minimap_scale
+			if pos.distance_to(mm_center) <= minimap_radius:
+				draw_circle(pos, 4.0, Color(0.4, 0.85, 1.0, 1.0))
+				draw_circle(pos, 6.5, Color(0.4, 0.85, 1.0, 0.28))
 				
 	# 2. Chests (Gold)
 	for c in get_tree().get_nodes_in_group("chests"):
@@ -143,19 +151,16 @@ func _draw_minimap() -> void:
 				draw_circle(pos, 3.5, Color(1.0, 0.75, 0.0, 1.0)) # Bright gold/yellow
 				draw_circle(pos, 5.0, Color(1.0, 0.75, 0.0, 0.3))
 				
-	# 3. Powerups / Gems (Cyan / Red)
+	# 3. Powerups / Crystals (Cyan / Red)
 	for p in get_tree().get_nodes_in_group("powerups"):
 		if is_instance_valid(p):
 			var pos = mm_center + (p.global_position - player_pos) * minimap_scale
-			var is_gem = _is_gem_pickup(p)
-			if is_gem:
-				# If gem is out of range, clamp it to the minimap border so it serves as a pointer
-				var to_gem = pos - mm_center
-				if to_gem.length() > minimap_radius:
-					pos = mm_center + to_gem.normalized() * (minimap_radius - 4.0)
-				var gem_size := Vector2(14.0, 14.0)
-				var gem_rect := Rect2(pos - gem_size / 2.0, gem_size)
-				draw_texture_rect(gem_marker_texture, gem_rect, false)
+			var is_crystal = _is_crystal_pickup(p)
+			if is_crystal:
+				if pos.distance_to(mm_center) <= minimap_radius:
+					var crystal_size := Vector2(14.0, 14.0)
+					var crystal_rect := Rect2(pos - crystal_size / 2.0, crystal_size)
+					draw_texture_rect(crystal_marker_texture, crystal_rect, false)
 			else:
 				if pos.distance_to(mm_center) <= minimap_radius: # Fog of war does not apply to circular minimap
 					draw_circle(pos, 3.5, Color(0.0, 0.85, 1.0, 1.0)) # Electric cyan
@@ -213,6 +218,14 @@ func _draw_full_map() -> void:
 			var pos = bounds_rect.position + local_offset * fm_scale
 			draw_circle(pos, 4.5, Color(0.9, 0.0, 0.9, 1.0))
 			draw_circle(pos, 6.0, Color(0.9, 0.0, 0.9, 0.3))
+
+	# 1b. Charge Shrines (Blue)
+	for s in get_tree().get_nodes_in_group("shrines"):
+		if is_instance_valid(s) and is_uncovered(s.global_position):
+			var local_offset = s.global_position - arena_rect.position
+			var pos = bounds_rect.position + local_offset * fm_scale
+			draw_circle(pos, 5.0, Color(0.4, 0.85, 1.0, 1.0))
+			draw_circle(pos, 7.0, Color(0.4, 0.85, 1.0, 0.28))
 			
 	# 2. Chests (Gold)
 	for c in get_tree().get_nodes_in_group("chests"):
@@ -222,20 +235,22 @@ func _draw_full_map() -> void:
 			draw_circle(pos, 4.5, Color(1.0, 0.75, 0.0, 1.0))
 			draw_circle(pos, 6.0, Color(1.0, 0.75, 0.0, 0.3))
 			
-	# 3. Powerups / Gems (Cyan / Red)
+	# 3. Powerups / Crystals (Cyan / Red)
 	for p in get_tree().get_nodes_in_group("powerups"):
 		if is_instance_valid(p):
-			var is_gem = _is_gem_pickup(p)
-			if is_gem or is_uncovered(p.global_position):
+			var is_crystal = _is_crystal_pickup(p)
+			if is_crystal:
+				if is_uncovered(p.global_position):
+					var local_offset = p.global_position - arena_rect.position
+					var pos = bounds_rect.position + local_offset * fm_scale
+					var crystal_size := Vector2(18.0, 18.0)
+					var crystal_rect := Rect2(pos - crystal_size / 2.0, crystal_size)
+					draw_texture_rect(crystal_marker_texture, crystal_rect, false)
+			elif is_uncovered(p.global_position):
 				var local_offset = p.global_position - arena_rect.position
 				var pos = bounds_rect.position + local_offset * fm_scale
-				if is_gem:
-					var gem_size := Vector2(18.0, 18.0)
-					var gem_rect := Rect2(pos - gem_size / 2.0, gem_size)
-					draw_texture_rect(gem_marker_texture, gem_rect, false)
-				else:
-					draw_circle(pos, 4.5, Color(0.0, 0.85, 1.0, 1.0))
-					draw_circle(pos, 6.0, Color(0.0, 0.85, 1.0, 0.3))
+				draw_circle(pos, 4.5, Color(0.0, 0.85, 1.0, 1.0))
+				draw_circle(pos, 6.0, Color(0.0, 0.85, 1.0, 0.3))
 
 	# Draw player pulsing green dot
 	var local_offset = player_pos - arena_rect.position

@@ -5,14 +5,16 @@ class_name GameConstants extends RefCounted
 # Edit these variables to adjust gameplay!
 # ==========================================
 
-const GAME_VERSION: String = "v0.15.0"
+const GAME_VERSION: String = "v0.16.0"
 
 # --- INITIAL SPAWN COUNTS ---
 const CHEST_STARTING_COUNT: int = 7
 const POWERUP_STARTING_COUNT: int = 7
 const GIFT_COUNT: int = 20
+const CHARGE_SHRINE_COUNT: int = 5
 
 # --- FEATURE FLAGS ---
+# Gifts now always roll a rarity-scaled stat; kept for compatibility.
 const FEATURE_GIFTS_GIVE_RANDOM_STAT: bool = false
 
 # --- PLAYER STATS ---
@@ -307,50 +309,63 @@ const POWERUP_SPEED_BOOST_MULTIPLIER: float = 1.6
 const POWERUP_SPEED_BOOST_DURATION: float = 7.0
 const POWERUP_ATK_SPEED_BOOST_MULTIPLIER: float = 10.0
 const POWERUP_ATK_SPEED_BOOST_DURATION: float = 3.0
-const POWERUP_GEM_AWARD_AMOUNT: int = 1
+const POWERUP_CRYSTAL_AWARD_AMOUNT: int = 1
 const POWERUP_ICON_SCALE: float = 0.07
+
+# --- CHARGE SHRINE SETTINGS ---
+const CHARGE_SHRINE_RADIUS: float = 120.0
+const CHARGE_SHRINE_CHARGE_TIME: float = 4.0
+const CHARGE_SHRINE_OPTIONS: int = 3
+
 # --- GIFT SETTINGS ---
 const GIFT_XP_AMOUNT: int = 15
-const GIFT_PICKUP_RADIUS_BOOST: float = 5.0
-const GIFT_LUCK_BOOST: float = 0.05
+const GIFT_PICKUP_RADIUS_BOOST: float = 6.0
+const GIFT_LUCK_BOOST: float = 0.06
 
 
 const GIFT_RARITY_VALUES: Dictionary = {
-	"common":    0.1,
-	"uncommon":  0.5,
-	"rare":      2.0,
-	"epic":      5.0,
-	"legendary": 10.0
+	"common":    0.12,
+	"uncommon":  0.60,
+	"rare":      2.40,
+	"epic":      6.00,
+	"legendary": 12.00
+}
+const GIFT_RARITY_SPAWN_WEIGHTS: Dictionary = {
+	"common": 50,
+	"uncommon": 25,
+	"rare": 15,
+	"epic": 7,
+	"legendary": 3
 }
 const GIFT_STATS: Dictionary = {
 	"damage": {
 		"display": "+%.1f Damage",
-		"weight": 2.0, # Common: +0.2, Legendary: +20
+		"weight": 2.4, # Common: +0.3, Legendary: +28.8
 		"internal_stat": "damage_bonus"
 	},
 	"crit_chance": {
 		"display": "+%.1f%% Crit Chance",
-		"weight": 0.01, # Common: +0.1%, Legendary: +10%
+		"weight": 0.012, # Common: +0.1%, Legendary: +14.4%
 		"internal_stat": "crit_chance"
 	},
 	"max_health": {
 		"display": "+%.0f Max Health",
-		"weight": 10.0, # Common: +1, Legendary: +100
+		"weight": 12.0, # Common: +1, Legendary: +144
 		"internal_stat": "max_health"
 	},
 	"speed": {
 		"display": "+%.1f%% Speed",
-		"weight": 0.01, # Common: +0.1%, Legendary: +10%
+		"weight": 0.012, # Common: +0.1%, Legendary: +14.4%
 		"internal_stat": "speed_multiplier"
 	},
 	"atk_speed": {
 		"display": "+%.1f%% Atk Speed",
-		"weight": 0.01, # Common: +0.1%, Legendary: +10%
+		"weight": 0.012, # Common: +0.1%, Legendary: +14.4%
 		"internal_stat": "atkspd_multiplier"
 	},
 	"pickup_radius": {
 		"display": "+%.1f Pickup Radius",
-		"weight": 5.0, # Common: +0.5, Legendary: +50
+		"weight": 6.0, # Common: +0.7, Legendary: +72
 		"internal_stat": "pickup_radius"
 	}
 }

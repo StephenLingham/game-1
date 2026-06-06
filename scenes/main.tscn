@@ -240,7 +240,7 @@ vertical_alignment = 1
 			offset_top = 120.0
 			offset_right = 88.0
 			offset_bottom = 144.0
-			text = "Gems: 0"
+			text = "Crystals: 0"
 			label_settings = SubResource("LabelSettings_shop_info")
 			theme_override_colors/font_color = Color(0.8, 0.4, 1, 1)
 
@@ -580,7 +580,7 @@ layout_mode = 2
 
 [node name="GemsLabel" type="Label" parent="UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox"]
 layout_mode = 2
-text = "Gems earned: 0 | Total gems: 0"
+text = "Crystals earned: 0 | Total crystals: 0"
 label_settings = SubResource("LabelSettings_shop_info")
 horizontal_alignment = 1
 

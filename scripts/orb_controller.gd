@@ -1,5 +1,9 @@
 extends Node2D
 
+@export var ability_id: String = "orbs"
+@export var damage_source: String = "orbs"
+@export var base_damage: int = GameConstants.ORB_DAMAGE
+
 var orb_scene := preload("res://scenes/orb.tscn")
 var orbs: Array[Node2D] = []
 var rotation_angle: float = 0.0
@@ -8,7 +12,7 @@ func _process(delta: float) -> void:
 	# Keep the controller locked to world rotation so orbs don't spin with the player
 	global_rotation = 0.0
 	
-	var target_count = GameState.get_orb_count()
+	var target_count = _get_orb_count()
 	
 	# Update orb count if needed
 	if orbs.size() != target_count:
@@ -17,8 +21,13 @@ func _process(delta: float) -> void:
 	if target_count == 0:
 		return
 		
+	var current_damage = base_damage + GameState.get_weapon_damage_bonus(damage_source)
+	for orb in orbs:
+		if is_instance_valid(orb) and "damage" in orb:
+			orb.damage = current_damage
+	
 	# Rotate
-	rotation_angle += GameState.get_orb_speed() * delta
+	rotation_angle += _get_orb_speed() * delta
 	if rotation_angle > TAU:
 		rotation_angle -= TAU
 		
@@ -26,6 +35,22 @@ func _process(delta: float) -> void:
 	for i in range(orbs.size()):
 		var angle = rotation_angle + (i * TAU / float(max(1, orbs.size())))
 		orbs[i].position = Vector2.RIGHT.rotated(angle) * GameConstants.ORB_RADIUS
+
+func _get_orb_count() -> int:
+	var lvl = GameState.run_abilities.get(ability_id, 0)
+	if lvl >= 5:
+		return 3
+	if lvl >= 3:
+		return 2
+	if lvl >= 1:
+		return 1
+	return 0
+
+func _get_orb_speed() -> float:
+	var lvl = GameState.run_abilities.get(ability_id, 0)
+	if lvl >= 2:
+		return GameConstants.ORB_UPGRADE_ROTATE_SPEED
+	return GameConstants.ORB_BASE_ROTATE_SPEED
 
 func _refresh_orbs(count: int) -> void:
 	# Clear old
@@ -37,5 +62,13 @@ func _refresh_orbs(count: int) -> void:
 	# Spawn new
 	for i in range(count):
 		var orb = orb_scene.instantiate()
+		if "weapon_source" in orb:
+			orb.weapon_source = damage_source
+		if "damage" in orb:
+			orb.damage = base_damage + GameState.get_weapon_damage_bonus(damage_source)
+		if damage_source == "arcane_orbs":
+			orb.modulate = Color(0.75, 0.45, 1.0)
+		else:
+			orb.modulate = Color(0.0, 0.8, 1.0)
 		add_child(orb)
 		orbs.append(orb)

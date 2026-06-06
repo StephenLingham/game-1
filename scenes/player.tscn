@@ -43,3 +43,9 @@ process_callback = 0
 
 [node name="OrbController" type="Node2D" parent="."]
 script = ExtResource("2_orb")
+
+[node name="ArcaneOrbController" type="Node2D" parent="."]
+script = ExtResource("2_orb")
+ability_id = "arcane_orbs"
+damage_source = "arcane_orbs"
+base_damage = 100

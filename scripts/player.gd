@@ -78,6 +78,10 @@ func _ready() -> void:
 	if cam:
 		cam.position_smoothing_enabled = false
 		cam.process_callback = Camera2D.CAMERA2D_PROCESS_PHYSICS
+	
+	var arcane_orb_controller = get_node_or_null("ArcaneOrbController")
+	if arcane_orb_controller and "base_damage" in arcane_orb_controller:
+		arcane_orb_controller.base_damage = GameConstants.ARCANE_ORBS_DAMAGE
 
 func refresh_stats() -> void:
 	var old_max = max_health
@@ -346,7 +350,8 @@ func _fire_projectile_weapon(id: String, target: Node2D, color: Color, explode: 
 		if not bolt_targets.is_empty():
 			var assigned_target: Node2D = bolt_targets[i]
 			bullet_dir = (assigned_target.global_position - global_position).normalized()
-			b.launch_delay = 0.035 * float(i)
+			if "launch_delay" in b:
+				b.launch_delay = 0.035 * float(i)
 		else:
 			var dir = (target.global_position - global_position).normalized()
 			var spread: float
@@ -477,8 +482,9 @@ func _fire_blizzard() -> void:
 		_apply_blizzard_hit(pos, strike_radius, effective_dmg)
 
 func _update_arcane_orbs() -> void:
-	# Handled via child nodes in player usually, but I'll skip for brevity or implement if needed
-	pass
+	var arcane_orb_controller = get_node_or_null("ArcaneOrbController")
+	if arcane_orb_controller and "base_damage" in arcane_orb_controller:
+		arcane_orb_controller.base_damage = GameConstants.ARCANE_ORBS_DAMAGE
 
 func _trigger_arcane_field() -> void:
 	var radius = GameConstants.ARCANE_FIELD_BASE_RADIUS * GameState.get_weapon_size_multiplier("arcane_field")

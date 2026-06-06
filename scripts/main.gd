@@ -7,6 +7,7 @@ extends Node2D
 @onready var game_over_panel: Control = $UI/GameOverPanel
 @onready var pause_panel: Control = $UI/PausePanel
 var item_popup_panel: Control
+var charge_shrine_popup_panel: Control
 
 
 
@@ -17,6 +18,8 @@ var item_popup_panel: Control
 @onready var xp_bar: ProgressBar = $UI/HUD/XPBar
 @onready var lvl_xp_label: Label = $UI/HUD/LevelXPLabel
 var current_chest_options: Array = []
+var current_charge_shrine_options: Array = []
+var current_charge_shrine: Node2D = null
 
 
 
@@ -193,7 +196,8 @@ func _ready() -> void:
 	_spawn_initial_gifts()
 	_spawn_initial_chests()
 	_spawn_initial_powerups()
-	_spawn_initial_gem()
+	_spawn_initial_crystal()
+	_spawn_charge_shrines()
 	wave_controller.start_run()
 	
 	# Spawn dynamic Minimap and Full Screen Map overlay with Fog of War
@@ -206,6 +210,8 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if is_instance_valid(item_popup_panel):
 		item_popup_panel.queue_free()
+	if is_instance_valid(charge_shrine_popup_panel):
+		charge_shrine_popup_panel.queue_free()
 	if is_instance_valid(shop_capacity_label):
 		shop_capacity_label.queue_free()
 	if is_instance_valid(shop_grid):
@@ -315,9 +321,19 @@ func _spawn_initial_gifts() -> void:
 	
 	var gift_script = load("res://scripts/gift_pickup.gd")
 	var count = int(GameConstants.GIFT_COUNT * GameConstants.ARENA_SIZE_MULTIPLIER)
+	var rarity_counts = _build_gift_rarity_counts(count)
+	var gift_stats = GameConstants.GIFT_STATS.keys()
+	var rarity_order = ["common", "uncommon", "rare", "epic", "legendary"]
+	var spawn_rarities: Array[String] = []
+	for rarity in rarity_order:
+		for i in range(int(rarity_counts.get(rarity, 0))):
+			spawn_rarities.append(rarity)
+	spawn_rarities.shuffle()
 	
-	for i in range(count):
+	for rarity in spawn_rarities:
 		var p = gift_script.new()
+		p.rarity = rarity
+		p.stat_key = gift_stats.pick_random()
 		
 		var rx = randf_range(arena_rect.position.x + padding, arena_rect.end.x - padding)
 		var ry = randf_range(arena_rect.position.y + padding, arena_rect.end.y - padding)
@@ -328,6 +344,36 @@ func _spawn_initial_gifts() -> void:
 			p.position += (p.position - arena_rect.get_center()).normalized() * 300.0
 			
 		add_child(p)
+
+func _build_gift_rarity_counts(total_count: int) -> Dictionary:
+	var counts := {
+		"common": 0,
+		"uncommon": 0,
+		"rare": 0,
+		"epic": 0,
+		"legendary": 0
+	}
+	if total_count <= 0:
+		return counts
+	if total_count == 1:
+		counts["legendary"] = 1
+		return counts
+	
+	var non_legendary_total = total_count - 1
+	var weight_sum = 0
+	for rarity in ["common", "uncommon", "rare", "epic"]:
+		weight_sum += int(GameConstants.GIFT_RARITY_SPAWN_WEIGHTS.get(rarity, 0))
+	
+	var used = 0
+	for rarity in ["common", "uncommon", "rare", "epic"]:
+		var weight = float(GameConstants.GIFT_RARITY_SPAWN_WEIGHTS.get(rarity, 0))
+		var amount = int(floor(non_legendary_total * weight / float(max(1, weight_sum))))
+		counts[rarity] = amount
+		used += amount
+	
+	counts["common"] += non_legendary_total - used
+	counts["legendary"] = 1
+	return counts
 
 func _spawn_initial_chests() -> void:
 	var floor_rect := $ArenaFloor as TextureRect
@@ -357,7 +403,7 @@ func _spawn_initial_powerups() -> void:
 	var powerup_scene = load("res://scenes/PowerupPickup.tscn")
 	var count = int(GameConstants.POWERUP_STARTING_COUNT * GameConstants.ARENA_SIZE_MULTIPLIER)
 	
-	# Randomly pick from: MAGNET, SPEED, HEAL, ROCKET, ATK_SPEED (Exclude GEM type 4)
+	# Randomly pick from: MAGNET, SPEED, HEAL, ROCKET, ATK_SPEED (Exclude CRYSTAL type 4)
 	var types = [0, 1, 2, 3, 5]
 	
 	for i in range(count):
@@ -370,20 +416,36 @@ func _spawn_initial_powerups() -> void:
 		
 		get_node("PickupContainer").add_child(p)
 
-func _spawn_initial_gem() -> void:
+func _spawn_initial_crystal() -> void:
 	var floor_rect := $ArenaFloor as TextureRect
 	var arena_rect = Rect2(floor_rect.position, floor_rect.size)
 	var padding = 100.0
 	
 	var powerup_scene = load("res://scenes/PowerupPickup.tscn")
 	var p = powerup_scene.instantiate()
-	p.type = 4 # GEM
+	p.type = 4 # CRYSTAL
 	
 	var rx = randf_range(arena_rect.position.x + padding, arena_rect.end.x - padding)
 	var ry = randf_range(arena_rect.position.y + padding, arena_rect.end.y - padding)
 	p.global_position = Vector2(rx, ry)
 	
 	get_node("PickupContainer").add_child(p)
+
+func _spawn_charge_shrines() -> void:
+	var floor_rect := $ArenaFloor as TextureRect
+	var arena_rect = Rect2(floor_rect.position, floor_rect.size)
+	var padding = 220.0
+	
+	var shrine_scene = load("res://scenes/charge_shrine.tscn")
+	for i in range(GameConstants.CHARGE_SHRINE_COUNT):
+		var shrine = shrine_scene.instantiate()
+		var rx = randf_range(arena_rect.position.x + padding, arena_rect.end.x - padding)
+		var ry = randf_range(arena_rect.position.y + padding, arena_rect.end.y - padding)
+		shrine.global_position = Vector2(rx, ry)
+		if shrine.global_position.distance_to(arena_rect.get_center()) < 300.0:
+			shrine.global_position += (shrine.global_position - arena_rect.get_center()).normalized() * 300.0
+		shrine.charged.connect(_on_charge_shrine_charged)
+		get_node("PickupContainer").add_child(shrine)
 
 func _process(_delta: float) -> void:
 	lvl_xp_label.text = "Level: %d" % GameState.run_level
@@ -769,8 +831,8 @@ func end_run(won: bool, waves_completed: int) -> void:
 		return
 	get_tree().paused = true
 
-	# Gems reward: Removed as per new requirement (Gems now drop during run)
-	var gems := 0
+	# Crystals reward: Removed as per new requirement (crystals now drop during run)
+	var crystals_reward := 0
 	if won:
 		GameState.mark_level_completed(GameState.run_level_name)
 		
@@ -787,7 +849,7 @@ func end_run(won: bool, waves_completed: int) -> void:
 		newly_unlocked.append(id)
 	GameState.finalize_run_unlocks()
 	
-	GameState.award_gems(gems)
+	GameState.award_crystals(crystals_reward)
 
 	game_over_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	game_over_panel.visible = true
@@ -834,8 +896,8 @@ func end_run(won: bool, waves_completed: int) -> void:
 	gold_grid.get_node("GoldSpentLabel").visible = false
 	gold_grid.get_node("GoldSpentValue").visible = false
 
-	# Gems
-	stats_vbox.get_node("GemsLabel").text = "Gems collected: %d  |  Total gems: %d" % [GameState.run_gems_collected, GameState.gems]
+	# Crystals
+	stats_vbox.get_node("GemsLabel").text = "Crystals collected: %d  |  Total crystals: %d" % [GameState.run_crystals_collected, GameState.crystals]
 
 	# Unlocks
 	if newly_unlocked.size() > 0:
@@ -1018,5 +1080,177 @@ func _ensure_item_popup_exists() -> void:
 
 func _close_item_window() -> void:
 	item_popup_panel.visible = false
+	get_tree().paused = false
+
+func _on_charge_shrine_charged(shrine: Node2D) -> void:
+	if not is_instance_valid(shrine):
+		return
+	current_charge_shrine = shrine
+	current_charge_shrine_options = _build_charge_shrine_options()
+	_show_charge_shrine_window()
+
+func _build_charge_shrine_options() -> Array:
+	var stat_keys = GameConstants.GIFT_STATS.keys().duplicate()
+	stat_keys.shuffle()
+	var chosen_keys = stat_keys.slice(0, min(GameConstants.CHARGE_SHRINE_OPTIONS, stat_keys.size()))
+	var options: Array = []
+	for stat_key in chosen_keys:
+		var stat_data: Dictionary = GameConstants.GIFT_STATS.get(stat_key, {})
+		if stat_data.is_empty():
+			continue
+		var rarity: String = GameState.roll_rarity()
+		var rarity_mult: float = GameConstants.GIFT_RARITY_VALUES.get(rarity, 1.0)
+		var value: float = stat_data.weight * rarity_mult
+		var display_text := _format_gift_stat_display(stat_key, value)
+		options.append({
+			"stat_key": stat_key,
+			"internal_stat": stat_data.internal_stat,
+			"rarity": rarity,
+			"rarity_name": GameConstants.RARITY_NAMES.get(rarity, rarity.capitalize()),
+			"rarity_color": GameConstants.RARITY_COLORS.get(rarity, Color.WHITE),
+			"value": value,
+			"display": display_text
+		})
+	return options
+
+func _format_gift_stat_display(stat_key: String, value: float) -> String:
+	var stat_data: Dictionary = GameConstants.GIFT_STATS.get(stat_key, {})
+	if stat_data.is_empty():
+		return ""
+	if stat_key == "crit_chance" or stat_key == "speed" or stat_key == "atk_speed":
+		return stat_data.display % (value * 100.0)
+	return stat_data.display % value
+
+func _show_charge_shrine_window() -> void:
+	_ensure_charge_shrine_popup_exists()
+	get_tree().paused = true
+	charge_shrine_popup_panel.visible = true
+	charge_shrine_popup_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	var grid = charge_shrine_popup_panel.get_node("Margin/VBox/OptionRow")
+	for child in grid.get_children():
+		child.queue_free()
+	
+	for idx in range(current_charge_shrine_options.size()):
+		var option: Dictionary = current_charge_shrine_options[idx]
+		var panel = PanelContainer.new()
+		var vbox = VBoxContainer.new()
+		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		vbox.add_theme_constant_override("separation", 10)
+		vbox.custom_minimum_size = Vector2(250, 180)
+		panel.add_child(vbox)
+		
+		var rarity_color: Color = option.get("rarity_color", Color.WHITE)
+		var sb = StyleBoxFlat.new()
+		sb.bg_color = Color(rarity_color.r * 0.15, rarity_color.g * 0.15, rarity_color.b * 0.15, 1.0)
+		sb.border_width_left = 3
+		sb.border_width_top = 3
+		sb.border_width_right = 3
+		sb.border_width_bottom = 3
+		sb.border_color = rarity_color
+		sb.corner_radius_top_left = 8
+		sb.corner_radius_top_right = 8
+		sb.corner_radius_bottom_left = 8
+		sb.corner_radius_bottom_right = 8
+		panel.add_theme_stylebox_override("panel", sb)
+		
+		var rarity_lbl = Label.new()
+		rarity_lbl.text = "★  %s" % String(option.get("rarity_name", "Common")).to_upper()
+		rarity_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		rarity_lbl.add_theme_font_size_override("font_size", 16)
+		rarity_lbl.modulate = rarity_color
+		vbox.add_child(rarity_lbl)
+		
+		var stat_lbl = Label.new()
+		stat_lbl.text = String(option.get("display", ""))
+		stat_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		stat_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		stat_lbl.add_theme_font_size_override("font_size", 18)
+		vbox.add_child(stat_lbl)
+		
+		var choose_btn = Button.new()
+		choose_btn.text = "Take It"
+		choose_btn.custom_minimum_size = Vector2(180, 40)
+		choose_btn.pressed.connect(_on_charge_shrine_option_chosen.bind(idx))
+		vbox.add_child(choose_btn)
+		
+		grid.add_child(panel)
+
+func _ensure_charge_shrine_popup_exists() -> void:
+	if charge_shrine_popup_panel:
+		return
+	
+	charge_shrine_popup_panel = PanelContainer.new()
+	charge_shrine_popup_panel.name = "ChargeShrinePopupPanel"
+	
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = Color(0.08, 0.08, 0.11, 1.0)
+	sb.border_width_left = 5
+	sb.border_width_top = 5
+	sb.border_width_right = 5
+	sb.border_width_bottom = 5
+	sb.border_color = Color(0.45, 0.85, 1.0, 1.0)
+	sb.corner_radius_top_left = 12
+	sb.corner_radius_top_right = 12
+	sb.corner_radius_bottom_left = 12
+	sb.corner_radius_bottom_right = 12
+	charge_shrine_popup_panel.add_theme_stylebox_override("panel", sb)
+	charge_shrine_popup_panel.custom_minimum_size = Vector2(980, 420)
+	charge_shrine_popup_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	charge_shrine_popup_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	charge_shrine_popup_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	
+	var margin = MarginContainer.new()
+	margin.name = "Margin"
+	margin.add_theme_constant_override("margin_left", 30)
+	margin.add_theme_constant_override("margin_right", 30)
+	margin.add_theme_constant_override("margin_top", 30)
+	margin.add_theme_constant_override("margin_bottom", 30)
+	charge_shrine_popup_panel.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.name = "VBox"
+	vbox.add_theme_constant_override("separation", 20)
+	margin.add_child(vbox)
+	
+	var title = Label.new()
+	title.text = "Charge Shrine"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 34)
+	title.modulate = Color(0.55, 0.9, 1.0)
+	vbox.add_child(title)
+	
+	var subtitle = Label.new()
+	subtitle.text = "Choose one reward."
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.modulate = Color(0.85, 0.92, 1.0)
+	vbox.add_child(subtitle)
+	
+	var options_row = HBoxContainer.new()
+	options_row.name = "OptionRow"
+	options_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	options_row.add_theme_constant_override("separation", 20)
+	vbox.add_child(options_row)
+	
+	$UI.add_child(charge_shrine_popup_panel)
+	charge_shrine_popup_panel.visible = false
+
+func _on_charge_shrine_option_chosen(index: int) -> void:
+	if index < 0 or index >= current_charge_shrine_options.size():
+		return
+	var option: Dictionary = current_charge_shrine_options[index]
+	var internal_stat: String = option.get("internal_stat", "")
+	var value: float = float(option.get("value", 0.0))
+	if internal_stat != "":
+		var current = GameState.run_gift_bonuses.get(internal_stat, 0.0)
+		GameState.run_gift_bonuses[internal_stat] = current + value
+		var player_node = get_tree().get_first_node_in_group("player")
+		if player_node and player_node.has_method("refresh_stats"):
+			player_node.refresh_stats()
+	if is_instance_valid(current_charge_shrine):
+		current_charge_shrine.queue_free()
+	current_charge_shrine = null
+	current_charge_shrine_options.clear()
+	charge_shrine_popup_panel.visible = false
 	get_tree().paused = false
 
