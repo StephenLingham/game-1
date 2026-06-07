@@ -46,6 +46,9 @@ var mg_timer: float = 0.0
 # New weapon timers
 var weapon_timers: Dictionary = {}
 
+var _arcane_field_visual: Node2D = null
+const ARCANE_FIELD_VISUAL_SCRIPT = preload("res://scripts/arcane_field_visual.gd")
+
 var disk_scene: PackedScene = preload("res://scenes/bouncing_disk.tscn")
 var spikes_scene: PackedScene = preload("res://scenes/floor_spikes.tscn")
 var turret_scene: PackedScene = preload("res://scenes/turret.tscn")
@@ -279,6 +282,24 @@ func _physics_process(delta: float) -> void:
 			mg_timer = GameConstants.MG_BASE_COOLDOWN / _atk_speed_boost_multiplier
 
 	_process_new_weapons(delta, nearest_enemy)
+	_update_arcane_field_visual()
+
+func _update_arcane_field_visual() -> void:
+	var lvl := int(GameState.run_abilities.get("arcane_field", 0))
+	if lvl <= 0:
+		if is_instance_valid(_arcane_field_visual):
+			_arcane_field_visual.queue_free()
+			_arcane_field_visual = null
+		return
+
+	if not is_instance_valid(_arcane_field_visual):
+		_arcane_field_visual = Node2D.new()
+		_arcane_field_visual.set_script(ARCANE_FIELD_VISUAL_SCRIPT)
+		add_child(_arcane_field_visual)
+
+	var radius := GameConstants.ARCANE_FIELD_BASE_RADIUS * GameState.get_weapon_size_multiplier("arcane_field")
+	if _arcane_field_visual.has_method("set_field_radius"):
+		_arcane_field_visual.set_field_radius(radius)
 
 func _process_new_weapons(delta: float, nearest_enemy: Node2D) -> void:
 	var new_weapons = [
@@ -302,7 +323,7 @@ func _get_weapon_cooldown(id: String) -> float:
 		"meteor": base = 3.0
 		"frozen_orb": base = 4.0
 		"blizzard": base = 2.5
-		"arcane_field": base = 1.0
+		"arcane_field": base = GameConstants.ARCANE_FIELD_BASE_COOLDOWN
 		"fire_trail": base = 0.2
 		"arcane_orbs": base = 0.0 # Handled by permanent nodes
 	
@@ -490,6 +511,8 @@ func _trigger_arcane_field() -> void:
 	var radius = GameConstants.ARCANE_FIELD_BASE_RADIUS * GameState.get_weapon_size_multiplier("arcane_field")
 	var effective_dmg = _get_weapon_base_damage("arcane_field") + GameState.get_weapon_damage_bonus("arcane_field")
 	_apply_area_damage_for_weapon(global_position, radius, effective_dmg, "arcane_field")
+	if is_instance_valid(_arcane_field_visual) and _arcane_field_visual.has_method("pulse"):
+		_arcane_field_visual.pulse()
 
 func _leave_fire_trail() -> void:
 	var fire = spikes_scene.instantiate() # Reuse floor spikes for trail
