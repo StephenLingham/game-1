@@ -511,8 +511,8 @@ func _trigger_arcane_field() -> void:
 	var radius = GameConstants.ARCANE_FIELD_BASE_RADIUS * GameState.get_weapon_size_multiplier("arcane_field")
 	var effective_dmg = _get_weapon_base_damage("arcane_field") + GameState.get_weapon_damage_bonus("arcane_field")
 	_apply_area_damage_for_weapon(global_position, radius, effective_dmg, "arcane_field")
-	if is_instance_valid(_arcane_field_visual) and _arcane_field_visual.has_method("pulse"):
-		_arcane_field_visual.pulse()
+	# Do not visually pulse the field every damage tick to avoid strobing.
+	# Keep the visual steady; pulse() is only for explicit events if needed.
 
 func _leave_fire_trail() -> void:
 	var fire = spikes_scene.instantiate() # Reuse floor spikes for trail

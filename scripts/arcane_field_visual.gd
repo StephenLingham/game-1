@@ -24,7 +24,8 @@ func pulse() -> void:
 	_pulse_strength = 0.45
 
 func _draw() -> void:
-	var idle_pulse := 0.05 * sin(Time.get_ticks_msec() / 280.0)
+	# Remove time-based idle pulsing to avoid strobing/flashing
+	var idle_pulse := 0.0
 	var fill := FILL_COLOR
 	fill.a += idle_pulse + _pulse_strength * 0.25
 	draw_circle(Vector2.ZERO, radius, fill)

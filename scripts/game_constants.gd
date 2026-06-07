@@ -225,7 +225,7 @@ const WEAPON_TRAITS: Dictionary = {
 	"arcane_bolt":    ["projectiles", "bounces"],
 	"lightning_fork": ["damage", "crit_chance"],
 	"blizzard":       ["size", "damage"],
-	"arcane_orbs":    ["damage", "crit_chance"],
+	"arcane_orbs":    ["damage", "crit_chance", "projectiles"],
 	"arcane_field":   ["size", "damage"],
 	"fire_trail":     ["damage", "size"],
 	"shotgun":        ["projectiles", "damage"],

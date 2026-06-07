@@ -37,6 +37,14 @@ func _process(delta: float) -> void:
 		orbs[i].position = Vector2.RIGHT.rotated(angle) * GameConstants.ORB_RADIUS
 
 func _get_orb_count() -> int:
+	# For weapon-based orb controllers (like arcane_orbs) prefer per-weapon trait projectiles
+	# but only if the player currently has the arcane_orbs ability unlocked for this run.
+	if damage_source == "arcane_orbs":
+		if GameState.run_abilities.get("arcane_orbs", 0) > 0:
+			return GameState.get_weapon_projectiles("arcane_orbs")
+		return 0
+
+	# Legacy behavior: orb count based on ability level
 	var lvl = GameState.run_abilities.get(ability_id, 0)
 	if lvl >= 5:
 		return 3
