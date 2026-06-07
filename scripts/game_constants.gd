@@ -5,13 +5,13 @@ class_name GameConstants extends RefCounted
 # Edit these variables to adjust gameplay!
 # ==========================================
 
-const GAME_VERSION: String = "v0.16.0"
+const GAME_VERSION: String = "v0.17.0"
 
 # --- INITIAL SPAWN COUNTS ---
 const CHEST_STARTING_COUNT: int = 7
-const POWERUP_STARTING_COUNT: int = 7
+const POWERUP_STARTING_COUNT: int = 6
 const GIFT_COUNT: int = 20
-const CHARGE_SHRINE_COUNT: int = 5
+const CHARGE_SHRINE_COUNT: int = 7
 
 # --- FEATURE FLAGS ---
 # Gifts now always roll a rarity-scaled stat; kept for compatibility.

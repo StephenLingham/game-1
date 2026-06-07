@@ -1,6 +1,5 @@
 extends Control
 
-@onready var crystals_label: Label = $VBox/GemsLabel
 @onready var start_btn: Button = $VBox/Start
 @onready var exit_btn: Button = $VBox/Exit
 @onready var upgrades_btn: Button = $VBox/Upgrades
@@ -15,12 +14,7 @@ func _ready() -> void:
 	unlocks_btn.pressed.connect(_on_unlocks_pressed)
 	reset_all_btn.pressed.connect(_on_reset_all_pressed)
 	reset_confirmation.confirmed.connect(_on_reset_confirmed)
-	
-	_refresh_crystals()
 	$VersionLabel.text = GameConstants.GAME_VERSION
-
-func _refresh_crystals() -> void:
-	crystals_label.text = "Crystals: %d" % GameState.crystals
 
 func _on_upgrades_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/PermUpgrades.tscn")
@@ -36,7 +30,6 @@ func _on_reset_all_pressed() -> void:
 
 func _on_reset_confirmed() -> void:
 	GameState.reset_all_data()
-	_refresh_crystals()
 	print("All data has been reset.")
 
 func _on_exit_pressed() -> void:

@@ -322,7 +322,6 @@ func _spawn_initial_gifts() -> void:
 	var gift_script = load("res://scripts/gift_pickup.gd")
 	var count = int(GameConstants.GIFT_COUNT * GameConstants.ARENA_SIZE_MULTIPLIER)
 	var rarity_counts = _build_gift_rarity_counts(count)
-	var gift_stats = GameConstants.GIFT_STATS.keys()
 	var rarity_order = ["common", "uncommon", "rare", "epic", "legendary"]
 	var spawn_rarities: Array[String] = []
 	for rarity in rarity_order:
@@ -333,7 +332,6 @@ func _spawn_initial_gifts() -> void:
 	for rarity in spawn_rarities:
 		var p = gift_script.new()
 		p.rarity = rarity
-		p.stat_key = gift_stats.pick_random()
 		
 		var rx = randf_range(arena_rect.position.x + padding, arena_rect.end.x - padding)
 		var ry = randf_range(arena_rect.position.y + padding, arena_rect.end.y - padding)
@@ -437,7 +435,8 @@ func _spawn_charge_shrines() -> void:
 	var padding = 220.0
 	
 	var shrine_scene = load("res://scenes/charge_shrine.tscn")
-	for i in range(GameConstants.CHARGE_SHRINE_COUNT):
+	var count = int(GameConstants.CHARGE_SHRINE_COUNT * GameConstants.ARENA_SIZE_MULTIPLIER)
+	for i in range(count):
 		var shrine = shrine_scene.instantiate()
 		var rx = randf_range(arena_rect.position.x + padding, arena_rect.end.x - padding)
 		var ry = randf_range(arena_rect.position.y + padding, arena_rect.end.y - padding)

@@ -1,19 +1,7 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/lobby.gd" id="1"]
 [ext_resource type="Theme" path="res://ui_theme.tres" id="2"]
-
-[sub_resource type="LabelSettings" id="LabelSettings_title"]
-font_size = 30
-font_color = Color(0.4, 0.7, 1, 1)
-shadow_size = 4
-shadow_color = Color(0.1, 0.2, 0.4, 0.5)
-
-[sub_resource type="LabelSettings" id="LabelSettings_gems"]
-font_size = 32
-font_color = Color(0.9, 0.95, 1, 1)
-shadow_size = 2
-shadow_color = Color(0, 0, 0, 0.7)
 
 [node name="Lobby" type="Control"]
 layout_mode = 3
@@ -43,21 +31,6 @@ anchor_bottom = 0.85
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 24
-
-[node name="Title" type="Label" parent="VBox"]
-layout_mode = 2
-text = "Generic roguelike arena shooter but with wizards"
-label_settings = SubResource("LabelSettings_title")
-horizontal_alignment = 1
-
-[node name="GemsLabel" type="Label" parent="VBox"]
-layout_mode = 2
-text = "Crystals: 0"
-label_settings = SubResource("LabelSettings_gems")
-horizontal_alignment = 1
-
-[node name="HSeparator" type="HSeparator" parent="VBox"]
-layout_mode = 2
 
 [node name="Start" type="Button" parent="VBox"]
 custom_minimum_size = Vector2(0, 60)
