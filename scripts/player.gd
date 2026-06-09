@@ -922,7 +922,8 @@ func _trigger_ice_wave() -> void:
 		if is_instance_valid(e) and global_position.distance_to(e.global_position) <= radius:
 			if e.has_method("freeze"):
 				e.freeze(GameConstants.ICE_FREEZE_DURATION)
-				GameState.record_kill("ice_wave")
+			if e.has_method("take_damage"):
+				e.take_damage(GameConstants.ICE_BASE_DAMAGE, "ice_wave")
 
 func _fire_machine_gun(target: Node2D) -> void:
 	if not target: return

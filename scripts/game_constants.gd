@@ -182,6 +182,7 @@ const SPIKES_MAX_LEVEL: int = 20
 const ICE_BASE_COOLDOWN: float = 6.0
 const ICE_BASE_RADIUS: float = 200.0
 const ICE_RADIUS_INCREMENT: float = 100.0
+const ICE_BASE_DAMAGE: int = 40
 const ICE_MAX_LEVEL: int = 20
 const ICE_FREEZE_DURATION: float = 2.0
 
