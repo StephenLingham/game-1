@@ -76,7 +76,7 @@ func _show_floating_text(magnet_boost: float, luck_boost: float) -> void:
 	var luck_text := "+%.0f%% Luck" % (luck_boost * 100.0)
 	
 	_spawn_floating_text(magnet_text, text_color, Vector2.ZERO)
-	_spawn_floating_text(luck_text, text_color, Vector2(0, 22))
+	_spawn_floating_text(luck_text, text_color, Vector2(0, 40))
 
 func _spawn_floating_text(label_text: String, text_color: Color, spawn_offset: Vector2) -> void:
 	var ft = Node2D.new()
