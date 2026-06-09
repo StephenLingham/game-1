@@ -283,7 +283,7 @@ const AURA_UNLOCK_UPGRADES_NEEDED: int = 20
 # Aura Stat Values (per level)
 const AURA_DAMAGE_BOOST: float = 0.1 # +10%
 const AURA_ATKSPD_BOOST: float = 0.1 # +10%
-const AURA_PICKUP_BOOST: float = 5.0 # +5 collection radius
+const AURA_PICKUP_BOOST: float = 5.0 # +5 collection range
 const AURA_HEALTH_BOOST: int = 10     # +10 max health
 const AURA_REGEN_BOOST: float = 0.1   # +0.1 HP/sec
 const AURA_CRIT_BOOST: float = 0.05   # +5% crit chance
@@ -366,7 +366,7 @@ const GIFT_STATS: Dictionary = {
 		"internal_stat": "atkspd_multiplier"
 	},
 	"pickup_radius": {
-		"display": "+%.1f Pickup Radius",
+		"display": "+%.1f Collection Range",
 		"weight": 6.0, # Common: +0.7, Legendary: +72
 		"internal_stat": "pickup_radius"
 	}
@@ -582,7 +582,7 @@ const AURAS: Dictionary = {
 		"name": "Magnet Aura",
 		"stat": "pickup_radius",
 		"value": AURA_PICKUP_BOOST,
-		"desc": "Increases collection radius by %d per level."
+		"desc": "Increases collection range by %d per level."
 	},
 	"aura_max_health": {
 		"name": "Vitality Aura",

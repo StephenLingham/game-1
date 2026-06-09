@@ -72,7 +72,7 @@ func _collect() -> void:
 
 func _show_floating_text(magnet_boost: float, luck_boost: float) -> void:
 	var text_color: Color = GameConstants.RARITY_COLORS.get(rarity, Color.WHITE)
-	var magnet_text := "+%.1f Magnet Range" % magnet_boost
+	var magnet_text := "+%.1f Collection Range" % magnet_boost
 	var luck_text := "+%.0f%% Luck" % (luck_boost * 100.0)
 	
 	_spawn_floating_text(magnet_text, text_color, Vector2.ZERO)
