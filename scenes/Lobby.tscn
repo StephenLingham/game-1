@@ -51,7 +51,6 @@ text = "Upgrades"
 [node name="ResetAll" type="Button" parent="VBox"]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
 text = "Reset All Data"
 
 [node name="Exit" type="Button" parent="VBox"]
