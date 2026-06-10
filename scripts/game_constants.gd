@@ -1,6 +1,6 @@
 class_name GameConstants extends RefCounted
 
-const GAME_VERSION: String = "v0.18.0"
+const GAME_VERSION: String = "v0.19.0"
 
 # --- INITIAL SPAWN COUNTS ---
 const CHEST_STARTING_COUNT: int = 7
@@ -32,12 +32,15 @@ const MAX_PERM_UPGRADE_LEVEL: int = 100
 const ZAP_MAX_LEVEL: int = 20
 const ZAP_DAMAGE_PER_UPGRADE: int = 0
 const ZAP_ATK_SPD_PER_UPGRADE: float = 0.15
-const ZAP_BASE_DAMAGE: int = 100
+const ZAP_BASE_DAMAGE: int = 20
 const ZAP_SECOND_WEAPON_DAMAGE: int = 100
 
 # --- WAVES & SPAWN SETTINGS ---
 const TOTAL_WAVES: int = 10
 const WAVE_SECONDS: float = 30.0
+const MAX_ENEMIES_ALIVE: int = 500
+const FINAL_WAVE_SPAWN_WAIT: float = 0.04
+const FINAL_WAVE_PAUSE_SECONDS: float = 8.0
 
 # --- ARENA SETTINGS ---
 const ARENA_SIZE_MULTIPLIER: float = 25.0

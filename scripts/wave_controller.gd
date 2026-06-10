@@ -15,6 +15,7 @@ var chest_scene := preload("res://scenes/TreasureChest.tscn")
 var wave: int = 0
 var wave_time_left: float = 0.0
 var spawning: bool = false
+var _next_spawn_order: int = 0
 
 @onready var spawn_timer: Timer = $SpawnTimer
 @onready var game: Node = get_tree().current_scene
@@ -50,6 +51,8 @@ func _next_wave() -> void:
 	
 	if wave == 3:
 		wait = GameConstants.WAVE_3_SPAWN_WAIT
+	elif wave == GameConstants.TOTAL_WAVES:
+		wait = GameConstants.FINAL_WAVE_SPAWN_WAIT
 	
 	# Difficulty adjustment
 	wait /= GameState.run_difficulty_spawn_mult
@@ -96,12 +99,45 @@ func resume_after_shop() -> void:
 			e.queue_free()
 	_next_wave()
 
+func _remove_oldest_enemy_if_needed() -> void:
+	var enemies := get_tree().get_nodes_in_group("enemies")
+	var valid_enemies: Array[Node] = []
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			valid_enemies.append(enemy)
+
+	if valid_enemies.size() < GameConstants.MAX_ENEMIES_ALIVE:
+		return
+
+	var oldest: Node = valid_enemies[0]
+	for enemy in valid_enemies:
+		var enemy_order := int(enemy.get_meta("_spawn_order", 0))
+		var oldest_order := int(oldest.get_meta("_spawn_order", 0))
+		if enemy_order < oldest_order:
+			oldest = enemy
+
+	if is_instance_valid(oldest):
+		oldest.queue_free()
+
 func _spawn_tick() -> void:
 	if enemy_scene == null:
 		return
+
+	if wave == GameConstants.TOTAL_WAVES:
+		var first_wall_end := GameConstants.WAVE_SECONDS - GameConstants.FINAL_WAVE_PAUSE_SECONDS
+		var pause_end := GameConstants.WAVE_SECONDS - (GameConstants.FINAL_WAVE_PAUSE_SECONDS * 2.0)
+		if wave_time_left > first_wall_end:
+			pass
+		elif wave_time_left > pause_end:
+			return
+		# otherwise the final wave is in its active wall phases
+
 	# spawn a small burst each tick as waves increase
 	var burst := 1 + int(floor((wave - 1) / 2.0))
+	if wave == GameConstants.TOTAL_WAVES:
+		burst = 6
 	for i in range(burst):
+		_remove_oldest_enemy_if_needed()
 		var rand_val := randf()
 		var scene_to_spawn := enemy_scene
 		
@@ -131,8 +167,13 @@ func _spawn_tick() -> void:
 					scene_to_spawn = enemy_elite_scene
 			
 		var e := scene_to_spawn.instantiate()
-		if is_golem:
+		if wave == GameConstants.TOTAL_WAVES:
 			e.enemy_type = "Golem"
+			is_golem = true
+		elif is_golem:
+			e.enemy_type = "Golem"
+		e.set_meta("_spawn_order", _next_spawn_order)
+		_next_spawn_order += 1
 
 		# Get the current screen center and dimensions
 		var cam := get_viewport().get_camera_2d()
