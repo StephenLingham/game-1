@@ -39,7 +39,7 @@ const ZAP_SECOND_WEAPON_DAMAGE: int = 100
 const TOTAL_WAVES: int = 10
 const WAVE_SECONDS: float = 30.0
 const MAX_ENEMIES_ALIVE: int = 500
-const FINAL_WAVE_SPAWN_WAIT: float = 0.04
+const FINAL_WAVE_SPAWN_WAIT: float = 0.05
 const FINAL_WAVE_PAUSE_SECONDS: float = 8.0
 
 # --- ARENA SETTINGS ---
