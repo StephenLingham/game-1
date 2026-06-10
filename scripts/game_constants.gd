@@ -1,11 +1,6 @@
 class_name GameConstants extends RefCounted
 
-# ==========================================
-# CENTRAL GAME BALANCE TWEAKS
-# Edit these variables to adjust gameplay!
-# ==========================================
-
-const GAME_VERSION: String = "v0.17.0"
+const GAME_VERSION: String = "v0.18.0"
 
 # --- INITIAL SPAWN COUNTS ---
 const CHEST_STARTING_COUNT: int = 7
