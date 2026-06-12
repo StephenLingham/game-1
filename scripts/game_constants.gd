@@ -318,6 +318,7 @@ const POWERUP_ICON_SCALE: float = 0.07
 const CHARGE_SHRINE_RADIUS: float = 120.0
 const CHARGE_SHRINE_CHARGE_TIME: float = 4.0
 const CHARGE_SHRINE_OPTIONS: int = 3
+const CHARGE_SHRINE_IMAGE_SCALE: float = 0.1
 
 # --- GIFT SETTINGS ---
 const GIFT_XP_AMOUNT: int = 15

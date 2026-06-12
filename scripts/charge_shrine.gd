@@ -7,9 +7,9 @@ signal charged(shrine: Node2D)
 
 var charge_progress: float = 0.0
 var _is_complete: bool = false
-var _glow: Polygon2D
-var _core: Polygon2D
-var _spark: Polygon2D
+var _charge_ring: Polygon2D
+var _radius_hint: Polygon2D
+var _player_inside: bool = false
 
 func _ready() -> void:
 	add_to_group("shrines")
@@ -51,36 +51,41 @@ func _on_body_exited(body: Node2D) -> void:
 		_update_visuals()
 
 func _build_visuals() -> void:
-	_glow = Polygon2D.new()
-	_glow.color = Color(0.35, 0.8, 1.0, 0.18)
-	_glow.polygon = _circle_points(42.0, 28)
-	_glow.z_index = 6
-	add_child(_glow)
-	
-	_core = Polygon2D.new()
-	_core.color = Color(0.18, 0.72, 1.0, 0.55)
-	_core.polygon = _circle_points(28.0, 24)
-	_core.z_index = 7
-	add_child(_core)
-	
-	_spark = Polygon2D.new()
-	_spark.color = Color(0.92, 0.98, 1.0, 0.95)
-	_spark.polygon = _circle_points(12.0, 18)
-	_spark.z_index = 8
-	add_child(_spark)
+	var sprite = get_node_or_null("Sprite2D") as Sprite2D
+	if sprite:
+		sprite.scale = Vector2.ONE * GameConstants.CHARGE_SHRINE_IMAGE_SCALE
+		sprite.z_index = 2
+
+	_radius_hint = Polygon2D.new()
+	_radius_hint.color = Color(0.35, 0.85, 1.0, 0.5)
+	_radius_hint.polygon = _circle_points(charge_radius, 64)
+	_radius_hint.z_index = 0
+	add_child(_radius_hint)
+
+	_charge_ring = Polygon2D.new()
+	_charge_ring.color = Color(1.0, 1.0, 1.0, 0.5)
+	_charge_ring.polygon = _circle_points(24.0, 32)
+	_charge_ring.z_index = 1
+	add_child(_charge_ring)
+
+	if sprite:
+		move_child(_radius_hint, 0)
+		move_child(_charge_ring, 1)
 
 func _update_visuals() -> void:
+	var player = get_tree().get_first_node_in_group("player")
+	_player_inside = is_instance_valid(player) and global_position.distance_to(player.global_position) <= charge_radius
 	var fill: float = charge_progress / max(charge_time, 0.001)
-	if _glow:
-		_glow.scale = Vector2.ONE * lerp(0.90, 1.12, fill)
-		_glow.modulate.a = lerp(0.18, 0.38, fill)
-	if _core:
-		_core.scale = Vector2.ONE * lerp(0.88, 1.10, fill)
-		_core.modulate.a = lerp(0.55, 0.85, fill)
-	if _spark:
-		_spark.scale = Vector2.ONE * lerp(0.85, 1.35, fill)
-		_spark.modulate.a = lerp(0.55, 1.0, fill)
-		_spark.rotation = fill * TAU * 0.5
+
+	if _radius_hint:
+		_radius_hint.visible = _player_inside
+		_radius_hint.scale = Vector2.ONE
+		_radius_hint.modulate.a = 0.50
+
+	if _charge_ring:
+		_charge_ring.visible = true
+		_charge_ring.scale = Vector2.ONE * lerp(0.20, charge_radius / 24.0, fill)
+		_charge_ring.modulate.a = 0.35
 
 func _circle_points(radius: float, points_count: int) -> PackedVector2Array:
 	var pts := PackedVector2Array()
