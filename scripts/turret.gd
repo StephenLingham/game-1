@@ -23,7 +23,7 @@ func _physics_process(delta: float) -> void:
 			var p = get_tree().get_first_node_in_group("player")
 			if p != null and "_atk_speed_boost_multiplier" in p:
 				mult = p._atk_speed_boost_multiplier
-			timer = 1.0 / max(fire_rate * mult * GameState.get_atkspd_multiplier() * GameState.get_gun_atk_speed_mult(), 0.05)
+			timer = 1.0 / max(fire_rate * mult * GameState.get_atkspd_multiplier() * GameState.get_turret_atk_speed_mult(), 0.05)
 	elif timer <= 0:
 		timer = 0.0 # Reset so it fires as soon as it sees an enemy
 

@@ -15,6 +15,7 @@ var charge_shrine_popup_panel: Control
 @onready var shop_lvl_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/LevelLabel
 @onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
 @onready var shop_capacity_label: Label = Label.new() # Will add to UI
+@onready var enemy_count_label: Label = Label.new()
 @onready var xp_bar: ProgressBar = $UI/HUD/XPBar
 @onready var lvl_xp_label: Label = $UI/HUD/LevelXPLabel
 var current_chest_options: Array = []
@@ -162,6 +163,11 @@ func _ready() -> void:
 	shop_capacity_label.add_theme_font_size_override("font_size", 22)
 	$UI/ShopPanel/Margin/VBox.add_child(shop_capacity_label)
 	$UI/ShopPanel/Margin/VBox.move_child(shop_capacity_label, $UI/ShopPanel/Margin/VBox/Scroll.get_index())
+
+	enemy_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	enemy_count_label.add_theme_font_size_override("font_size", 16)
+	enemy_count_label.modulate = Color(0.9, 0.9, 0.9, 1.0)
+	$UI/HUD/HUDTopRow/CenterInfo.add_child(enemy_count_label)
 
 	# Game over buttons
 	$UI/GameOverPanel/Margin/VBox/ButtonBox/BackToLobby.pressed.connect(_back_to_lobby)
@@ -450,6 +456,16 @@ func _process(_delta: float) -> void:
 	lvl_xp_label.text = "Level: %d" % GameState.run_level
 	xp_bar.max_value = GameState.run_xp_to_next_level
 	xp_bar.value = GameState.run_xp
+
+	var alive_enemy_count := 0
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if is_instance_valid(enemy):
+			alive_enemy_count += 1
+	if GameConstants.FEATURE_SHOW_ENEMY_COUNT:
+		enemy_count_label.visible = true
+		enemy_count_label.text = "Enemies Alive: %d" % alive_enemy_count
+	else:
+		enemy_count_label.visible = false
 	
 	if is_instance_valid(player) and "health" in player:
 		hp_bar.max_value = player.max_health
@@ -732,23 +748,6 @@ func _refresh_shop_ui() -> void:
 		buy_btn.custom_minimum_size = Vector2(180, 40)
 		vbox.add_child(buy_btn)
 		
-		# Aura description (non-weapon)
-		var desc_lbl = Label.new()
-		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		desc_lbl.modulate = Color(0.8, 0.8, 0.8)
-		desc_lbl.add_theme_font_size_override("font_size", 14)
-		if abi.id.begins_with("aura_"):
-			var aura_data = GameConstants.AURAS[abi.id]
-			var val = aura_data.value
-			if aura_data.desc != "":
-				if aura_data.stat.ends_with("_multiplier") or aura_data.stat.ends_with("_percent") or aura_data.stat.ends_with("_chance") or aura_data.stat == "thorns_percentage" or aura_data.stat == "gem_drop_chance_bonus" or aura_data.stat == "spawn_rate_multiplier":
-					desc_lbl.text = aura_data.desc % int(val * 100)
-				else:
-					desc_lbl.text = aura_data.desc % val
-			else:
-				desc_lbl.visible = false
-		vbox.add_child(desc_lbl)
 		upgrades_box.add_child(panel)
 
 	# --- FOOTER (Reroll) ---
@@ -1132,13 +1131,6 @@ func _show_charge_shrine_window() -> void:
 	
 	for idx in range(current_charge_shrine_options.size()):
 		var option: Dictionary = current_charge_shrine_options[idx]
-		var panel = PanelContainer.new()
-		var vbox = VBoxContainer.new()
-		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-		vbox.add_theme_constant_override("separation", 10)
-		vbox.custom_minimum_size = Vector2(250, 180)
-		panel.add_child(vbox)
-		
 		var rarity_color: Color = option.get("rarity_color", Color.WHITE)
 		var sb = StyleBoxFlat.new()
 		sb.bg_color = Color(rarity_color.r * 0.15, rarity_color.g * 0.15, rarity_color.b * 0.15, 1.0)
@@ -1151,29 +1143,19 @@ func _show_charge_shrine_window() -> void:
 		sb.corner_radius_top_right = 8
 		sb.corner_radius_bottom_left = 8
 		sb.corner_radius_bottom_right = 8
-		panel.add_theme_stylebox_override("panel", sb)
-		
-		var rarity_lbl = Label.new()
-		rarity_lbl.text = "★  %s" % String(option.get("rarity_name", "Common")).to_upper()
-		rarity_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		rarity_lbl.add_theme_font_size_override("font_size", 16)
-		rarity_lbl.modulate = rarity_color
-		vbox.add_child(rarity_lbl)
-		
-		var stat_lbl = Label.new()
-		stat_lbl.text = String(option.get("display", ""))
-		stat_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		stat_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		stat_lbl.add_theme_font_size_override("font_size", 18)
-		vbox.add_child(stat_lbl)
-		
+
 		var choose_btn = Button.new()
-		choose_btn.text = "Take It"
-		choose_btn.custom_minimum_size = Vector2(180, 40)
+		choose_btn.text = "★ %s\n%s" % [String(option.get("rarity_name", "Common")).to_upper(), String(option.get("display", ""))]
+		choose_btn.custom_minimum_size = Vector2(250, 180)
+		choose_btn.add_theme_font_size_override("font_size", 18)
+		choose_btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
+		choose_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+		choose_btn.add_theme_stylebox_override("normal", sb)
+		choose_btn.add_theme_stylebox_override("hover", sb)
+		choose_btn.add_theme_stylebox_override("pressed", sb)
+		choose_btn.add_theme_stylebox_override("focus", sb)
 		choose_btn.pressed.connect(_on_charge_shrine_option_chosen.bind(idx))
-		vbox.add_child(choose_btn)
-		
-		grid.add_child(panel)
+		grid.add_child(choose_btn)
 
 func _ensure_charge_shrine_popup_exists() -> void:
 	if charge_shrine_popup_panel:

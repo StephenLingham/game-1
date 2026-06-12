@@ -11,6 +11,7 @@ const CHARGE_SHRINE_COUNT: int = 7
 # --- FEATURE FLAGS ---
 # Gifts now always roll a rarity-scaled stat; kept for compatibility.
 const FEATURE_GIFTS_GIVE_RANDOM_STAT: bool = false
+const FEATURE_SHOW_ENEMY_COUNT: bool = true
 
 # --- PLAYER STATS ---
 const PLAYER_SPEED: float = 300.0
@@ -39,7 +40,7 @@ const ZAP_SECOND_WEAPON_DAMAGE: int = 100
 const TOTAL_WAVES: int = 10
 const WAVE_SECONDS: float = 30.0
 const MAX_ENEMIES_ALIVE: int = 500
-const FINAL_WAVE_SPAWN_WAIT: float = 0.05
+const FINAL_WAVE_SPAWN_WAIT: float = 0.1
 const FINAL_WAVE_PAUSE_SECONDS: float = 8.0
 
 # --- ARENA SETTINGS ---
@@ -165,6 +166,7 @@ const TURRET_COOLDOWN_REDUCTION: float = 1.0
 const TURRET_MAX_LEVEL: int = 20
 const TURRET_DAMAGE: int = 250
 const TURRET_FIRE_RATE: float = 0.5
+const TURRET_ATK_SPD_PER_UPGRADE: float = 0.15
 
 # Machine Gun
 const MG_BASE_COOLDOWN: float = 0.15

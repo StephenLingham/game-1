@@ -407,6 +407,10 @@ func get_zap_atk_speed_mult() -> float:
 	var lvl = run_abilities.get("zap", 1)
 	return 1.0 + float(lvl - 1) * GameConstants.ZAP_ATK_SPD_PER_UPGRADE
 
+func get_turret_atk_speed_mult() -> float:
+	var lvl = run_abilities.get("turret", 1)
+	return 1.0 + float(lvl - 1) * GameConstants.TURRET_ATK_SPD_PER_UPGRADE
+
 func get_shotgun_bullet_count() -> int:
 	var lvl = run_abilities.get("shotgun", 0)
 	match lvl:
