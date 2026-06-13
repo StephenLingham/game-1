@@ -100,9 +100,8 @@ func resume_after_shop() -> void:
 	_next_wave()
 
 func _remove_oldest_enemy_if_needed() -> void:
-	var enemies := get_tree().get_nodes_in_group("enemies")
 	var valid_enemies: Array[Node] = []
-	for enemy in enemies:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
 		if is_instance_valid(enemy):
 			valid_enemies.append(enemy)
 
@@ -111,13 +110,12 @@ func _remove_oldest_enemy_if_needed() -> void:
 
 	var oldest: Node = valid_enemies[0]
 	for enemy in valid_enemies:
-		var enemy_order := int(enemy.get_meta("_spawn_order", 0))
-		var oldest_order := int(oldest.get_meta("_spawn_order", 0))
-		if enemy_order < oldest_order:
+		if int(enemy.get_meta("_spawn_order", 0)) < int(oldest.get_meta("_spawn_order", 0)):
 			oldest = enemy
 
 	if is_instance_valid(oldest):
-		oldest.queue_free()
+		# Free immediately so the cap is enforced for the current frame as well.
+		oldest.free()
 
 func _spawn_tick() -> void:
 	if enemy_scene == null:
@@ -137,6 +135,7 @@ func _spawn_tick() -> void:
 	if wave == GameConstants.TOTAL_WAVES:
 		burst = 6
 	for i in range(burst):
+		# Enforce the cap before every spawn in the burst, not just once at the start.
 		_remove_oldest_enemy_if_needed()
 		var rand_val := randf()
 		var scene_to_spawn := enemy_scene
