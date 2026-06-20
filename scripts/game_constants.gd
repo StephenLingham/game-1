@@ -1,4 +1,4 @@
-class_name GameConstants extends RefCounted
+﻿class_name GameConstants extends RefCounted
 
 const GAME_VERSION: String = "v0.20.0"
 
@@ -257,7 +257,7 @@ const RARITY_COLORS: Dictionary = {
 	"epic":      Color(0.75, 0.3, 1.0),
 	"legendary": Color(1.0, 0.82, 0.1)
 }
-# Cumulative weights — common = 50%, uncommon = 25%, rare = 15%, epic = 7%, legendary = 3%
+# Cumulative weights â€” common = 50%, uncommon = 25%, rare = 15%, epic = 7%, legendary = 3%
 const RARITY_WEIGHTS: Array = [50, 25, 15, 7, 3]
 const RARITY_MULTIPLIERS: Dictionary = {
 	"common":    1.0,
@@ -562,8 +562,266 @@ const ITEMS: Dictionary = {
 	"cosmic_sausage": {
 		"name": "Cosmic Sausage",
 		"stats": {"damage": 5}
+	},
+	"titanblood_core": {
+		"name": "Titanblood Core",
+		"desc": "Gain +10% damage for each 100 max health."
+	},
+	"volley_charm": {
+		"name": "Volley Charm",
+		"stats": {"projectiles": 1},
+		"desc": "+1 projectile."
+	},
+	"ricochet_rune": {
+		"name": "Ricochet Rune",
+		"stats": {"bounces": 1},
+		"desc": "+1 bounce to all attacks that can bounce."
+	},
+	"execution_pin": {
+		"name": "Execution Pin",
+		"desc": "Each hit deals bonus damage equal to 1% of the target's max health."
+	},
+	"vampire_tooth": {
+		"name": "Vampire Tooth",
+		"desc": "+1% lifesteal."
+	},
+	"vampire_cape": {
+		"name": "Vampire Cape",
+		"desc": "1% chance per hit to heal 1 health."
+	},
+	"frostbite_needle": {
+		"name": "Frostbite Needle",
+		"desc": "1% chance per hit to freeze enemies."
+	},
+	"chilling_dust": {
+		"name": "Chilling Dust",
+		"desc": "1% chance per hit to slow enemies."
+	},
+	"vitality_sap": {
+		"name": "Vitality Sap",
+		"desc": "Heal 5 health whenever you collect XP."
+	},
+	"crystal_tracker": {
+		"name": "Crystal Tracker",
+		"desc": "Reveal the crystal on the map."
+	},
+	"crystal_magnet": {
+		"name": "Crystal Magnet",
+		"desc": "The crystal is pulled toward you from anywhere."
+	},
+	"giftforge_sigil": {
+		"name": "Giftforge Sigil",
+		"desc": "Gain +1 permanent damage each time you pick up a gift."
+	},
+	"close_quarters_core": {
+		"name": "Close Quarters Core",
+		"desc": "Gain up to +30 flat damage the closer you are to your target."
+	},
+	"desperation_brand": {
+		"name": "Desperation Brand",
+		"desc": "Gain +10 permanent damage each time your health drops below 30%."
+	},
+	"bloodrush_boots": {
+		"name": "Bloodrush Boots",
+		"desc": "Gain movement speed equal to the percentage of health you have lost."
+	},
+	"cartographers_lens": {
+		"name": "Cartographer's Lens",
+		"desc": "Reveal a much larger radius on the full map."
+	},
+	"legendfinder_compass": {
+		"name": "Legendfinder Compass",
+		"desc": "Reveal the legendary gift on the map."
+	},
+	"ember_plague": {
+		"name": "Ember Plague",
+		"desc": "Attacks have a 10% chance to burn enemies. Burning spreads on contact."
+	},
+	"phoenix_idol": {
+		"name": "Phoenix Idol",
+		"desc": "Fatal damage instead heals you to full and freezes all enemies. One use. Can only carry one."
+	},
+	"sentry_root": {
+		"name": "Sentry Root",
+		"desc": "Standing still charges up to +100% damage over 60 seconds. Moving resets the charge."
+	},
+	"stillwater_idol": {
+		"name": "Stillwater Idol",
+		"desc": "Heal 1% max health per second while standing still."
+	},
+	"momentum_greaves": {
+		"name": "Momentum Greaves",
+		"desc": "While moving, build up to +50% speed over 120 seconds. Stopping resets it."
+	},
+	"bloodletter_prism": {
+		"name": "Bloodletter Prism",
+		"desc": "Critical hits heal you for 1 health."
+	},
+	"shrapnel_seal": {
+		"name": "Shrapnel Seal",
+		"desc": "Critical hits have a 50% chance to explode for 25% damage to nearby enemies."
+	},
+	"trail_medicine": {
+		"name": "Trail Medicine",
+		"desc": "Heal 1 health for every 1000 pixels travelled."
+	},
+	"pureheart_badge": {
+		"name": "Pureheart Badge",
+		"desc": "+10% damage while at full health."
+	},
+	"corpse_charge": {
+		"name": "Corpse Charge",
+		"desc": "1% chance for killed enemies to explode for 50% of their max health."
+	},
+	"hex_nails": {
+		"name": "Hex Nails",
+		"desc": "Hits curse targets, dealing 25% of their max health per second. One active curse per copy."
+	},
+	"pain_furnace": {
+		"name": "Pain Furnace",
+		"desc": "Taking damage hurts for 50 extra damage, but grants +1 permanent damage each time."
+	},
+	"quake_pulse": {
+		"name": "Quake Pulse",
+		"desc": "1% chance per hit to knock back all enemies."
+	},
+	"giant_slayer": {
+		"name": "Giant Slayer",
+		"desc": "+10% damage to bosses."
+	},
+	"iron_dumbbell": {
+		"name": "Iron Dumbbell",
+		"stats": {"damage": 5},
+		"desc": "+5 flat damage."
+	},
+	"hardy_apple": {
+		"name": "Hardy Apple",
+		"stats": {"max_health": 5},
+		"desc": "+5 max health."
+	},
+	"windlace": {
+		"name": "Windlace",
+		"stats": {"speed_multiplier": 0.05},
+		"desc": "+5% movement speed."
+	},
+	"training_gloves": {
+		"name": "Training Gloves",
+		"stats": {"atkspd_multiplier": 0.05},
+		"desc": "+5% attack speed."
+	},
+	"whetstone": {
+		"name": "Whetstone",
+		"stats": {"crit_chance": 0.05},
+		"desc": "+5% crit chance."
+	},
+	"vengeance_drum": {
+		"name": "Vengeance Drum",
+		"desc": "Taking damage grants a stacking +20% damage buff for 3 seconds."
+	},
+	"longshot_scope": {
+		"name": "Longshot Scope",
+		"desc": "Deal up to +50% more damage to distant enemies."
+	},
+	"trophy_heart": {
+		"name": "Trophy Heart",
+		"desc": "Gain +1 max health every 10 kills, up to +100 per copy."
+	},
+	"warpath_ledger": {
+		"name": "Warpath Ledger",
+		"desc": "Gain +1% damage every 10 kills, up to +100% per copy."
+	},
+	"lesson_seed": {
+		"name": "Lesson Seed",
+		"desc": "10% chance for enemies to drop an extra XP orb."
+	},
+	"striders_lesson": {
+		"name": "Strider's Lesson",
+		"desc": "Gain 1 XP every 5 seconds while moving."
+	},
+	"glass_canon_item": {
+		"name": "Glass Canon",
+		"stats": {"damage_multiplier": 0.5},
+		"desc": "+50% damage, but halve max health."
+	},
+	"mirror_sigil": {
+		"name": "Mirror Sigil",
+		"desc": "Reflect the next incoming hit back to the attacker. 10 second cooldown."
+	},
+	"menagerie_crate": {
+		"name": "Menagerie Crate",
+		"desc": "Opening a chest summons 3 temporary pets for 20 seconds."
+	},
+	"spirit_lantern": {
+		"name": "Spirit Lantern",
+		"desc": "1% chance on hit to fire 5 ghost spirits at random enemies for 10 damage each."
+	},
+	"stride_to_fury": {
+		"name": "Stride-to-Fury Boots",
+		"desc": "Every +2% movement speed grants +1% attack speed."
+	},
+	"crowd_fang": {
+		"name": "Crowd Fang",
+		"desc": "Gain +1 flat damage for each enemy currently visible on screen."
+	},
+	"last_stand_stride": {
+		"name": "Last Stand Stride",
+		"desc": "Gain movement speed equal to half the percentage of health you have lost."
+	},
+	"stormlink_fang": {
+		"name": "Stormlink Fang",
+		"desc": "Critical hits have a 50% chance to chain to a nearby enemy. Crit chains can keep chaining."
+	},
+	"echo_trigger": {
+		"name": "Echo Trigger",
+		"desc": "On-hit effects get one extra chance to trigger."
+	},
+	"catastrophe_die": {
+		"name": "Catastrophe Die",
+		"desc": "2% chance on hit to deal 20x damage."
+	},
+	"shockwave_shell": {
+		"name": "Shockwave Shell",
+		"desc": "20% chance on hit to splash 50% damage to nearby enemies."
+	},
+	"snowball_fang": {
+		"name": "Snowball Fang",
+		"desc": "Each crit permanently grants +1% crit chance."
+	},
+	"mega_magnet": {
+		"name": "Mega Magnet",
+		"desc": "Every 25 seconds, pull all XP orbs to you."
+	},
+	"ninja_wizard_cat": {
+		"name": "Ninja Wizard Cat",
+		"desc": "Summon a permanent cat that dashes across the screen and instantly kills enemies it touches."
+	},
+	"gift_vacuum": {
+		"name": "Gift Vacuum",
+		"desc": "Your pickup radius also collects gifts."
+	},
+	"chest_vacuum": {
+		"name": "Chest Vacuum",
+		"desc": "Your pickup radius also collects chests."
+	},
+	"atlas_eye": {
+		"name": "Atlas Eye",
+		"desc": "Reveal the entire map."
+	},
+	"wave_blessing": {
+		"name": "Wave Blessing",
+		"desc": "At the end of each wave, gain a random stat bonus."
+	},
+	"pain_lottery": {
+		"name": "Pain Lottery",
+		"desc": "Whenever you take damage, gain a random flat stat bonus."
+	},
+	"spirit_kennel": {
+		"name": "Spirit Kennel",
+		"desc": "1% chance for killed enemies to summon a temporary invulnerable pet."
 	}
 }
+
+const UNIQUE_RUN_ITEMS: Array = ["phoenix_idol", "ninja_wizard_cat"]
 
 const AURAS: Dictionary = {
 	"aura_damage": {
@@ -664,3 +922,4 @@ const AURAS: Dictionary = {
 		"desc": "Increases global weapon bounces by +%.1f per level (more for higher rarity)."
 	}
 }
+

@@ -42,7 +42,9 @@ func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("player"):
 		collect(body)
 
-func collect(_player: Node) -> void:
+func collect(player: Node) -> void:
 	GameState.add_xp(value)
+	if player and player.has_method("on_xp_collected"):
+		player.on_xp_collected(value)
 	queue_free()
 

@@ -953,8 +953,11 @@ func show_item_window(_deprecated_item_id: String = "") -> void:
 	# Only show items the player has unlocked AND NOT sealed
 	var all_keys = []
 	for item_id in GameState.unlocked_treasure_items:
-		if not GameState.sealed_items.has(item_id):
-			all_keys.append(item_id)
+		if GameState.sealed_items.has(item_id):
+			continue
+		if GameConstants.UNIQUE_RUN_ITEMS.has(item_id) and GameState.has_run_item(item_id):
+			continue
+		all_keys.append(item_id)
 			
 	all_keys.shuffle()
 	current_chest_options = all_keys.slice(0, 3)
@@ -978,22 +981,7 @@ func show_item_window(_deprecated_item_id: String = "") -> void:
 		btn.custom_minimum_size = Vector2(250, 180)
 		btn.add_theme_font_size_override("font_size", 18)
 		
-		# Build description text
-		var text = item_data.name + "\n\n"
-		var stats = item_data.get("stats", {})
-		for stat_key in stats.keys():
-			var val = stats[stat_key]
-			var sign_str = "+" if val > 0 else ""
-			var percent = ""
-			if stat_key.ends_with("_multiplier") or stat_key.ends_with("_percent") or stat_key.ends_with("_chance") or stat_key == "thorns_percentage" or stat_key == "gem_drop_chance_bonus":
-				val *= 100.0
-				percent = "%"
-			
-			var human_name = stat_key.replace("_", " ").capitalize()
-			if stat_key == "atkspd_multiplier":
-				human_name = "Attack Speed Multiplier"
-				
-			text += "%s%s%s %s\n" % [sign_str, str(val), percent, human_name]
+		var text = _build_item_card_text(item_data)
 
 		
 		btn.text = text
@@ -1079,6 +1067,28 @@ func _ensure_item_popup_exists() -> void:
 func _close_item_window() -> void:
 	item_popup_panel.visible = false
 	get_tree().paused = false
+
+func _build_item_card_text(item_data: Dictionary) -> String:
+	var text: String = item_data.name + "\n\n"
+	var desc := String(item_data.get("desc", ""))
+	if desc != "":
+		text += desc + "\n"
+	var stats = item_data.get("stats", {})
+	if not stats.is_empty():
+		if desc != "":
+			text += "\n"
+		for stat_key in stats.keys():
+			var val = stats[stat_key]
+			var sign_str = "+" if val > 0 else ""
+			var percent = ""
+			if stat_key.ends_with("_multiplier") or stat_key.ends_with("_percent") or stat_key.ends_with("_chance") or stat_key == "thorns_percentage" or stat_key == "gem_drop_chance_bonus":
+				val *= 100.0
+				percent = "%"
+			var human_name = stat_key.replace("_", " ").capitalize()
+			if stat_key == "atkspd_multiplier":
+				human_name = "Attack Speed"
+			text += "%s%s%s %s\n" % [sign_str, str(val), percent, human_name]
+	return text
 
 func _on_charge_shrine_charged(shrine: Node2D) -> void:
 	if not is_instance_valid(shrine):

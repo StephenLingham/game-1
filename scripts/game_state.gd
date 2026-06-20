@@ -1,4 +1,4 @@
-extends Node
+﻿extends Node
 # Persistent meta-progression + run-state container.
 
 const SAVE_PATH := "user://save.json"
@@ -249,16 +249,54 @@ func _apply_character_level_up_traits() -> void:
 		"singular_volley":
 			run_extra_projectiles += 1
 
+func count_run_item(item_id: String) -> int:
+	var total := 0
+	for held_id in run_items:
+		if held_id == item_id:
+			total += 1
+	return total
+
+func has_run_item(item_id: String) -> bool:
+	return count_run_item(item_id) > 0
+
+func remove_run_item(item_id: String) -> bool:
+	var idx := run_items.find(item_id)
+	if idx == -1:
+		return false
+	run_items.remove_at(idx)
+	var p = get_tree().get_first_node_in_group("player")
+	if p and p.has_method("refresh_stats"):
+		p.refresh_stats()
+	return true
+
+func get_item_stat_total(stat_name: String) -> float:
+	var total := 0.0
+	for item_id in run_items:
+		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
+		total += float(stats.get(stat_name, 0.0))
+	return total
+
+func roll_proc(chance: float, extra_attempts: int = 0) -> bool:
+	var attempts: int = max(1, 1 + extra_attempts)
+	var rolled_chance: float = clamp(chance, 0.0, 1.0)
+	for _i in range(attempts):
+		if randf() < rolled_chance:
+			return true
+	return false
+
 func get_projectiles() -> int:
 	var plvl = min(perm_projectiles_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
 	var aura_bonus = _get_aura_bonus("projectiles")
-	return int(floor(float(GameConstants.BASE_PROJECTILES + plvl + run_extra_projectiles) + aura_bonus))
+	var item_bonus = get_item_stat_total("projectiles")
+	var gift_bonus = run_gift_bonuses.get("projectiles", 0.0)
+	return int(floor(float(GameConstants.BASE_PROJECTILES + plvl + run_extra_projectiles) + aura_bonus + item_bonus + gift_bonus))
 
 func get_bounces() -> int:
 	var blvl = min(perm_bounces_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
 	var aura_bonus = _get_aura_bonus("bounces")
-	return int(floor(float(GameConstants.BASE_BOUNCES + blvl + run_extra_bounces) + aura_bonus))
-
+	var item_bonus = get_item_stat_total("bounces")
+	var gift_bonus = run_gift_bonuses.get("bounces", 0.0)
+	return int(floor(float(GameConstants.BASE_BOUNCES + blvl + run_extra_bounces) + aura_bonus + item_bonus + gift_bonus))
 
 # --- PER-WEAPON TRAIT SYSTEM ---
 
@@ -333,8 +371,8 @@ func roll_weapon_upgrade(weapon_id: String) -> Dictionary:
 	match trait_name:
 		"damage":      display = "+%d Damage" % int(round(value))
 		"crit_chance": display = "+%d%% Crit Chance" % int(round(value * 100.0))
-		"projectiles": display = "+%.1f Projectiles (→%d)" % [value, int(floor(get_weapon_trait(weapon_id, "projectiles") + value)) + GameConstants.BASE_PROJECTILES]
-		"bounces":     display = "+%.1f Bounces (→%d)" % [value, int(floor(get_weapon_trait(weapon_id, "bounces") + value))]
+		"projectiles": display = "+%.1f Projectiles (â†’%d)" % [value, int(floor(get_weapon_trait(weapon_id, "projectiles") + value)) + GameConstants.BASE_PROJECTILES]
+		"bounces":     display = "+%.1f Bounces (â†’%d)" % [value, int(floor(get_weapon_trait(weapon_id, "bounces") + value))]
 		"size":        display = "+%d%% Area Size" % int(round(value * 100.0))
 		_:             display = ""
 	return {
@@ -459,22 +497,21 @@ func get_damage_multiplier() -> float:
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		mult += stats.get("damage_multiplier", 0.0)
-	
-	# Character traits
+
+	mult += float(floor(float(get_max_health()) / 100.0)) * 0.10 * float(count_run_item("titanblood_core"))
+	mult += min(1.0 * float(count_run_item("warpath_ledger")), floor(float(run_enemies_killed) / 10.0) * 0.01 * float(count_run_item("warpath_ledger")))
+
 	match current_character:
 		"speed_damage":
-			# Damage scales with speed: +1% damage per 5% speed bonus
 			var speed_mult = get_speed_multiplier()
-			mult += (speed_mult - 1.0) * 0.2 
+			mult += (speed_mult - 1.0) * 0.2
 		"glass_cannon":
-			mult += run_level * 0.05 # +5% damage per level
+			mult += run_level * 0.05
 		"singular_force":
 			mult *= 6.0
-	
-	mult += run_gift_bonuses.get("damage_multiplier", 0.0)
-	
-	return mult
 
+	mult += run_gift_bonuses.get("damage_multiplier", 0.0)
+	return mult
 
 func get_atkspd_multiplier() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_atkspd_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
@@ -483,10 +520,10 @@ func get_atkspd_multiplier() -> float:
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		mult += stats.get("atkspd_multiplier", 0.0)
-	
+
+	mult += max(0.0, get_speed_multiplier() - 1.0) * 0.5 * float(count_run_item("stride_to_fury"))
 	mult += run_gift_bonuses.get("atkspd_multiplier", 0.0)
 	return mult
-
 
 func get_pickup_radius() -> float:
 	var base := GameConstants.BASE_COLLECTION_RADIUS
@@ -519,10 +556,9 @@ func get_max_health() -> int:
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("max_health", 0)
-	
+
 	var final_hp = base + bonus
-	
-	# Character traits
+
 	match current_character:
 		"tank":
 			final_hp = int(final_hp * 2.5)
@@ -532,20 +568,21 @@ func get_max_health() -> int:
 			final_hp = int(final_hp * 10.0)
 		"passive_master":
 			final_hp = int(final_hp * 1.5)
-			
-	final_hp += int(run_gift_bonuses.get("max_health", 0.0))
-	return final_hp
 
+	final_hp += int(run_gift_bonuses.get("max_health", 0.0))
+	if count_run_item("glass_canon_item") > 0:
+		final_hp = max(10, int(round(float(final_hp) * pow(0.5, count_run_item("glass_canon_item")))))
+	return final_hp
 
 func get_health_regen() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_regen_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
-	var base = float(lvl) * 0.1 # 0.1 HP per second
+	var base = float(lvl) * 0.1
 	var bonus = _get_aura_bonus("health_regen")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("health_regen", 0.0)
+	bonus += run_gift_bonuses.get("health_regen", 0.0)
 	return base + bonus
-
 
 func get_crit_chance() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_crit_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
@@ -561,53 +598,52 @@ func get_crit_chance() -> float:
 
 func get_crit_multiplier() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_crit_damage_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
-	var base = 2.0 + float(lvl) * 0.01 # Base 2.0x, +0.01x per level
+	var base = 2.0 + float(lvl) * 0.01
 	var bonus = _get_aura_bonus("crit_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("crit_multiplier", 0.0)
+	bonus += run_gift_bonuses.get("crit_multiplier", 0.0)
 	return base + bonus
-
 
 func get_armor() -> int:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_armor_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
-	var base = lvl * 1 # Flat damage reduction
+	var base = lvl * 1
 	var bonus = int(_get_aura_bonus("armor"))
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("armor", 0)
-	
+	bonus += int(run_gift_bonuses.get("armor", 0.0))
+
 	var final_armor = base + bonus
-	
-	# Character traits
+
 	match current_character:
 		"tank":
 			final_armor += 20
 		"passive_master":
 			final_armor += 10
-			
-	return final_armor
 
+	return final_armor
 
 func get_armor_percent() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_armor_percent_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
-	var base = float(lvl) * 0.01 # 1% reduction per level
+	var base = float(lvl) * 0.01
 	var bonus = _get_aura_bonus("armor_percent")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("armor_percent", 0.0)
+	bonus += run_gift_bonuses.get("armor_percent", 0.0)
 	return base + bonus
-
 
 func get_thorns_percentage() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_thorns_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
-	var base = float(lvl) * 0.01 # 1% thorns per level
+	var base = float(lvl) * 0.01
 	var bonus = _get_aura_bonus("thorns_percentage")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("thorns_percentage", 0.0)
+	bonus += run_gift_bonuses.get("thorns_percentage", 0.0)
 	return base + bonus
-
 
 func get_spawn_rate_multiplier() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_spawn_rate_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
@@ -622,13 +658,12 @@ func get_spawn_rate_multiplier() -> float:
 func get_xp_drop_multiplier() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_gold_drop_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
 	var base = 1.0 + float(lvl) * 0.01
-	# Any item bonuses too
 	var bonus = _get_aura_bonus("xp_drop_multiplier")
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("xp_drop_multiplier", 0.0)
+	bonus += run_gift_bonuses.get("xp_drop_multiplier", 0.0)
 	return base + bonus
-
 
 func get_speed_multiplier(include_dynamic: bool = true) -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_speed_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
@@ -637,20 +672,24 @@ func get_speed_multiplier(include_dynamic: bool = true) -> float:
 	for item_id in run_items:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus += stats.get("speed_multiplier", 0.0)
-	
+
 	var mult = base + bonus
 	if include_dynamic:
-		mult += run_speed_bonus # From Zephyros trait
-	
+		mult += run_speed_bonus
+		var player = get_tree().get_first_node_in_group("player")
+		if player and player.max_health > 0:
+			var health_lost_ratio := 1.0 - (float(player.health) / float(player.max_health))
+			mult += health_lost_ratio * float(count_run_item("bloodrush_boots"))
+			mult += health_lost_ratio * 0.5 * float(count_run_item("last_stand_stride"))
+
 	match current_character:
 		"tank":
-			mult *= 0.5 # Slow
+			mult *= 0.5
 		"vampire":
-			mult = max(0.4, mult - (run_level - 1) * 0.02) # Decreases as level increases
-			
+			mult = max(0.4, mult - (run_level - 1) * 0.02)
+
 	mult += run_gift_bonuses.get("speed_multiplier", 0.0)
 	return mult
-
 
 func get_luck() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_luck_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
@@ -686,14 +725,17 @@ func _get_aura_bonus(stat_name: String) -> float:
 	return total
 
 func add_run_item(item_id: String) -> void:
+	if GameConstants.UNIQUE_RUN_ITEMS.has(item_id) and has_run_item(item_id):
+		return
 	run_items.append(item_id)
 	lifetime_item_picks[item_id] = lifetime_item_picks.get(item_id, 0) + 1
-	
+
 	var p = get_tree().get_first_node_in_group("player")
-	if p and p.has_method("refresh_stats"):
-		p.refresh_stats()
-
-
+	if p:
+		if p.has_method("refresh_stats"):
+			p.refresh_stats()
+		if p.has_method("on_item_added"):
+			p.on_item_added(item_id)
 
 func award_crystals(amount: int) -> void:
 	crystals += max(amount, 0)
@@ -974,3 +1016,4 @@ func load_save() -> void:
 	max_levels_reached = parsed.get("max_levels_reached", {})
 	lifetime_upgrades = parsed.get("lifetime_upgrades", {})
 	lifetime_item_picks = parsed.get("lifetime_item_picks", {})
+

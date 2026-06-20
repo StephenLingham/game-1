@@ -81,15 +81,15 @@ func _process(delta: float) -> void:
 func _end_wave() -> void:
 	spawning = false
 	spawn_timer.stop()
-	
-	# We no longer clear XP, projectiles, or reset anything for a "continuous" feel.
-	
+
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.has_method("on_wave_completed"):
+		player.on_wave_completed()
+
 	if wave < GameConstants.TOTAL_WAVES:
-		# small delay between waves before spawning resumes
 		var timer = get_tree().create_timer(2.0)
 		timer.timeout.connect(_next_wave)
 	else:
-		# Final wave completed! Trigger victory.
 		game.call_deferred("end_run", true, wave)
 
 func resume_after_shop() -> void:

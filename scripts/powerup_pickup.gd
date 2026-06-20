@@ -47,6 +47,17 @@ func _ready() -> void:
 	tween.tween_property($Sprite2D, "position:y", 5.0, 1.0).set_trans(Tween.TRANS_SINE)
 
 
+func _process(delta: float) -> void:
+	if type != Type.CRYSTAL or not GameState.has_run_item("crystal_magnet"):
+		return
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		return
+	var direction: Vector2 = (player.global_position - global_position).normalized()
+	global_position += direction * GameConstants.MAGNET_SPEED * delta
+	if global_position.distance_to(player.global_position) < 18.0:
+		collect(player)
+
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("player"):
 		collect(body)

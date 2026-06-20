@@ -65,7 +65,7 @@ func _process(_delta: float) -> void:
 		var shop = main_scene.get_node_or_null("UI/ShopPanel")
 		var game_over = main_scene.get_node_or_null("UI/GameOverPanel")
 		var pause = main_scene.get_node_or_null("UI/PausePanel")
-		var item_window = main_scene.get_node_or_null("UI/ItemSelectionPanel") # Optional chest panel
+		var item_window = main_scene.get_node_or_null("UI/ItemPopupPanel")
 		
 		var is_any_open = (shop and shop.visible) or (game_over and game_over.visible) or (pause and pause.visible) or (item_window and item_window.visible)
 		if is_any_open:
@@ -85,15 +85,24 @@ func _process(_delta: float) -> void:
 	var p_col = int(local_pos.x / cell_size)
 	var p_row = int(local_pos.y / cell_size)
 	
-	for x in range(max(0, p_col - GameConstants.LARGE_MAP_FOG_REVEAL_CELLS), min(cols, p_col + GameConstants.LARGE_MAP_FOG_REVEAL_CELLS + 1)):
-		for y in range(max(0, p_row - GameConstants.LARGE_MAP_FOG_REVEAL_CELLS), min(rows, p_row + GameConstants.LARGE_MAP_FOG_REVEAL_CELLS + 1)):
-			var cell_center = arena_rect.position + Vector2(x + 0.5, y + 0.5) * cell_size
-			if player_pos.distance_to(cell_center) < GameConstants.LARGE_MAP_FOG_REVEAL_RADIUS:
+	var reveal_cells := GameConstants.LARGE_MAP_FOG_REVEAL_CELLS + (10 if GameState.has_run_item("cartographers_lens") else 0)
+	var reveal_radius := GameConstants.LARGE_MAP_FOG_REVEAL_RADIUS + (1000.0 if GameState.has_run_item("cartographers_lens") else 0.0)
+	if GameState.has_run_item("atlas_eye"):
+		for x in range(cols):
+			for y in range(rows):
 				fog_grid[x][y] = true
+	else:
+		for x in range(max(0, p_col - reveal_cells), min(cols, p_col + reveal_cells + 1)):
+			for y in range(max(0, p_row - reveal_cells), min(rows, p_row + reveal_cells + 1)):
+				var cell_center = arena_rect.position + Vector2(x + 0.5, y + 0.5) * cell_size
+				if player_pos.distance_to(cell_center) < reveal_radius:
+					fog_grid[x][y] = true
 				
 	queue_redraw()
 
 func is_uncovered(world_pos: Vector2) -> bool:
+	if GameState.has_run_item("atlas_eye"):
+		return true
 	if not GameConstants.ENABLE_LARGE_MAP_FOG_OF_WAR:
 		return true
 	if not is_initialized: return false
@@ -213,11 +222,14 @@ func _draw_full_map() -> void:
 	# Draw collectibles if uncovered
 	# 1. Gifts (Magenta)
 	for g in get_tree().get_nodes_in_group("gifts"):
-		if is_instance_valid(g) and is_uncovered(g.global_position):
+		if is_instance_valid(g) and (is_uncovered(g.global_position) or (GameState.has_run_item("legendfinder_compass") and String(g.get("rarity")) == "legendary")):
 			var local_offset = g.global_position - arena_rect.position
 			var pos = bounds_rect.position + local_offset * fm_scale
-			draw_circle(pos, 4.5, Color(0.9, 0.0, 0.9, 1.0))
-			draw_circle(pos, 6.0, Color(0.9, 0.0, 0.9, 0.3))
+			var color := Color(0.9, 0.0, 0.9, 1.0)
+			if String(g.get("rarity")) == "legendary":
+				color = Color(1.0, 0.85, 0.2, 1.0)
+			draw_circle(pos, 4.5, color)
+			draw_circle(pos, 6.0, Color(color.r, color.g, color.b, 0.3))
 
 	# 1b. Charge Shrines (Blue)
 	for s in get_tree().get_nodes_in_group("shrines"):
@@ -240,7 +252,8 @@ func _draw_full_map() -> void:
 		if is_instance_valid(p):
 			var is_crystal = _is_crystal_pickup(p)
 			if is_crystal:
-				if is_uncovered(p.global_position):
+				if is_uncovered(p.global_position) or GameState.has_run_item("crystal_tracker"):
+
 					var local_offset = p.global_position - arena_rect.position
 					var pos = bounds_rect.position + local_offset * fm_scale
 					var crystal_size := Vector2(18.0, 18.0)

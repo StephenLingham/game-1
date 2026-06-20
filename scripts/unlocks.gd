@@ -197,6 +197,15 @@ func _show_items() -> void:
 		vbox.add_child(status)
 		
 		if is_unlocked:
+			var desc_text := String(item_data.get("desc", ""))
+			if desc_text != "":
+				var desc_lbl = Label.new()
+				desc_lbl.text = desc_text
+				desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				desc_lbl.modulate = Color(0.9, 0.9, 1.0)
+				vbox.add_child(desc_lbl)
+
 			var stats_lbl = Label.new()
 			var stats_text = ""
 			var stats = item_data.get("stats", {})
@@ -207,18 +216,19 @@ func _show_items() -> void:
 				if stat_key.ends_with("_multiplier") or stat_key.ends_with("_percent") or stat_key.ends_with("_chance") or stat_key == "thorns_percentage" or stat_key == "gem_drop_chance_bonus":
 					val *= 100.0
 					percent = "%"
-				
+
 				var human_name = stat_key.replace("_", " ").capitalize()
 				if stat_key == "atkspd_multiplier":
 					human_name = "Attack Speed"
-					
+
 				stats_text += "%s%s%s %s\n" % [sign_str, str(val), percent, human_name]
-			
-			stats_lbl.text = stats_text
-			stats_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			stats_lbl.modulate = Color.LIGHT_BLUE
-			stats_lbl.add_theme_font_size_override("font_size", 14)
-			vbox.add_child(stats_lbl)
+
+			if stats_text != "":
+				stats_lbl.text = stats_text
+				stats_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				stats_lbl.modulate = Color.LIGHT_BLUE
+				stats_lbl.add_theme_font_size_override("font_size", 14)
+				vbox.add_child(stats_lbl)
 		else:
 			var chests_needed = (i - 4) * 5
 			var current_chests = GameState.lifetime_chests_opened

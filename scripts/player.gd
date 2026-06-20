@@ -52,9 +52,22 @@ const ARCANE_FIELD_VISUAL_SCRIPT = preload("res://scripts/arcane_field_visual.gd
 var disk_scene: PackedScene = preload("res://scenes/bouncing_disk.tscn")
 var spikes_scene: PackedScene = preload("res://scenes/floor_spikes.tscn")
 var turret_scene: PackedScene = preload("res://scenes/turret.tscn")
+var pet_scene: PackedScene = preload("res://scenes/pet.tscn")
+var _still_time: float = 0.0
+var _momentum_speed_bonus: float = 0.0
+var _distance_since_heal: float = 0.0
+var _move_xp_timer: float = 0.0
+var _item_heal_accumulator: float = 0.0
+var _reflect_cooldown: float = 0.0
+var _mega_magnet_timer: float = 25.0
+var _below_health_threshold_latched: bool = false
+var _kill_hp_bonus: int = 0
+var _ninja_cat_spawned: bool = false
+var _damage_buff_timers: Array = []
 
 func _ready() -> void:
 	add_to_group("player")
+	add_to_group("allies")
 	refresh_stats()
 	health = max_health
 	
@@ -91,7 +104,8 @@ func refresh_stats() -> void:
 	max_health = GameState.get_max_health()
 	if max_health > old_max:
 		health += (max_health - old_max)
-	
+	health = min(health, max_health)
+
 	_base_speed = GameConstants.PLAYER_SPEED * GameState.get_speed_multiplier(false)
 	# Current speed is updated in _physics_process
 
@@ -146,6 +160,12 @@ func set_camera_limits(rect: Rect2) -> void:
 		cam.force_update_scroll()
 
 func _physics_process(delta: float) -> void:
+	if _reflect_cooldown > 0.0:
+		_reflect_cooldown = max(0.0, _reflect_cooldown - delta)
+	for i in range(_damage_buff_timers.size() - 1, -1, -1):
+		_damage_buff_timers[i] -= delta
+		if _damage_buff_timers[i] <= 0.0:
+			_damage_buff_timers.remove_at(i)
 	if GameState.current_character == "speed_damage":
 		GameState.run_speed_bonus = min(
 			GameState.run_speed_bonus + GameConstants.ZEPHYROS_SPEED_GAIN_PER_SEC * delta,
@@ -158,7 +178,7 @@ func _physics_process(delta: float) -> void:
 			_speed_boost_multiplier = 1.0
 	
 	# Update speed every frame to account for dynamic bonuses and boosts
-	speed = GameConstants.PLAYER_SPEED * GameState.get_speed_multiplier(true) * _speed_boost_multiplier
+	speed = GameConstants.PLAYER_SPEED * GameState.get_speed_multiplier(true) * _speed_boost_multiplier * (1.0 + _momentum_speed_bonus)
 			
 	if _atk_speed_boost_duration > 0:
 		_atk_speed_boost_duration -= delta
@@ -177,6 +197,8 @@ func _physics_process(delta: float) -> void:
 				var amount := int(floor(_regen_accumulator))
 				health = min(health + amount, max_health)
 				_regen_accumulator -= float(amount)
+
+	var prev_position := global_position
 
 	# Movement
 	var input_dir := Vector2.ZERO
@@ -206,6 +228,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity = Vector2.ZERO
 	move_and_slide()
+	_update_item_runtime(delta, velocity.length() > 0.1, global_position.distance_to(prev_position))
 	
 	# Find nearest enemy for aiming (but don't rotate player)
 	var nearest_enemy := _get_nearest_enemy()
@@ -572,7 +595,10 @@ func get_damage() -> int:
 	return int(round(dmg))
 
 func _get_final_damage(base_dmg: int) -> Dictionary:
-	var dmg = GameState.get_total_damage(base_dmg)
+	var dmg = GameState.get_total_damage(base_dmg) + _get_dynamic_flat_damage_bonus()
+	dmg = int(round(float(dmg) * _get_dynamic_damage_multiplier()))
+	if GameState.count_run_item("catastrophe_die") > 0 and GameState.roll_proc(0.02 * float(GameState.count_run_item("catastrophe_die")), GameState.count_run_item("echo_trigger")):
+		dmg *= 20
 	var is_crit = randf() < GameState.get_crit_chance()
 	if is_crit:
 		dmg = int(round(float(dmg) * GameState.get_crit_multiplier()))
@@ -580,7 +606,10 @@ func _get_final_damage(base_dmg: int) -> Dictionary:
 
 ## Includes per-weapon crit chance bonus on top of the global crit chance.
 func _get_final_damage_for_weapon(base_dmg: int, weapon_id: String) -> Dictionary:
-	var dmg = GameState.get_total_damage(base_dmg)
+	var dmg = GameState.get_total_damage(base_dmg) + _get_dynamic_flat_damage_bonus()
+	dmg = int(round(float(dmg) * _get_dynamic_damage_multiplier()))
+	if GameState.count_run_item("catastrophe_die") > 0 and GameState.roll_proc(0.02 * float(GameState.count_run_item("catastrophe_die")), GameState.count_run_item("echo_trigger")):
+		dmg *= 20
 	var crit_chance = GameState.get_crit_chance() + GameState.get_weapon_crit_chance_bonus(weapon_id)
 	var is_crit = randf() < crit_chance
 	if is_crit:
@@ -774,25 +803,39 @@ func take_damage(amount: int = 1, attacker: Node2D = null) -> void:
 	var percent_red = GameState.get_armor_percent()
 	var after_percent = float(amount) * (1.0 - percent_red)
 	var reduced = max(1, int(round(after_percent)) - GameState.get_armor())
-	
+	reduced += 50 * GameState.count_run_item("pain_furnace")
+
+	if GameState.count_run_item("mirror_sigil") > 0 and _reflect_cooldown <= 0.0 and attacker and is_instance_valid(attacker) and attacker.has_method("take_damage"):
+		_reflect_cooldown = 10.0
+		attacker.take_damage(reduced, "reflect")
+
 	health -= reduced
-	
-	# Zephyros trait: Speed halved on damage
+
 	if GameState.current_character == "speed_damage":
 		GameState.run_speed_bonus *= 0.5
-	
-	# Thorns
+
 	var thorns_pct = GameState.get_thorns_percentage()
 	if thorns_pct > 0 and attacker and is_instance_valid(attacker):
 		if attacker.has_method("take_damage"):
-			# Enemies take a percentage of the damage they deal *before* armor
 			attacker.take_damage(int(round(float(amount) * thorns_pct)), "thorns")
-	
-	# Flash red
+
+	if GameState.count_run_item("pain_furnace") > 0:
+		_add_run_bonus("damage_bonus", float(GameState.count_run_item("pain_furnace")))
+	for _i in range(GameState.count_run_item("vengeance_drum")):
+		_damage_buff_timers.append(3.0)
+	for _i in range(GameState.count_run_item("pain_lottery")):
+		_grant_random_pain_bonus()
+
+	_update_low_health_state()
+
 	sprite.modulate = Color(1, 0.3, 0.3)
 	var tween := create_tween()
 	tween.tween_property(sprite, "modulate", Color.WHITE, 0.2)
-	
+
+	if health <= 0 and GameState.has_run_item("phoenix_idol"):
+		_consume_phoenix_idol()
+		return
+
 	if health <= 0:
 		player_died.emit()
 
@@ -938,6 +981,332 @@ func _fire_machine_gun(target: Node2D) -> void:
 	if "is_crit" in b: b.is_crit = res.is_crit
 	b.weapon_source = "machine_gun"
 	get_tree().current_scene.add_child(b)
+
+func on_item_added(item_id: String) -> void:
+	if item_id == "ninja_wizard_cat" and not _ninja_cat_spawned:
+		_spawn_pet("cat", -1.0, true, 9999, 999999)
+		_ninja_cat_spawned = true
+	_update_low_health_state()
+
+func heal(amount: int) -> void:
+	if amount <= 0:
+		return
+	health = min(max_health, health + amount)
+	_update_low_health_state()
+
+func on_xp_collected(_amount: int) -> void:
+	var sap_count := GameState.count_run_item("vitality_sap")
+	if sap_count > 0:
+		heal(5 * sap_count)
+
+func on_gift_collected() -> void:
+	var sigil_count := GameState.count_run_item("giftforge_sigil")
+	if sigil_count > 0:
+		_add_run_bonus("damage_bonus", float(sigil_count))
+
+func on_chest_opened() -> void:
+	var crate_count := GameState.count_run_item("menagerie_crate")
+	for _i in range(crate_count * 3):
+		_spawn_pet("chestling", 20.0, false, 1, 10)
+
+func on_wave_completed() -> void:
+	for _i in range(GameState.count_run_item("wave_blessing")):
+		_grant_random_wave_bonus()
+
+func should_spawn_extra_xp_drop() -> bool:
+	var count := GameState.count_run_item("lesson_seed")
+	return count > 0 and GameState.roll_proc(0.10 * float(count), GameState.count_run_item("echo_trigger"))
+
+func on_enemy_hit(enemy: Node2D, actual_damage: int, source: String, is_crit: bool) -> void:
+	if actual_damage <= 0:
+		return
+
+	var lifesteal := GameState.run_lifesteal + 0.01 * float(GameState.count_run_item("vampire_tooth"))
+	if lifesteal > 0.0 and _source_can_trigger_on_hit(source):
+		heal(max(1, int(round(float(actual_damage) * lifesteal))))
+
+	if is_crit:
+		var prism_count := GameState.count_run_item("bloodletter_prism")
+		if prism_count > 0:
+			heal(prism_count)
+		var snowball_count := GameState.count_run_item("snowball_fang")
+		if snowball_count > 0:
+			_add_run_bonus("crit_chance", 0.01 * float(snowball_count))
+		var shrapnel_count := GameState.count_run_item("shrapnel_seal")
+		if shrapnel_count > 0 and GameState.roll_proc(min(1.0, 0.5 * float(shrapnel_count)), GameState.count_run_item("echo_trigger")):
+			_damage_nearby_enemies(enemy, int(round(float(actual_damage) * 0.25)), 110.0, "crit_explosion")
+		var chain_count := GameState.count_run_item("stormlink_fang")
+		if chain_count > 0 and GameState.roll_proc(0.5, GameState.count_run_item("echo_trigger")):
+			_chain_crit(enemy, actual_damage, [enemy])
+
+	var target_alive: bool = enemy.health > 0
+	if not _source_can_trigger_on_hit(source) or not target_alive:
+		return
+
+	var execute_count := GameState.count_run_item("execution_pin")
+	if execute_count > 0 and enemy.has_method("take_damage") and "max_health" in enemy:
+		enemy.take_damage(int(round(float(enemy.max_health) * 0.01 * float(execute_count))), "execute_health")
+
+	var close_bonus := _get_close_quarters_bonus(enemy)
+	if close_bonus > 0:
+		enemy.take_damage(close_bonus, "close_quarters_bonus")
+
+	var longshot_bonus := _get_longshot_bonus(enemy, actual_damage)
+	if longshot_bonus > 0:
+		enemy.take_damage(longshot_bonus, "longshot_bonus")
+
+	if _is_boss(enemy) and GameState.count_run_item("giant_slayer") > 0:
+		enemy.take_damage(int(round(float(actual_damage) * 0.10 * float(GameState.count_run_item("giant_slayer")))), "giant_slayer")
+
+	if GameState.count_run_item("ember_plague") > 0 and GameState.roll_proc(0.10 * float(GameState.count_run_item("ember_plague")), GameState.count_run_item("echo_trigger")) and enemy.has_method("apply_burn"):
+		enemy.apply_burn(max(10.0, float(actual_damage) * 0.25), 4.0)
+	if GameState.count_run_item("frostbite_needle") > 0 and GameState.roll_proc(0.01 * float(GameState.count_run_item("frostbite_needle")), GameState.count_run_item("echo_trigger")) and enemy.has_method("freeze"):
+		enemy.freeze(GameConstants.ICE_FREEZE_DURATION)
+	if GameState.count_run_item("chilling_dust") > 0 and GameState.roll_proc(0.01 * float(GameState.count_run_item("chilling_dust")), GameState.count_run_item("echo_trigger")) and enemy.has_method("apply_slow"):
+		enemy.apply_slow(0.5, 3.0)
+	if GameState.count_run_item("vampire_cape") > 0 and GameState.roll_proc(0.01 * float(GameState.count_run_item("vampire_cape")), GameState.count_run_item("echo_trigger")):
+		heal(1)
+	if GameState.count_run_item("quake_pulse") > 0 and GameState.roll_proc(0.01 * float(GameState.count_run_item("quake_pulse")), GameState.count_run_item("echo_trigger")):
+		_knockback_all_enemies()
+	if GameState.count_run_item("spirit_lantern") > 0 and GameState.roll_proc(0.01 * float(GameState.count_run_item("spirit_lantern")), GameState.count_run_item("echo_trigger")):
+		_spawn_ghost_spirits()
+	if GameState.count_run_item("shockwave_shell") > 0 and GameState.roll_proc(0.20 * float(GameState.count_run_item("shockwave_shell")), GameState.count_run_item("echo_trigger")):
+		_damage_nearby_enemies(enemy, int(round(float(actual_damage) * 0.5)), 100.0, "shockwave_shell")
+	_try_apply_curse(enemy)
+
+func on_enemy_killed(enemy: Node2D, source: String, actual_damage: int, _is_crit: bool) -> void:
+	if source == "thorns" or source == "reflect":
+		return
+
+	var trophy_count := GameState.count_run_item("trophy_heart")
+	if trophy_count > 0:
+		var desired_bonus: int = min(100 * trophy_count, int(floor(float(GameState.run_enemies_killed) / 10.0)) * trophy_count)
+		if desired_bonus > _kill_hp_bonus:
+			_add_run_bonus("max_health", float(desired_bonus - _kill_hp_bonus))
+			_kill_hp_bonus = desired_bonus
+
+	var corpse_count := GameState.count_run_item("corpse_charge")
+	if corpse_count > 0 and GameState.roll_proc(0.01 * float(corpse_count), GameState.count_run_item("echo_trigger")):
+		_damage_nearby_enemies(enemy, int(round(float(enemy.max_health) * 0.5)), 120.0, "corpse_explosion")
+
+	var kennel_count := GameState.count_run_item("spirit_kennel")
+	if kennel_count > 0 and GameState.roll_proc(0.01 * float(kennel_count), GameState.count_run_item("echo_trigger")):
+		_spawn_pet("spirit", 10.0, true, 1, 10)
+
+func _source_can_trigger_on_hit(source: String) -> bool:
+	if GameConstants.WEAPON_TRAITS.has(source):
+		return true
+	return source in ["zap", "shotgun", "sniper", "rocket", "machine_gun", "orbs", "spike_ball", "bouncing_disk", "floor_spikes", "turret", "ice_wave", "pet"]
+
+func _get_dynamic_damage_multiplier() -> float:
+	var mult := 1.0
+	if health >= max_health:
+		mult += 0.10 * float(GameState.count_run_item("pureheart_badge"))
+	var root_count := GameState.count_run_item("sentry_root")
+	if root_count > 0:
+		mult += min(1.0 * float(root_count), (_still_time / 60.0) * float(root_count))
+	mult += 0.20 * float(_damage_buff_timers.size())
+	return mult
+
+func _get_dynamic_flat_damage_bonus() -> int:
+	var bonus := 0
+	bonus += _get_visible_enemies().size() * GameState.count_run_item("crowd_fang")
+	return bonus
+
+func _update_item_runtime(delta: float, moving: bool, distance_travelled: float) -> void:
+	if GameState.count_run_item("mega_magnet") > 0:
+		_mega_magnet_timer -= delta
+		if _mega_magnet_timer <= 0.0:
+			_magnetize_all_xp()
+			_mega_magnet_timer = 25.0
+	else:
+		_mega_magnet_timer = 25.0
+
+	if moving:
+		_still_time = 0.0
+		var momentum_count := GameState.count_run_item("momentum_greaves")
+		if momentum_count > 0:
+			_momentum_speed_bonus = min(0.5 * float(momentum_count), _momentum_speed_bonus + delta * (0.5 / 120.0) * float(momentum_count))
+		var strider_count := GameState.count_run_item("striders_lesson")
+		if strider_count > 0:
+			_move_xp_timer += delta
+			while _move_xp_timer >= 5.0:
+				_move_xp_timer -= 5.0
+				GameState.add_xp(strider_count)
+	else:
+		_still_time += delta
+		_momentum_speed_bonus = 0.0
+		var stillwater_count := GameState.count_run_item("stillwater_idol")
+		if stillwater_count > 0:
+			_apply_fractional_heal(float(max_health) * 0.01 * float(stillwater_count) * delta)
+
+	if GameState.count_run_item("trail_medicine") > 0 and distance_travelled > 0.0:
+		_distance_since_heal += distance_travelled
+		while _distance_since_heal >= 1000.0:
+			_distance_since_heal -= 1000.0
+			heal(GameState.count_run_item("trail_medicine"))
+
+	_update_low_health_state()
+
+func _apply_fractional_heal(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	_item_heal_accumulator += amount
+	if _item_heal_accumulator >= 1.0:
+		var heal_amount := int(floor(_item_heal_accumulator))
+		_item_heal_accumulator -= float(heal_amount)
+		heal(heal_amount)
+
+func _add_run_bonus(stat_key: String, value: float) -> void:
+	GameState.run_gift_bonuses[stat_key] = GameState.run_gift_bonuses.get(stat_key, 0.0) + value
+	if stat_key == "max_health":
+		refresh_stats()
+
+func _update_low_health_state() -> void:
+	if max_health <= 0:
+		return
+	var is_below := float(health) / float(max_health) < 0.3
+	if is_below and not _below_health_threshold_latched and GameState.count_run_item("desperation_brand") > 0:
+		_add_run_bonus("damage_bonus", 10.0 * float(GameState.count_run_item("desperation_brand")))
+	_below_health_threshold_latched = is_below
+
+func _consume_phoenix_idol() -> void:
+	GameState.remove_run_item("phoenix_idol")
+	heal_full()
+	_freeze_all_enemies(GameConstants.ICE_FREEZE_DURATION * 2.0)
+
+func _freeze_all_enemies(duration: float) -> void:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if is_instance_valid(enemy) and enemy.has_method("freeze"):
+			enemy.freeze(duration)
+
+func _knockback_all_enemies() -> void:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if is_instance_valid(enemy) and enemy.has_method("apply_knockback"):
+			var dir: Vector2 = (enemy.global_position - global_position).normalized()
+			enemy.apply_knockback(dir * 160.0)
+
+func _get_close_quarters_bonus(enemy: Node2D) -> int:
+	var count := GameState.count_run_item("close_quarters_core")
+	if count <= 0:
+		return 0
+	var dist := global_position.distance_to(enemy.global_position)
+	var scale: float = clamp(1.0 - (dist / 250.0), 0.0, 1.0)
+	return int(round(30.0 * scale * float(count)))
+
+func _get_longshot_bonus(enemy: Node2D, base_damage: int) -> int:
+	var count := GameState.count_run_item("longshot_scope")
+	if count <= 0:
+		return 0
+	var dist := global_position.distance_to(enemy.global_position)
+	var scale: float = clamp((dist - 200.0) / 600.0, 0.0, 1.0)
+	return int(round(float(base_damage) * 0.5 * scale * float(count)))
+
+func _is_boss(enemy: Node2D) -> bool:
+	return enemy.get("enemy_type") == "Golem"
+
+func _damage_nearby_enemies(center_enemy: Node2D, damage_amount: int, radius: float, source: String) -> void:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if enemy == center_enemy or not is_instance_valid(enemy):
+			continue
+		if enemy.global_position.distance_to(center_enemy.global_position) <= radius and enemy.has_method("take_damage"):
+			enemy.take_damage(max(1, damage_amount), source)
+
+func _chain_crit(enemy: Node2D, damage_amount: int, visited: Array) -> void:
+	var next_target = _find_nearby_enemy(enemy, visited)
+	if not is_instance_valid(next_target):
+		return
+	visited.append(next_target)
+	var next_is_crit := randf() < GameState.get_crit_chance()
+	next_target.take_damage(max(1, damage_amount), "crit_chain", next_is_crit)
+	if next_is_crit and GameState.roll_proc(0.5, GameState.count_run_item("echo_trigger")):
+		_chain_crit(next_target, damage_amount, visited)
+
+func _find_nearby_enemy(from_enemy: Node2D, visited: Array) -> Node2D:
+	var nearest: Node2D = null
+	var nearest_dist := INF
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy) or enemy == from_enemy or visited.has(enemy):
+			continue
+		var dist := from_enemy.global_position.distance_squared_to(enemy.global_position)
+		if dist < nearest_dist and dist <= 160.0 * 160.0:
+			nearest_dist = dist
+			nearest = enemy
+	return nearest
+
+func _try_apply_curse(enemy: Node2D) -> void:
+	var curse_count := GameState.count_run_item("hex_nails")
+	if curse_count <= 0 or not enemy.has_method("apply_curse"):
+		return
+	if enemy.has_method("is_cursed") and enemy.is_cursed():
+		return
+	var active_curses := 0
+	for other in get_tree().get_nodes_in_group("enemies"):
+		if is_instance_valid(other) and other.has_method("is_cursed") and other.is_cursed():
+			active_curses += 1
+	if active_curses < curse_count:
+		enemy.apply_curse(9999.0)
+
+func _spawn_ghost_spirits() -> void:
+	var enemies := get_tree().get_nodes_in_group("enemies")
+	if enemies.is_empty():
+		return
+	for _i in range(5):
+		var target = enemies[randi() % enemies.size()]
+		if not is_instance_valid(target):
+			continue
+		var spirit = bullet_scene.instantiate()
+		spirit.global_position = global_position
+		var dir: Vector2 = (target.global_position - global_position).normalized()
+		spirit.direction = dir
+		spirit.rotation = dir.angle()
+		spirit.speed = 850.0
+		spirit.damage = 10
+		spirit.lifetime = 1.5
+		spirit.weapon_source = "ghost_spirit"
+		spirit.modulate = Color(0.75, 0.95, 1.0, 0.9)
+		get_tree().current_scene.add_child(spirit)
+
+func _magnetize_all_xp() -> void:
+	for xp in get_tree().get_nodes_in_group("xp_drops"):
+		if is_instance_valid(xp):
+			xp.is_magnetized = true
+			xp.player = self
+
+func _spawn_pet(pet_type: String, lifetime_value: float, invulnerable: bool, pet_health: int, pet_damage: int) -> void:
+	var pet = pet_scene.instantiate()
+	pet.pet_type = pet_type
+	pet.lifetime = lifetime_value
+	pet.invulnerable = invulnerable
+	pet.max_health = pet_health
+	pet.damage = pet_damage
+	pet.global_position = global_position + Vector2(randf_range(-40.0, 40.0), randf_range(-40.0, 40.0))
+	get_tree().current_scene.add_child(pet)
+
+func _grant_random_wave_bonus() -> void:
+	var options := [
+		{"key": "damage_multiplier", "value": 0.05},
+		{"key": "max_health", "value": 5.0},
+		{"key": "speed_multiplier", "value": 0.05},
+		{"key": "atkspd_multiplier", "value": 0.05},
+		{"key": "crit_chance", "value": 0.05}
+	]
+	_apply_random_bonus_option(options)
+
+func _grant_random_pain_bonus() -> void:
+	var options := [
+		{"key": "damage_bonus", "value": 1.0},
+		{"key": "max_health", "value": 1.0},
+		{"key": "armor", "value": 1.0},
+		{"key": "speed_multiplier", "value": 0.01}
+	]
+	_apply_random_bonus_option(options)
+
+func _apply_random_bonus_option(options: Array) -> void:
+	if options.is_empty():
+		return
+	var option: Dictionary = options[randi() % options.size()]
+	_add_run_bonus(option.get("key", "damage_bonus"), float(option.get("value", 0.0)))
 
 func trigger_rocket_blast() -> void:
 	var blast_pos = global_position
