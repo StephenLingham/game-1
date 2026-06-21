@@ -1,4 +1,4 @@
-﻿extends Node
+extends Node
 # Persistent meta-progression + run-state container.
 
 const SAVE_PATH := "user://save.json"
@@ -25,6 +25,13 @@ var max_levels_reached: Dictionary = {} # item_id -> reached_max (bool)
 var selected_starter_weapon: String = "zap"
 var lifetime_upgrades: Dictionary = {} # id -> total upgrades across all runs
 var lifetime_item_picks: Dictionary = {} # id -> total picks across all runs
+var best_run_player_level: int = 1
+var best_run_enemies_killed: int = 0
+var best_run_gifts_collected: int = 0
+var best_run_chests_opened: int = 0
+var best_run_shrines_activated: int = 0
+var best_weapon_level_reached: int = 0
+var best_aura_level_reached: int = 0
 
 # Permanent Upgrades
 var perm_damage_level: int = 0
@@ -85,6 +92,9 @@ var run_level_name: String = "Level 1"
 var run_enemies_killed: int = 0
 var run_xp_collected: int = 0
 var run_crystals_collected: int = 0
+var run_gifts_collected: int = 0
+var run_chests_opened: int = 0
+var run_shrines_activated: int = 0
 var run_gems_collected: int:
 	get:
 		return run_crystals_collected
@@ -106,6 +116,13 @@ func _ready() -> void:
 		lifetime_chests_opened = 0
 		completed_levels = []
 		aura_max_levels_reached = {}
+		best_run_player_level = 1
+		best_run_enemies_killed = 0
+		best_run_gifts_collected = 0
+		best_run_chests_opened = 0
+		best_run_shrines_activated = 0
+		best_weapon_level_reached = 0
+		best_aura_level_reached = 0
 		_reset_all_perm_levels()
 		changed = true
 		print("DEBUG: All data reset.")
@@ -162,6 +179,13 @@ func reset_all_data() -> void:
 	max_levels_reached = {}
 	lifetime_upgrades = {}
 	lifetime_item_picks = {}
+	best_run_player_level = 1
+	best_run_enemies_killed = 0
+	best_run_gifts_collected = 0
+	best_run_chests_opened = 0
+	best_run_shrines_activated = 0
+	best_weapon_level_reached = 0
+	best_aura_level_reached = 0
 	_reset_all_perm_levels()
 	save()
 
@@ -195,6 +219,9 @@ func reset_run() -> void:
 	run_enemies_killed = 0
 	run_xp_collected = 0
 	run_crystals_collected = 0
+	run_gifts_collected = 0
+	run_chests_opened = 0
+	run_shrines_activated = 0
 	run_damage_stats = {}
 	run_unlocked_items = []
 	run_items = []
@@ -821,7 +848,22 @@ func record_kill(weapon: String) -> void:
 
 func record_chest_opened() -> void:
 	lifetime_chests_opened += 1
+	run_chests_opened += 1
 	_check_unlocks()
+	save()
+
+func record_gift_collected() -> void:
+	run_gifts_collected += 1
+
+func record_shrine_activated() -> void:
+	run_shrines_activated += 1
+
+func finalize_run_stats() -> void:
+	best_run_player_level = max(best_run_player_level, run_level)
+	best_run_enemies_killed = max(best_run_enemies_killed, run_enemies_killed)
+	best_run_gifts_collected = max(best_run_gifts_collected, run_gifts_collected)
+	best_run_chests_opened = max(best_run_chests_opened, run_chests_opened)
+	best_run_shrines_activated = max(best_run_shrines_activated, run_shrines_activated)
 	save()
 
 func record_ability_upgrade(id: String, level: int) -> void:
@@ -829,9 +871,12 @@ func record_ability_upgrade(id: String, level: int) -> void:
 	lifetime_upgrades[id] = lifetime_upgrades.get(id, 0) + 1
 	
 	if id.begins_with("aura_"):
+		best_aura_level_reached = max(best_aura_level_reached, level)
 		var current_max = aura_max_levels_reached.get(id, 0)
 		if level > current_max:
 			aura_max_levels_reached[id] = level
+	else:
+		best_weapon_level_reached = max(best_weapon_level_reached, level)
 	
 	# General max level tracking for sealing
 	var max_lvl = 5 # Default
@@ -846,7 +891,7 @@ func record_ability_upgrade(id: String, level: int) -> void:
 	save()
 
 func _is_ability_at_max(id: String, level: int) -> bool:
-	return level >= 20
+	return false
 
 func is_item_unlocked(id: String) -> bool:
 	if GameConstants.DEBUG_UNLOCK_ALL_WEAPONS:
@@ -968,7 +1013,14 @@ func save() -> void:
 		"current_character": current_character,
 		"max_levels_reached": max_levels_reached,
 		"lifetime_upgrades": lifetime_upgrades,
-		"lifetime_item_picks": lifetime_item_picks
+		"lifetime_item_picks": lifetime_item_picks,
+		"best_run_player_level": best_run_player_level,
+		"best_run_enemies_killed": best_run_enemies_killed,
+		"best_run_gifts_collected": best_run_gifts_collected,
+		"best_run_chests_opened": best_run_chests_opened,
+		"best_run_shrines_activated": best_run_shrines_activated,
+		"best_weapon_level_reached": best_weapon_level_reached,
+		"best_aura_level_reached": best_aura_level_reached
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -1016,4 +1068,11 @@ func load_save() -> void:
 	max_levels_reached = parsed.get("max_levels_reached", {})
 	lifetime_upgrades = parsed.get("lifetime_upgrades", {})
 	lifetime_item_picks = parsed.get("lifetime_item_picks", {})
+	best_run_player_level = int(parsed.get("best_run_player_level", 1))
+	best_run_enemies_killed = int(parsed.get("best_run_enemies_killed", 0))
+	best_run_gifts_collected = int(parsed.get("best_run_gifts_collected", 0))
+	best_run_chests_opened = int(parsed.get("best_run_chests_opened", 0))
+	best_run_shrines_activated = int(parsed.get("best_run_shrines_activated", 0))
+	best_weapon_level_reached = int(parsed.get("best_weapon_level_reached", 0))
+	best_aura_level_reached = int(parsed.get("best_aura_level_reached", 0))
 

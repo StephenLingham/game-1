@@ -67,6 +67,7 @@ func _collect() -> void:
 	GameState.run_gift_bonuses["luck"] = current_luck + luck_boost
 
 	GameState.add_xp(GameConstants.GIFT_XP_AMOUNT)
+	GameState.record_gift_collected()
 
 	var player = get_tree().get_first_node_in_group("player")
 	if player:

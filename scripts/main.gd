@@ -227,7 +227,7 @@ func _exit_tree() -> void:
 func _on_level_up(new_level: int) -> void:
 	_generate_shop_options()
 	if current_shop_options.is_empty():
-		# Maxed out abilities! Reward with a free item from chests instead.
+		# No valid ability offers left, so reward with a free item instead.
 		show_item_window()
 		return
 	open_shop(new_level)
@@ -513,10 +513,6 @@ func _generate_shop_options() -> void:
 		if GameState.sealed_items.has(abi.id): continue
 		
 		var level = GameState.run_abilities.get(abi.id, 0)
-		var max_level = _get_max_level(abi.id)
-		
-		# Skip if maxed
-		if level >= max_level: continue
 		
 		# Capacity checks
 		if level == 0:
@@ -610,7 +606,6 @@ func _refresh_shop_ui() -> void:
 		if not abi_data: continue
 		
 		var level = GameState.run_abilities[abi_id]
-		var max_lvl = _get_max_level(abi_id)
 		
 		var panel = PanelContainer.new()
 		var vbox = VBoxContainer.new()
@@ -620,9 +615,7 @@ func _refresh_shop_ui() -> void:
 		panel.add_child(vbox)
 		
 		var lbl = Label.new()
-		var level_text = "(Lvl %d)" % level
-		if level >= max_lvl: level_text = "(MAX)"
-		lbl.text = abi_data.name + "\n" + level_text
+		lbl.text = abi_data.name + "\n(Lvl %d)" % level
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.add_theme_font_size_override("font_size", 18)
 		vbox.add_child(lbl)
@@ -719,7 +712,6 @@ func _refresh_shop_ui() -> void:
 		
 		# --- Upgrade button ---
 		var buy_btn = Button.new()
-		var max_lvl = _get_max_level(abi.id)
 		
 		var is_limit_reached = false
 		if level == 0:
@@ -734,10 +726,7 @@ func _refresh_shop_ui() -> void:
 			else:
 				is_limit_reached = cur_abi >= GameState.get_ability_limit()
 		
-		if level >= max_lvl:
-			buy_btn.text = "MAXED"
-			buy_btn.disabled = true
-		elif is_limit_reached:
+		if is_limit_reached:
 			buy_btn.text = "Limit Reached"
 			buy_btn.disabled = true
 		else:
@@ -767,9 +756,6 @@ func _refresh_shop_ui() -> void:
 	reroll_btn.pressed.connect(_reroll_shop)
 	footer_box.add_child(reroll_btn)
 
-func _get_max_level(id: String) -> int:
-	return 20
-
 func _create_shop_weapon_icon(weapon_id: String, scale: float = 0.75) -> TextureRect:
 	if not SHOP_WEAPON_ICONS.has(weapon_id):
 		return null
@@ -784,22 +770,20 @@ func _create_shop_weapon_icon(weapon_id: String, scale: float = 0.75) -> Texture
 func _buy_ability(id: String, upgrade_roll: Dictionary = {}) -> void:
 	var level = GameState.run_abilities.get(id, 0)
 	
-	if level < _get_max_level(id):
-		GameState.run_abilities[id] = level + 1
-		GameState.record_ability_upgrade(id, level + 1)
-		if id.begins_with("aura_"):
-			if not upgrade_roll.is_empty():
-				# Upgrade (level > 0): apply the rarity-scaled value
-				GameState.add_aura_rarity_bonus(id, upgrade_roll["value"])
-			else:
-				# First purchase (level 0→1): apply flat base value at Common
-				var aura_data = GameConstants.AURAS.get(id, {})
-				if not aura_data.is_empty():
-					GameState.add_aura_rarity_bonus(id, aura_data.value)
-		elif not upgrade_roll.is_empty():
-			GameState.add_weapon_trait(id, upgrade_roll["trait"], upgrade_roll["value"])
-		_close_shop()
-
+	GameState.run_abilities[id] = level + 1
+	GameState.record_ability_upgrade(id, level + 1)
+	if id.begins_with("aura_"):
+		if not upgrade_roll.is_empty():
+			# Upgrade (level > 0): apply the rarity-scaled value
+			GameState.add_aura_rarity_bonus(id, upgrade_roll["value"])
+		else:
+			# First purchase (level 0->1): apply flat base value at Common
+			var aura_data = GameConstants.AURAS.get(id, {})
+			if not aura_data.is_empty():
+				GameState.add_aura_rarity_bonus(id, aura_data.value)
+	elif not upgrade_roll.is_empty():
+		GameState.add_weapon_trait(id, upgrade_roll["trait"], upgrade_roll["value"])
+	_close_shop()
 
 func _reroll_shop() -> void:
 	if GameState.run_reroll_count > 0:
@@ -846,6 +830,7 @@ func end_run(won: bool, waves_completed: int) -> void:
 	for id in GameState.run_unlocked_items:
 		newly_unlocked.append(id)
 	GameState.finalize_run_unlocks()
+	GameState.finalize_run_stats()
 	
 	GameState.award_crystals(crystals_reward)
 

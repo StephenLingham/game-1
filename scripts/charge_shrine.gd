@@ -36,6 +36,7 @@ func _process(delta: float) -> void:
 		if charge_progress >= charge_time:
 			_is_complete = true
 			monitoring = false
+			GameState.record_shrine_activated()
 			emit_signal("charged", self)
 	else:
 		if charge_progress > 0.0:
