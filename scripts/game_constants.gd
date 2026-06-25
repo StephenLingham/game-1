@@ -76,7 +76,7 @@ const ENEMY_FAST_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_FAST_XP_MIN: int = 8
 const ENEMY_FAST_XP_MAX: int = 12
 
-const ENEMY_BIG_SPRITE_SCALE: float = 0.12
+const ENEMY_BIG_SPRITE_SCALE: float = 0.15
 const ENEMY_BIG_SPEED: float = 60.0
 const ENEMY_BIG_HEALTH: int = 400
 const ENEMY_BIG_DAMAGE: int = 40

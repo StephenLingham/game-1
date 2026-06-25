@@ -28,7 +28,7 @@ var _knockback_velocity: Vector2 = Vector2.ZERO
 var _death_processed: bool = false
 const TEXTURE_NORMAL = preload("res://assets/Enemies/enemy1-cropped.png")
 const TEXTURE_FAST = preload("res://assets/Enemies/wisp.png")
-const TEXTURE_BIG = preload("res://assets/Enemies/enemy3-cropped.png")
+const TEXTURE_BIG = preload("res://assets/Enemies/dark-creature.png")
 const TEXTURE_TREE = preload("res://assets/Enemies/enemy6.png")
 const TEXTURE_ELITE = preload("res://assets/Enemies/enemy5.png")
 const TEXTURE_GOLEM = preload("res://assets/Enemies/stone-golem-3.png")
@@ -139,7 +139,7 @@ func _physics_process(delta: float) -> void:
 		var dir := (target.global_position - global_position).normalized()
 		desired_velocity = dir * speed * _slow_factor
 		if desired_velocity.x != 0.0:
-			if enemy_type == "Tree" or enemy_type == "Elite" or enemy_type == "Fast":
+			if enemy_type == "Tree" or enemy_type == "Elite" or enemy_type == "Fast" or enemy_type == "Big":
 				sprite.flip_h = desired_velocity.x < 0
 			else:
 				sprite.flip_h = desired_velocity.x > 0
