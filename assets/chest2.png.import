@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bbar1blhao1ce"
-path="res://.godot/imported/124ae390-f6fb-46de-aaca-c25fe80cffde.jpg-8d2107f12d3808870d6c1a992917d00d.ctex"
+uid="uid://b2n5sx0ktsbvo"
+path="res://.godot/imported/chest2.png-2f07fc519e4f7f4d3a6f0de6e0f18918.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Enemies/124ae390-f6fb-46de-aaca-c25fe80cffde.jpg"
-dest_files=["res://.godot/imported/124ae390-f6fb-46de-aaca-c25fe80cffde.jpg-8d2107f12d3808870d6c1a992917d00d.ctex"]
+source_file="res://assets/chest2.png"
+dest_files=["res://.godot/imported/chest2.png-2f07fc519e4f7f4d3a6f0de6e0f18918.ctex"]
 
 [params]
 

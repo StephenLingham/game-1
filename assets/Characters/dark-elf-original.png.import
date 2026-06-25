@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dq0rn14vk23oj"
-path="res://.godot/imported/2nrqap2nrqap2nrq.png-c63ec161195a2fda3c6b272f978908bd.ctex"
+uid="uid://d3lsv3fjjoq4u"
+path="res://.godot/imported/dark-elf-original.png-01de7df0f8658e20b3c00631b75c5f4f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Enemies/2nrqap2nrqap2nrq.png"
-dest_files=["res://.godot/imported/2nrqap2nrqap2nrq.png-c63ec161195a2fda3c6b272f978908bd.ctex"]
+source_file="res://assets/Characters/dark-elf-original.png"
+dest_files=["res://.godot/imported/dark-elf-original.png-01de7df0f8658e20b3c00631b75c5f4f.ctex"]
 
 [params]
 

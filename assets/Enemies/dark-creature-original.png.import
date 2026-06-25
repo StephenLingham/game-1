@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4l6jg36rywvf"
-path="res://.godot/imported/7cc9c041-2969-4db7-bfa6-640fee532724.png-7426e2c115eb27b6b4b94fcddbcdb2b7.ctex"
+uid="uid://dxgv5k7nhepdb"
+path="res://.godot/imported/dark-creature-original.png-52c8114f280e8b5cf067e4adcc9752b3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Enemies/7cc9c041-2969-4db7-bfa6-640fee532724.png"
-dest_files=["res://.godot/imported/7cc9c041-2969-4db7-bfa6-640fee532724.png-7426e2c115eb27b6b4b94fcddbcdb2b7.ctex"]
+source_file="res://assets/Enemies/dark-creature-original.png"
+dest_files=["res://.godot/imported/dark-creature-original.png-52c8114f280e8b5cf067e4adcc9752b3.ctex"]
 
 [params]
 

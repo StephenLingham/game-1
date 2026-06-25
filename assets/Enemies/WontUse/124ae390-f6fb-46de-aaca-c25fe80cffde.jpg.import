@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cwyui5j2vl3mp"
-path="res://.godot/imported/23a5007c-e82b-47ed-9659-6d321d8a16b0.png-3b4d9282e512e2d69ab35847a7dda504.ctex"
+uid="uid://bbar1blhao1ce"
+path="res://.godot/imported/124ae390-f6fb-46de-aaca-c25fe80cffde.jpg-e02725db2c1b66e09fb96a6e523e410e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Enemies/23a5007c-e82b-47ed-9659-6d321d8a16b0.png"
-dest_files=["res://.godot/imported/23a5007c-e82b-47ed-9659-6d321d8a16b0.png-3b4d9282e512e2d69ab35847a7dda504.ctex"]
+source_file="res://assets/Enemies/WontUse/124ae390-f6fb-46de-aaca-c25fe80cffde.jpg"
+dest_files=["res://.godot/imported/124ae390-f6fb-46de-aaca-c25fe80cffde.jpg-e02725db2c1b66e09fb96a6e523e410e.ctex"]
 
 [params]
 
