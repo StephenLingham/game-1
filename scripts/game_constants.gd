@@ -50,7 +50,7 @@ const WAVE_BASE_SPAWN_WAIT: float = 0.75
 const WAVE_MIN_SPAWN_WAIT: float = 0.25
 const WAVE_SPAWN_WAIT_DECREMENT: float = 0.05
 const WAVE_3_SPAWN_WAIT: float = 0.10
-const WAVE_7_CLUMP_WAIT: float = 3.0
+const WAVE_7_CLUMP_WAIT: float = 0.2
 const WAVE_8_TREE_SPAWN_WAIT: float = 0.08
 
 # Enemy Probabilities
@@ -112,7 +112,7 @@ const ENEMY_GOLEM_XP_MAX: int = 120
 
 const ENEMY_BOSS_SPRITE_SCALE: float = 0.22
 const ENEMY_BOSS_SPEED: float = 45.0
-const ENEMY_BOSS_HEALTH: int = 10000
+const ENEMY_BOSS_HEALTH: int = 50000
 const ENEMY_BOSS_DAMAGE: int = 55
 const ENEMY_BOSS_ATTACK_COOLDOWN: float = 1.2
 const ENEMY_BOSS_XP_MIN: int = 250

@@ -193,6 +193,7 @@ func take_damage(amount: int = 1, source: String = "", is_crit: bool = false) ->
 		GameState.record_enemy_killed()
 		if enemy_type == "Boss":
 			GameState.run_boss_killed = true
+			GameState.record_boss_kill()
 		if source != "":
 			GameState.record_kill(source)
 		enemy_killed.emit()

@@ -22,6 +22,8 @@ func _ready() -> void:
 	_add_stat_row("Total enemies killed", str(GameState.lifetime_enemies_killed_total))
 	for level_name in ["Level 1", "Level 2", "Level 3"]:
 		_add_stat_row("Enemies killed on " + level_name, str(GameState.lifetime_enemies_killed_by_level.get(level_name, 0)))
+	for level_name in ["Level 1", "Level 2", "Level 3"]:
+		_add_stat_row("Fastest boss kill on " + level_name, _format_boss_kill_time(GameState.fastest_boss_kill_by_level.get(level_name, -1.0)))
 	_add_stat_row("Successful runs completed", str(GameState.lifetime_successful_runs))
 	back_button.pressed.connect(_on_back_pressed)
 
@@ -46,3 +48,8 @@ func _format_seconds(seconds_value: float) -> String:
 	if hours > 0:
 		return "%dh %dm %ds" % [hours, minutes, seconds]
 	return "%dm %ds" % [minutes, seconds]
+
+func _format_boss_kill_time(seconds_value: float) -> String:
+	if seconds_value < 0.0:
+		return "-"
+	return "%.1fs" % seconds_value

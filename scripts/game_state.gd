@@ -34,6 +34,7 @@ var best_weapon_level_reached: int = 0
 var best_aura_level_reached: int = 0
 var lifetime_enemies_killed_total: int = 0
 var lifetime_enemies_killed_by_level: Dictionary = {"Level 1": 0, "Level 2": 0, "Level 3": 0}
+var fastest_boss_kill_by_level: Dictionary = {"Level 1": -1.0, "Level 2": -1.0, "Level 3": -1.0}
 var lifetime_successful_runs: int = 0
 var total_game_seconds: float = 0.0
 var total_run_seconds: float = 0.0
@@ -108,6 +109,8 @@ var run_gems_collected: int:
 		run_crystals_collected = value
 var run_damage_stats: Dictionary = {} # ability_id -> damage
 var run_boss_killed: bool = false
+var run_elapsed_seconds: float = 0.0
+var run_boss_spawn_elapsed: float = -1.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -133,6 +136,7 @@ func _ready() -> void:
 		best_aura_level_reached = 0
 		lifetime_enemies_killed_total = 0
 		lifetime_enemies_killed_by_level = {"Level 1": 0, "Level 2": 0, "Level 3": 0}
+		fastest_boss_kill_by_level = {"Level 1": -1.0, "Level 2": -1.0, "Level 3": -1.0}
 		lifetime_successful_runs = 0
 		total_game_seconds = 0.0
 		total_run_seconds = 0.0
@@ -201,6 +205,7 @@ func reset_all_data() -> void:
 	best_aura_level_reached = 0
 	lifetime_enemies_killed_total = 0
 	lifetime_enemies_killed_by_level = {"Level 1": 0, "Level 2": 0, "Level 3": 0}
+	fastest_boss_kill_by_level = {"Level 1": -1.0, "Level 2": -1.0, "Level 3": -1.0}
 	lifetime_successful_runs = 0
 	total_game_seconds = 0.0
 	total_run_seconds = 0.0
@@ -242,6 +247,8 @@ func reset_run() -> void:
 	run_shrines_activated = 0
 	run_damage_stats = {}
 	run_boss_killed = false
+	run_elapsed_seconds = 0.0
+	run_boss_spawn_elapsed = -1.0
 	run_unlocked_items = []
 	run_items = []
 
@@ -282,7 +289,9 @@ func _process(delta: float) -> void:
 		save()
 
 func track_run_time(delta: float) -> void:
-	total_run_seconds += max(delta, 0.0)
+	var safe_delta: float = max(delta, 0.0)
+	total_run_seconds += safe_delta
+	run_elapsed_seconds += safe_delta
 
 func add_xp(amount: int) -> void:
 	# Apply the XP multiplier from permanent upgrades and auras
@@ -876,6 +885,19 @@ func record_enemy_killed() -> void:
 	var level_name := run_level_name if run_level_name != "" else "Level 1"
 	lifetime_enemies_killed_by_level[level_name] = int(lifetime_enemies_killed_by_level.get(level_name, 0)) + 1
 
+func record_boss_spawn() -> void:
+	run_boss_spawn_elapsed = run_elapsed_seconds
+
+func record_boss_kill() -> void:
+	if run_boss_spawn_elapsed < 0.0:
+		return
+	var level_name := run_level_name if run_level_name != "" else "Level 1"
+	var kill_time: float = max(0.0, run_elapsed_seconds - run_boss_spawn_elapsed)
+	var current_best := float(fastest_boss_kill_by_level.get(level_name, -1.0))
+	if current_best < 0.0 or kill_time < current_best:
+		fastest_boss_kill_by_level[level_name] = kill_time
+		save()
+
 func record_kill(weapon: String) -> void:
 	lifetime_kills[weapon] = lifetime_kills.get(weapon, 0) + 1
 	_check_unlocks()
@@ -1066,6 +1088,7 @@ func save() -> void:
 		"best_aura_level_reached": best_aura_level_reached,
 		"lifetime_enemies_killed_total": lifetime_enemies_killed_total,
 		"lifetime_enemies_killed_by_level": lifetime_enemies_killed_by_level,
+		"fastest_boss_kill_by_level": fastest_boss_kill_by_level,
 		"lifetime_successful_runs": lifetime_successful_runs,
 		"total_game_seconds": total_game_seconds,
 		"total_run_seconds": total_run_seconds
@@ -1126,6 +1149,8 @@ func load_save() -> void:
 	lifetime_enemies_killed_total = int(parsed.get("lifetime_enemies_killed_total", _sum_lifetime_kills()))
 	lifetime_enemies_killed_by_level = parsed.get("lifetime_enemies_killed_by_level", {"Level 1": 0, "Level 2": 0, "Level 3": 0})
 	_ensure_level_kill_keys()
+	fastest_boss_kill_by_level = parsed.get("fastest_boss_kill_by_level", {"Level 1": -1.0, "Level 2": -1.0, "Level 3": -1.0})
+	_ensure_boss_kill_keys()
 	lifetime_successful_runs = int(parsed.get("lifetime_successful_runs", 0))
 	total_game_seconds = float(parsed.get("total_game_seconds", 0.0))
 	total_run_seconds = float(parsed.get("total_run_seconds", 0.0))
@@ -1141,3 +1166,8 @@ func _ensure_level_kill_keys() -> void:
 	for level_name in ["Level 1", "Level 2", "Level 3"]:
 		if not lifetime_enemies_killed_by_level.has(level_name):
 			lifetime_enemies_killed_by_level[level_name] = 0
+
+func _ensure_boss_kill_keys() -> void:
+	for level_name in ["Level 1", "Level 2", "Level 3"]:
+		if not fastest_boss_kill_by_level.has(level_name):
+			fastest_boss_kill_by_level[level_name] = -1.0

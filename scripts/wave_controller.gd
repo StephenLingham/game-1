@@ -173,18 +173,25 @@ func _spawn_boss() -> void:
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	var center: Vector2 = player.global_position if player else arena_rect.get_center()
 	var spawn_pos: Vector2 = _clamp_to_arena(center + Vector2(0, -280), 70.0)
+	GameState.record_boss_spawn()
 	_spawn_enemy({"scene": enemy_scene, "type": "Boss"}, spawn_pos, true)
 
 func _spawn_tree_circle() -> void:
 	var player = get_tree().get_first_node_in_group("player")
 	if not player:
 		return
-	var radii: Array[float] = [120.0, 160.0, 200.0]
+	var viewport_size := get_viewport().get_visible_rect().size
+	var outer_radius: float = max(620.0, viewport_size.length() * 0.55)
+	var row_spacing := 40.0
+	var radii: Array[float] = []
+	for row in range(10):
+		radii.append(outer_radius - (row_spacing * float(9 - row)))
 	for radius: float in radii:
 		var count: int = max(12, int(round(TAU * radius / 45.0)))
 		for i in range(count):
-			var angle := TAU * float(i) / float(count)
-			var pos: Vector2 = player.global_position + Vector2(cos(angle), sin(angle)) * radius
+			var angle: float = TAU * ((float(i) + randf_range(-0.22, 0.22)) / float(count))
+			var jittered_radius: float = radius + randf_range(-16.0, 16.0)
+			var pos: Vector2 = player.global_position + Vector2(cos(angle), sin(angle)) * jittered_radius
 			_spawn_enemy({"scene": enemy_tree_scene, "type": ""}, _clamp_to_arena(pos))
 
 func _spawn_clump_in_front_of_player() -> void:
@@ -197,7 +204,9 @@ func _spawn_clump_in_front_of_player() -> void:
 	else:
 		var angle := randf() * TAU
 		dir = Vector2(cos(angle), sin(angle))
-	var clump_center: Vector2 = _clamp_to_arena(player.global_position + dir * 300.0)
+	var viewport_size := get_viewport().get_visible_rect().size
+	var clump_distance: float = max(360.0, min(viewport_size.x, viewport_size.y) * 0.48)
+	var clump_center: Vector2 = _clamp_to_arena(player.global_position + dir * clump_distance)
 	for i in range(10):
 		var offset: Vector2 = Vector2(randf_range(-45.0, 45.0), randf_range(-45.0, 45.0))
 		_spawn_enemy({"scene": enemy_tree_scene, "type": ""}, _clamp_to_arena(clump_center + offset))
