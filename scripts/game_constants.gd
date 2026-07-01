@@ -112,7 +112,7 @@ const ENEMY_GOLEM_XP_MAX: int = 120
 
 const ENEMY_BOSS_SPRITE_SCALE: float = 0.22
 const ENEMY_BOSS_SPEED: float = 45.0
-const ENEMY_BOSS_HEALTH: int = 50000
+const ENEMY_BOSS_HEALTH: int = 30000
 const ENEMY_BOSS_DAMAGE: int = 55
 const ENEMY_BOSS_ATTACK_COOLDOWN: float = 1.2
 const ENEMY_BOSS_XP_MIN: int = 250
