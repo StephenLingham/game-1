@@ -32,6 +32,12 @@ var best_run_chests_opened: int = 0
 var best_run_shrines_activated: int = 0
 var best_weapon_level_reached: int = 0
 var best_aura_level_reached: int = 0
+var lifetime_enemies_killed_total: int = 0
+var lifetime_enemies_killed_by_level: Dictionary = {"Level 1": 0, "Level 2": 0, "Level 3": 0}
+var lifetime_successful_runs: int = 0
+var total_game_seconds: float = 0.0
+var total_run_seconds: float = 0.0
+var _time_save_accumulator: float = 0.0
 
 # Permanent Upgrades
 var perm_damage_level: int = 0
@@ -101,8 +107,10 @@ var run_gems_collected: int:
 	set(value):
 		run_crystals_collected = value
 var run_damage_stats: Dictionary = {} # ability_id -> damage
+var run_boss_killed: bool = false
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	load_save()
 	
 	var changed := false
@@ -123,6 +131,11 @@ func _ready() -> void:
 		best_run_shrines_activated = 0
 		best_weapon_level_reached = 0
 		best_aura_level_reached = 0
+		lifetime_enemies_killed_total = 0
+		lifetime_enemies_killed_by_level = {"Level 1": 0, "Level 2": 0, "Level 3": 0}
+		lifetime_successful_runs = 0
+		total_game_seconds = 0.0
+		total_run_seconds = 0.0
 		_reset_all_perm_levels()
 		changed = true
 		print("DEBUG: All data reset.")
@@ -186,6 +199,11 @@ func reset_all_data() -> void:
 	best_run_shrines_activated = 0
 	best_weapon_level_reached = 0
 	best_aura_level_reached = 0
+	lifetime_enemies_killed_total = 0
+	lifetime_enemies_killed_by_level = {"Level 1": 0, "Level 2": 0, "Level 3": 0}
+	lifetime_successful_runs = 0
+	total_game_seconds = 0.0
+	total_run_seconds = 0.0
 	_reset_all_perm_levels()
 	save()
 
@@ -223,6 +241,7 @@ func reset_run() -> void:
 	run_chests_opened = 0
 	run_shrines_activated = 0
 	run_damage_stats = {}
+	run_boss_killed = false
 	run_unlocked_items = []
 	run_items = []
 
@@ -254,6 +273,16 @@ func _apply_initial_character_traits() -> void:
 		"tank":
 			# Handled in player.refresh_stats (slow)
 			pass
+
+func _process(delta: float) -> void:
+	total_game_seconds += max(delta, 0.0)
+	_time_save_accumulator += max(delta, 0.0)
+	if _time_save_accumulator >= 10.0:
+		_time_save_accumulator = 0.0
+		save()
+
+func track_run_time(delta: float) -> void:
+	total_run_seconds += max(delta, 0.0)
 
 func add_xp(amount: int) -> void:
 	# Apply the XP multiplier from permanent upgrades and auras
@@ -841,9 +870,19 @@ func buy_perm_upgrade(property: String) -> bool:
 		return true
 	return false
 
+func record_enemy_killed() -> void:
+	run_enemies_killed += 1
+	lifetime_enemies_killed_total += 1
+	var level_name := run_level_name if run_level_name != "" else "Level 1"
+	lifetime_enemies_killed_by_level[level_name] = int(lifetime_enemies_killed_by_level.get(level_name, 0)) + 1
+
 func record_kill(weapon: String) -> void:
 	lifetime_kills[weapon] = lifetime_kills.get(weapon, 0) + 1
 	_check_unlocks()
+	save()
+
+func record_successful_run() -> void:
+	lifetime_successful_runs += 1
 	save()
 
 func record_chest_opened() -> void:
@@ -901,6 +940,10 @@ func is_item_unlocked(id: String) -> bool:
 	if id.begins_with("aura_"):
 		return unlocked_auras.has(id)
 	return unlocked_items.has(id)
+
+func discard_run_unlocks() -> void:
+	run_unlocked_items = []
+	save()
 
 func finalize_run_unlocks() -> void:
 	for item in run_unlocked_items:
@@ -1020,7 +1063,12 @@ func save() -> void:
 		"best_run_chests_opened": best_run_chests_opened,
 		"best_run_shrines_activated": best_run_shrines_activated,
 		"best_weapon_level_reached": best_weapon_level_reached,
-		"best_aura_level_reached": best_aura_level_reached
+		"best_aura_level_reached": best_aura_level_reached,
+		"lifetime_enemies_killed_total": lifetime_enemies_killed_total,
+		"lifetime_enemies_killed_by_level": lifetime_enemies_killed_by_level,
+		"lifetime_successful_runs": lifetime_successful_runs,
+		"total_game_seconds": total_game_seconds,
+		"total_run_seconds": total_run_seconds
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -1075,4 +1123,21 @@ func load_save() -> void:
 	best_run_shrines_activated = int(parsed.get("best_run_shrines_activated", 0))
 	best_weapon_level_reached = int(parsed.get("best_weapon_level_reached", 0))
 	best_aura_level_reached = int(parsed.get("best_aura_level_reached", 0))
+	lifetime_enemies_killed_total = int(parsed.get("lifetime_enemies_killed_total", _sum_lifetime_kills()))
+	lifetime_enemies_killed_by_level = parsed.get("lifetime_enemies_killed_by_level", {"Level 1": 0, "Level 2": 0, "Level 3": 0})
+	_ensure_level_kill_keys()
+	lifetime_successful_runs = int(parsed.get("lifetime_successful_runs", 0))
+	total_game_seconds = float(parsed.get("total_game_seconds", 0.0))
+	total_run_seconds = float(parsed.get("total_run_seconds", 0.0))
 
+
+func _sum_lifetime_kills() -> int:
+	var total := 0
+	for weapon in lifetime_kills.keys():
+		total += int(lifetime_kills.get(weapon, 0))
+	return total
+
+func _ensure_level_kill_keys() -> void:
+	for level_name in ["Level 1", "Level 2", "Level 3"]:
+		if not lifetime_enemies_killed_by_level.has(level_name):
+			lifetime_enemies_killed_by_level[level_name] = 0

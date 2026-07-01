@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 signal enemy_killed
 
-@export_enum("Normal", "Fast", "Big", "Tree", "Elite", "Golem") var enemy_type: String = "Normal"
+@export_enum("Normal", "Fast", "Big", "Tree", "Elite", "Golem", "Boss") var enemy_type: String = "Normal"
 
 var speed: float
 var health: int
@@ -26,14 +26,20 @@ var _curse_timer: float = 0.0
 var _curse_accumulator: float = 0.0
 var _knockback_velocity: Vector2 = Vector2.ZERO
 var _death_processed: bool = false
+var _boss_health_bar: Node2D = null
+var _boss_health_fill: ColorRect = null
+var _boss_health_label: Label = null
 const TEXTURE_NORMAL = preload("res://assets/Enemies/enemy1-cropped.png")
 const TEXTURE_FAST = preload("res://assets/Enemies/wisp.png")
 const TEXTURE_BIG = preload("res://assets/Enemies/dark-creature.png")
 const TEXTURE_TREE = preload("res://assets/Enemies/enemy6.png")
 const TEXTURE_ELITE = preload("res://assets/Enemies/enemy5.png")
 const TEXTURE_GOLEM = preload("res://assets/Enemies/stone-golem-3.png")
+const BOSS_TEXTURE_PATH: String = "res://assets/Enemies/Bosses/fox-boss.png"
 
 @onready var sprite: Sprite2D = $Sprite2D
+@onready var body_shape: CollisionShape2D = $CollisionShape2D
+@onready var hitbox_shape: CollisionShape2D = $Hitbox/HitboxShape
 
 func _ready() -> void:
 	z_index = 10
@@ -86,6 +92,16 @@ func _ready() -> void:
 			attack_cooldown = GameConstants.ENEMY_GOLEM_ATTACK_COOLDOWN
 			xp_drop_min = GameConstants.ENEMY_GOLEM_XP_MIN
 			xp_drop_max = GameConstants.ENEMY_GOLEM_XP_MAX
+		"Boss":
+			sprite.texture = _load_boss_texture()
+			sprite.scale = Vector2.ONE * GameConstants.ENEMY_BOSS_SPRITE_SCALE
+			speed = GameConstants.ENEMY_BOSS_SPEED
+			health = GameConstants.ENEMY_BOSS_HEALTH
+			damage = GameConstants.ENEMY_BOSS_DAMAGE
+			attack_cooldown = GameConstants.ENEMY_BOSS_ATTACK_COOLDOWN
+			xp_drop_min = GameConstants.ENEMY_BOSS_XP_MIN
+			xp_drop_max = GameConstants.ENEMY_BOSS_XP_MAX
+			_set_collision_radius(GameConstants.ENEMY_BOSS_COLLISION_RADIUS, GameConstants.ENEMY_BOSS_HITBOX_RADIUS)
 		_, "Normal":
 			sprite.texture = TEXTURE_NORMAL
 			sprite.scale = Vector2.ONE * GameConstants.ENEMY_NORMAL_SPRITE_SCALE
@@ -99,6 +115,9 @@ func _ready() -> void:
 	health = int(health * GameState.run_difficulty_health_mult)
 	damage = int(damage * GameState.run_difficulty_damage_mult)
 	max_health = health
+	if enemy_type == "Boss":
+		_create_boss_health_bar()
+		_update_boss_health_bar()
 
 func _physics_process(delta: float) -> void:
 	if not can_attack:
@@ -147,6 +166,7 @@ func _physics_process(delta: float) -> void:
 	velocity = desired_velocity + _knockback_velocity
 	_knockback_velocity = _knockback_velocity.move_toward(Vector2.ZERO, 900.0 * delta)
 	move_and_slide()
+	_update_boss_health_bar()
 
 func take_damage(amount: int = 1, source: String = "", is_crit: bool = false) -> int:
 	if _death_processed:
@@ -158,6 +178,7 @@ func take_damage(amount: int = 1, source: String = "", is_crit: bool = false) ->
 	_spawn_damage_number(actual_damage, is_crit)
 	var before_health = health
 	health -= amount
+	_update_boss_health_bar()
 
 	sprite.modulate = Color(10, 10, 10)
 	var tween := create_tween()
@@ -169,7 +190,9 @@ func take_damage(amount: int = 1, source: String = "", is_crit: bool = false) ->
 
 	if health <= 0 and before_health > 0 and not _death_processed:
 		_death_processed = true
-		GameState.run_enemies_killed += 1
+		GameState.record_enemy_killed()
+		if enemy_type == "Boss":
+			GameState.run_boss_killed = true
 		if source != "":
 			GameState.record_kill(source)
 		enemy_killed.emit()
@@ -203,6 +226,56 @@ func is_cursed() -> bool:
 
 func apply_knockback(force: Vector2) -> void:
 	_knockback_velocity += force
+
+func _load_boss_texture() -> Texture2D:
+	var image := Image.load_from_file(BOSS_TEXTURE_PATH)
+	if image == null:
+		return null
+	return ImageTexture.create_from_image(image)
+
+func _set_collision_radius(body_radius: float, hitbox_radius: float) -> void:
+	if body_shape and body_shape.shape is CircleShape2D:
+		body_shape.shape = body_shape.shape.duplicate()
+		body_shape.shape.radius = body_radius
+	if hitbox_shape and hitbox_shape.shape is CircleShape2D:
+		hitbox_shape.shape = hitbox_shape.shape.duplicate()
+		hitbox_shape.shape.radius = hitbox_radius
+
+func _create_boss_health_bar() -> void:
+	_boss_health_bar = Node2D.new()
+	_boss_health_bar.z_index = 40
+	add_child(_boss_health_bar)
+
+	var bg := ColorRect.new()
+	bg.position = Vector2(-80, -110)
+	bg.size = Vector2(160, 14)
+	bg.color = Color(0.08, 0.02, 0.02, 0.9)
+	_boss_health_bar.add_child(bg)
+
+	_boss_health_fill = ColorRect.new()
+	_boss_health_fill.position = bg.position
+	_boss_health_fill.size = bg.size
+	_boss_health_fill.color = Color(0.9, 0.05, 0.03, 1.0)
+	_boss_health_bar.add_child(_boss_health_fill)
+
+	_boss_health_label = Label.new()
+	_boss_health_label.position = Vector2(-80, -134)
+	_boss_health_label.size = Vector2(160, 24)
+	_boss_health_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_boss_health_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_boss_health_label.add_theme_font_size_override("font_size", 16)
+	_boss_health_label.add_theme_color_override("font_color", Color.WHITE)
+	_boss_health_bar.add_child(_boss_health_label)
+
+func _update_boss_health_bar() -> void:
+	if enemy_type != "Boss" or _boss_health_bar == null or max_health <= 0:
+		return
+	var hp = max(health, 0)
+	var pct = clamp(float(hp) / float(max_health), 0.0, 1.0)
+	if _boss_health_fill:
+		_boss_health_fill.size.x = 160.0 * pct
+	if _boss_health_label:
+		_boss_health_label.text = "%d / %d" % [hp, max_health]
 
 func _spread_burn() -> void:
 	for enemy in get_tree().get_nodes_in_group("enemies"):

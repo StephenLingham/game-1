@@ -452,7 +452,9 @@ func _spawn_charge_shrines() -> void:
 		shrine.charged.connect(_on_charge_shrine_charged)
 		get_node("PickupContainer").add_child(shrine)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if not game_over_panel.visible:
+		GameState.track_run_time(delta)
 	lvl_xp_label.text = "Level: %d" % GameState.run_level
 	xp_bar.max_value = GameState.run_xp_to_next_level
 	xp_bar.value = GameState.run_xp
@@ -811,12 +813,16 @@ func end_run(won: bool, waves_completed: int) -> void:
 	# Prevent double-end
 	if game_over_panel.visible:
 		return
+	if won and not GameState.run_boss_killed:
+		won = false
 	get_tree().paused = true
 
 	# Crystals reward: Removed as per new requirement (crystals now drop during run)
 	var crystals_reward := 0
+	var newly_unlocked = []
 	if won:
 		GameState.mark_level_completed(GameState.run_level_name)
+		GameState.record_successful_run()
 		
 		# Character Unlock
 		var current_chain = GameConstants.CHARACTER_UNLOCK_CHAIN
@@ -826,10 +832,11 @@ func end_run(won: bool, waves_completed: int) -> void:
 			if not GameState.unlocked_characters.has(next_char):
 				GameState.unlocked_characters.append(next_char)
 				# We'll show this in the endgame screen if possible
-	var newly_unlocked = []
-	for id in GameState.run_unlocked_items:
-		newly_unlocked.append(id)
-	GameState.finalize_run_unlocks()
+		for id in GameState.run_unlocked_items:
+			newly_unlocked.append(id)
+		GameState.finalize_run_unlocks()
+	else:
+		GameState.discard_run_unlocks()
 	GameState.finalize_run_stats()
 	
 	GameState.award_crystals(crystals_reward)

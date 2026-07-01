@@ -25,7 +25,7 @@ func _on_level_2_pressed() -> void:
 	_start_level(2.0, 1.5, 1.3, "Level 2")
 
 func _on_level_3_pressed() -> void:
-	_start_level(5.0, 3.0, 1.8, "Level 3")
+	_start_level(4.0, 3.0, 1.8, "Level 3")
 
 func _on_back_pressed() -> void:
 	if GameState.current_character == "passive_master":
