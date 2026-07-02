@@ -39,6 +39,7 @@ const BOSS_TEXTURE_PATH: String = "res://assets/Enemies/Bosses/fox-boss.png"
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var body_shape: CollisionShape2D = $CollisionShape2D
+@onready var hitbox: Area2D = $Hitbox
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/HitboxShape
 
 func _ready() -> void:
@@ -124,6 +125,8 @@ func _physics_process(delta: float) -> void:
 		attack_timer -= delta
 		if attack_timer <= 0.0:
 			can_attack = true
+	if can_attack:
+		_try_attack_overlapping_ally()
 
 	if _freeze_timer > 0.0:
 		_freeze_timer -= delta
@@ -155,13 +158,17 @@ func _physics_process(delta: float) -> void:
 	target = _get_nearest_ally()
 	var desired_velocity := Vector2.ZERO
 	if _freeze_timer <= 0.0 and target and is_instance_valid(target):
-		var dir := (target.global_position - global_position).normalized()
-		desired_velocity = dir * speed * _slow_factor
-		if desired_velocity.x != 0.0:
-			if enemy_type == "Tree" or enemy_type == "Elite" or enemy_type == "Fast" or enemy_type == "Big":
-				sprite.flip_h = desired_velocity.x < 0
-			else:
-				sprite.flip_h = desired_velocity.x > 0
+		var to_target := target.global_position - global_position
+		var distance := to_target.length()
+		var stop_distance := _get_approach_stop_distance(target)
+		if distance > stop_distance and distance > 0.001:
+			var dir := to_target / distance
+			desired_velocity = dir * speed * _slow_factor
+			if desired_velocity.x != 0.0:
+				if enemy_type == "Tree" or enemy_type == "Elite" or enemy_type == "Fast" or enemy_type == "Big":
+					sprite.flip_h = desired_velocity.x < 0
+				else:
+					sprite.flip_h = desired_velocity.x > 0
 
 	velocity = desired_velocity + _knockback_velocity
 	_knockback_velocity = _knockback_velocity.move_toward(Vector2.ZERO, 900.0 * delta)
@@ -227,6 +234,29 @@ func is_cursed() -> bool:
 
 func apply_knockback(force: Vector2) -> void:
 	_knockback_velocity += force
+
+func _get_approach_stop_distance(ally: Node2D) -> float:
+	return _get_collision_shape_radius(body_shape, 14.0) + _get_node_collision_radius(ally, 16.0) + 1.0
+
+func _get_node_collision_radius(node: Node2D, fallback: float) -> float:
+	if node == null:
+		return fallback
+	var collision_shape := node.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	return _get_collision_shape_radius(collision_shape, fallback)
+
+func _get_collision_shape_radius(collision_shape: CollisionShape2D, fallback: float) -> float:
+	if collision_shape == null or collision_shape.shape == null:
+		return fallback
+	var shape := collision_shape.shape
+	var scale_factor = max(abs(collision_shape.global_scale.x), abs(collision_shape.global_scale.y))
+	if shape is CircleShape2D:
+		return (shape as CircleShape2D).radius * scale_factor
+	if shape is RectangleShape2D:
+		return (shape as RectangleShape2D).size.length() * 0.5 * scale_factor
+	if shape is CapsuleShape2D:
+		var capsule := shape as CapsuleShape2D
+		return max(capsule.radius, capsule.height * 0.5) * scale_factor
+	return fallback
 
 func _load_boss_texture() -> Texture2D:
 	var image := Image.load_from_file(BOSS_TEXTURE_PATH)
@@ -314,10 +344,24 @@ func _spawn_damage_number(dmg: int, is_crit: bool) -> void:
 	get_tree().current_scene.add_child(dn)
 
 func _on_hitbox_body_entered(body: Node2D) -> void:
-	if body.is_in_group("allies") and can_attack and body.has_method("take_damage"):
+	_try_attack_ally(body)
+
+func _try_attack_overlapping_ally() -> void:
+	if hitbox == null:
+		return
+	for body in hitbox.get_overlapping_bodies():
+		if _try_attack_ally(body):
+			return
+
+func _try_attack_ally(body: Node2D) -> bool:
+	if not can_attack or body == null:
+		return false
+	if body.is_in_group("allies") and body.has_method("take_damage"):
 		can_attack = false
 		attack_timer = attack_cooldown
 		body.take_damage(damage, self)
+		return true
+	return false
 
 func _get_nearest_ally() -> Node2D:
 	var nearest: Node2D = null

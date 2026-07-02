@@ -1,4 +1,4 @@
-﻿class_name GameConstants extends RefCounted
+class_name GameConstants extends RefCounted
 
 const GAME_VERSION: String = "v0.20.0"
 
@@ -82,7 +82,7 @@ const ENEMY_BIG_SPRITE_SCALE: float = 0.15
 const ENEMY_BIG_SPEED: float = 60.0
 const ENEMY_BIG_HEALTH: int = 400
 const ENEMY_BIG_DAMAGE: int = 40
-const ENEMY_BIG_ATTACK_COOLDOWN: float = 1.5
+const ENEMY_BIG_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_BIG_XP_MIN: int = 40
 const ENEMY_BIG_XP_MAX: int = 60
 
@@ -106,7 +106,7 @@ const ENEMY_GOLEM_SPRITE_SCALE: float = 0.12
 const ENEMY_GOLEM_SPEED: float = 40.0
 const ENEMY_GOLEM_HEALTH: int = 1500
 const ENEMY_GOLEM_DAMAGE: int = 40
-const ENEMY_GOLEM_ATTACK_COOLDOWN: float = 1.5
+const ENEMY_GOLEM_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_GOLEM_XP_MIN: int = 80
 const ENEMY_GOLEM_XP_MAX: int = 120
 
@@ -114,7 +114,7 @@ const ENEMY_BOSS_SPRITE_SCALE: float = 0.22
 const ENEMY_BOSS_SPEED: float = 45.0
 const ENEMY_BOSS_HEALTH: int = 30000
 const ENEMY_BOSS_DAMAGE: int = 55
-const ENEMY_BOSS_ATTACK_COOLDOWN: float = 1.2
+const ENEMY_BOSS_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_BOSS_XP_MIN: int = 250
 const ENEMY_BOSS_XP_MAX: int = 350
 const ENEMY_BOSS_COLLISION_RADIUS: float = 42.0

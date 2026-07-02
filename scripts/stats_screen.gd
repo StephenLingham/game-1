@@ -1,12 +1,13 @@
 extends Control
 
-@onready var highest_level_value: Label = $Margin/VBox/StatsList/HighestLevelValue
-@onready var enemies_killed_value: Label = $Margin/VBox/StatsList/EnemiesKilledValue
-@onready var gifts_collected_value: Label = $Margin/VBox/StatsList/GiftsCollectedValue
-@onready var chests_opened_value: Label = $Margin/VBox/StatsList/ChestsOpenedValue
-@onready var shrines_activated_value: Label = $Margin/VBox/StatsList/ShrinesActivatedValue
-@onready var weapon_level_value: Label = $Margin/VBox/StatsList/WeaponLevelValue
-@onready var aura_level_value: Label = $Margin/VBox/StatsList/AuraLevelValue
+@onready var stats_list: GridContainer = $Margin/VBox/StatsScroll/StatsList
+@onready var highest_level_value: Label = $Margin/VBox/StatsScroll/StatsList/HighestLevelValue
+@onready var enemies_killed_value: Label = $Margin/VBox/StatsScroll/StatsList/EnemiesKilledValue
+@onready var gifts_collected_value: Label = $Margin/VBox/StatsScroll/StatsList/GiftsCollectedValue
+@onready var chests_opened_value: Label = $Margin/VBox/StatsScroll/StatsList/ChestsOpenedValue
+@onready var shrines_activated_value: Label = $Margin/VBox/StatsScroll/StatsList/ShrinesActivatedValue
+@onready var weapon_level_value: Label = $Margin/VBox/StatsScroll/StatsList/WeaponLevelValue
+@onready var aura_level_value: Label = $Margin/VBox/StatsScroll/StatsList/AuraLevelValue
 @onready var back_button: Button = $Margin/VBox/Back
 
 func _ready() -> void:
@@ -33,12 +34,12 @@ func _on_back_pressed() -> void:
 func _add_stat_row(label_text: String, value_text: String) -> void:
 	var label := Label.new()
 	label.text = label_text
-	$Margin/VBox/StatsList.add_child(label)
+	stats_list.add_child(label)
 
 	var value := Label.new()
 	value.text = value_text
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	$Margin/VBox/StatsList.add_child(value)
+	stats_list.add_child(value)
 
 func _format_seconds(seconds_value: float) -> String:
 	var total := int(floor(max(seconds_value, 0.0)))
