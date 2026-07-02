@@ -269,7 +269,7 @@ const RARITY_COLORS: Dictionary = {
 	"epic":      Color(0.75, 0.3, 1.0),
 	"legendary": Color(1.0, 0.82, 0.1)
 }
-# Cumulative weights â€” common = 50%, uncommon = 25%, rare = 15%, epic = 7%, legendary = 3%
+# Cumulative weights - common = 50%, uncommon = 25%, rare = 15%, epic = 7%, legendary = 3%
 const RARITY_WEIGHTS: Array = [50, 25, 15, 7, 3]
 const RARITY_MULTIPLIERS: Dictionary = {
 	"common":    1.0,
@@ -388,6 +388,14 @@ const GIFT_STATS: Dictionary = {
 
 # --- UNLOCKS ---
 const UNLOCK_KILLS_NEEDED: int = 50
+const WEAPON_UNLOCK_CHAIN: Array = [
+	"zap", "arcane_missile", "fireball", "ice_shard", "meteor", "frozen_orb",
+	"lightning_bolt", "ice_bolt", "fire_bolt", "arcane_bolt", "lightning_fork",
+	"blizzard", "arcane_orbs", "arcane_field", "fire_trail", "shotgun",
+	"floor_spikes", "ice_wave", "spike_ball", "turret", "sniper", "orbs",
+	"bouncing_disk", "machine_gun", "rocket",
+]
+const AURA_INITIAL_KILLS_NEEDED: int = 100
 const DEBUG_UNLOCK_ALL_WEAPONS: bool = false
 const DEBUG_MAX_PERM_UPGRADES: bool = false
 const DEBUG_UNLOCK_ALL_LEVELS: bool = false

@@ -436,8 +436,8 @@ func roll_weapon_upgrade(weapon_id: String) -> Dictionary:
 	match trait_name:
 		"damage":      display = "+%d Damage" % int(round(value))
 		"crit_chance": display = "+%d%% Crit Chance" % int(round(value * 100.0))
-		"projectiles": display = "+%.1f Projectiles (â†’%d)" % [value, int(floor(get_weapon_trait(weapon_id, "projectiles") + value)) + GameConstants.BASE_PROJECTILES]
-		"bounces":     display = "+%.1f Bounces (â†’%d)" % [value, int(floor(get_weapon_trait(weapon_id, "bounces") + value))]
+		"projectiles": display = "+%.1f Projectiles (%d to %d)" % [value, get_weapon_projectiles(weapon_id), int(floor(get_weapon_trait(weapon_id, "projectiles") + value)) + GameConstants.BASE_PROJECTILES]
+		"bounces":     display = "+%.1f Bounces (%d to %d)" % [value, get_weapon_bounces(weapon_id), int(floor(get_weapon_trait(weapon_id, "bounces") + value)) + GameConstants.BASE_BOUNCES]
 		"size":        display = "+%d%% Area Size" % int(round(value * 100.0))
 		_:             display = ""
 	return {
@@ -999,13 +999,7 @@ func is_level_unlocked(level_id: String) -> bool:
 
 func _check_unlocks() -> void:
 	# Zap -> Arcane Missile -> Fireball -> ...
-	var weapon_chain = [
-		"zap", "arcane_missile", "fireball", "ice_shard", "meteor", "frozen_orb", 
-		"lightning_bolt", "ice_bolt", "fire_bolt", "arcane_bolt", "lightning_fork", 
-		"blizzard", "arcane_orbs", "arcane_field", "fire_trail",
-		"shotgun", "floor_spikes", "ice_wave", "spike_ball", "turret", 
-		"sniper", "orbs", "bouncing_disk", "machine_gun", "rocket",
-	]
+	var weapon_chain = GameConstants.WEAPON_UNLOCK_CHAIN
 	for i in range(weapon_chain.size() - 1):
 		var current = weapon_chain[i]
 		var next = weapon_chain[i+1]
@@ -1034,7 +1028,7 @@ func _check_unlocks() -> void:
 	
 	# Initial aura unlock: Kill 100 enemies with Zap
 	if not unlocked_auras.has(aura_chain[0]):
-		if lifetime_kills.get("zap", 0) >= 100:
+		if lifetime_kills.get("zap", 0) >= GameConstants.AURA_INITIAL_KILLS_NEEDED:
 			if not run_unlocked_items.has(aura_chain[0]):
 				run_unlocked_items.append(aura_chain[0])
 

@@ -3,34 +3,33 @@ extends Control
 @onready var grid: GridContainer = $VBox/Scroll/Grid
 @onready var back_btn: Button = $VBox/Footer/Back
 
-const WEAPONS = {
-	"zap": {"name": "Zap", "unlock": "Unlocked by default"},
-	"arcane_missile": {"name": "Arcane Missile", "unlock": "Kill 50 enemies with Zap"},
-	"fireball": {"name": "Fireball", "unlock": "Kill 50 enemies with Arcane Missile"},
-	"ice_shard": {"name": "Ice Shard", "unlock": "Kill 50 enemies with Fireball"},
-	"meteor": {"name": "Meteor", "unlock": "Kill 50 enemies with Ice Shard"},
-	"frozen_orb": {"name": "Frozen Orb", "unlock": "Kill 50 enemies with Meteor"},
-	"lightning_bolt": {"name": "Lightning Bolt", "unlock": "Kill 50 enemies with Frozen Orb"},
-	"ice_bolt": {"name": "Ice Bolt", "unlock": "Kill 50 enemies with Lightning Bolt"},
-	"fire_bolt": {"name": "Fire Bolt", "unlock": "Kill 50 enemies with Ice Bolt"},
-	"arcane_bolt": {"name": "Arcane Bolt", "unlock": "Kill 50 enemies with Fire Bolt"},
-	"lightning_fork": {"name": "Lightning Fork", "unlock": "Kill 50 enemies with Arcane Bolt"},
-	"blizzard": {"name": "Blizzard", "unlock": "Kill 50 enemies with Lightning Fork"},
-	"arcane_orbs": {"name": "Arcane Orbs", "unlock": "Kill 50 enemies with Blizzard"},
-	"arcane_field": {"name": "Arcane Field", "unlock": "Kill 50 enemies with Arcane Orbs"},
-	"fire_trail": {"name": "Fire Trail", "unlock": "Kill 50 enemies with Arcane Field"},
-	"floor_spikes": {"name": "Floor Spikes", "unlock": "Kill 50 enemies with Fire Trail"},
-	"ice_wave": {"name": "Ice Wave", "unlock": "Kill 50 enemies with Floor Spikes"},
-	"spike_ball": {"name": "Spike Ball", "unlock": "Kill 50 enemies with Ice Wave"},
-	"shotgun": {"name": "Shotgun", "unlock": "Kill 50 enemies with Spike Ball"},
-	"turret": {"name": "Turret", "unlock": "Kill 50 enemies with Shotgun"},
-	"sniper": {"name": "Sniper Gun", "unlock": "Kill 50 enemies with Turret"},
-	"orbs": {"name": "Energy Orbs", "unlock": "Kill 50 enemies with Sniper Gun"},
-	"bouncing_disk": {"name": "Bouncing Disk", "unlock": "Kill 50 enemies with Energy Orbs"},
-	"machine_gun": {"name": "Machine Gun", "unlock": "Kill 50 enemies with Bouncing Disk"},
-	"rocket": {"name": "Rocket Launcher", "unlock": "Kill 50 enemies with Machine Gun"},
+const WEAPONS: Dictionary = {
+	"zap": {"name": "Zap"},
+	"arcane_missile": {"name": "Arcane Missile"},
+	"fireball": {"name": "Fireball"},
+	"ice_shard": {"name": "Ice Shard"},
+	"meteor": {"name": "Meteor"},
+	"frozen_orb": {"name": "Frozen Orb"},
+	"lightning_bolt": {"name": "Lightning Bolt"},
+	"ice_bolt": {"name": "Ice Bolt"},
+	"fire_bolt": {"name": "Fire Bolt"},
+	"arcane_bolt": {"name": "Arcane Bolt"},
+	"lightning_fork": {"name": "Lightning Fork"},
+	"blizzard": {"name": "Blizzard"},
+	"arcane_orbs": {"name": "Arcane Orbs"},
+	"arcane_field": {"name": "Arcane Field"},
+	"fire_trail": {"name": "Fire Trail"},
+	"shotgun": {"name": "Shotgun"},
+	"floor_spikes": {"name": "Floor Spikes"},
+	"ice_wave": {"name": "Ice Wave"},
+	"spike_ball": {"name": "Spike Ball"},
+	"turret": {"name": "Turret"},
+	"sniper": {"name": "Sniper Gun"},
+	"orbs": {"name": "Energy Orbs"},
+	"bouncing_disk": {"name": "Bouncing Disk"},
+	"machine_gun": {"name": "Machine Gun"},
+	"rocket": {"name": "Rocket Launcher"},
 }
-
 var current_view: String = "weapons"
 var weapon_tab: Button
 var aura_tab: Button
@@ -105,12 +104,10 @@ func _refresh_ui() -> void:
 		"slots": _show_slots()
 
 func _show_weapons() -> void:
-	for id in WEAPONS:
-		var item = WEAPONS[id]
+	for id in GameConstants.WEAPON_UNLOCK_CHAIN:
 		var is_unlocked = GameState.is_item_unlocked(id)
 		
 		# Progress info
-		var kills = GameState.lifetime_kills.get(id, 0)
 		var needed = GameConstants.UNLOCK_KILLS_NEEDED
 		
 		var panel = PanelContainer.new()
@@ -121,7 +118,7 @@ func _show_weapons() -> void:
 		panel.add_child(vbox)
 		
 		var title = Label.new()
-		title.text = item.name
+		title.text = _get_weapon_name(id)
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		title.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(title)
@@ -145,7 +142,7 @@ func _show_weapons() -> void:
 				vbox.add_child(progress)
 
 		var desc = Label.new()
-		desc.text = item.unlock
+		desc.text = _get_weapon_unlock_text(id)
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc.modulate = Color(0.8, 0.8, 0.9)
@@ -230,11 +227,11 @@ func _show_items() -> void:
 				stats_lbl.add_theme_font_size_override("font_size", 14)
 				vbox.add_child(stats_lbl)
 		else:
-			var chests_needed = (i - 4) * 5
+			var chests_needed = max(0, (i - 4) * 5)
 			var current_chests = GameState.lifetime_chests_opened
 			
 			var lock_info = Label.new()
-			lock_info.text = "Open %d chests to unlock (%d / %d)" % [chests_needed, current_chests, chests_needed]
+			lock_info.text = "Unlocked by default" if i < 5 else "Open %d chests to unlock (%d / %d)" % [chests_needed, current_chests, chests_needed]
 			lock_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			lock_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			lock_info.modulate = Color(0.7, 0.7, 0.7)
@@ -298,7 +295,7 @@ func _show_auras() -> void:
 				var prec_name = auras[precursor].name
 				desc.text = "Upgrade %s %d times in total to unlock" % [prec_name, GameConstants.AURA_UNLOCK_UPGRADES_NEEDED]
 			else:
-				desc.text = "Kill 100 enemies with Zap to unlock"
+				desc.text = "Kill %d enemies with Zap to unlock" % GameConstants.AURA_INITIAL_KILLS_NEEDED
 				
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -335,8 +332,17 @@ func _get_aura_precursor(id: String) -> String:
 		return aura_chain[idx-1]
 	return ""
 
+func _get_weapon_unlock_text(id: String) -> String:
+	var precursor = _get_precursor(id)
+	if precursor == "":
+		return "Unlocked by default"
+	return "Kill %d enemies with %s" % [GameConstants.UNLOCK_KILLS_NEEDED, _get_weapon_name(precursor)]
+
+func _get_weapon_name(id: String) -> String:
+	return String(WEAPONS.get(id, {"name": id.replace("_", " ").capitalize()}).get("name", id.replace("_", " ").capitalize()))
+
 func _get_precursor(id: String) -> String:
-	var weapon_chain = WEAPONS.keys()
+	var weapon_chain = GameConstants.WEAPON_UNLOCK_CHAIN
 	var idx = weapon_chain.find(id)
 	if idx > 0:
 		return weapon_chain[idx-1]
@@ -460,7 +466,7 @@ func _show_slots() -> void:
 	current_w_slots = min(4, current_w_slots)
 	
 	var w_slots_lbl = Label.new()
-	w_slots_lbl.text = "Active Weapon Slots: %d / 4" % current_w_slots
+	w_slots_lbl.text = "Weapon Slots: %d / 4" % current_w_slots
 	w_slots_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	w_slots_lbl.add_theme_font_size_override("font_size", 20)
 	wvbox.add_child(w_slots_lbl)
@@ -473,11 +479,11 @@ func _show_slots() -> void:
 	
 	# Breakdown / milestones
 	var w_breakdown = Label.new()
-	w_breakdown.text = "Milestones:\n• 1 Slot: Unlocked by default %s\n• 2 Slots: Unlock 4 weapons %s\n• 3 Slots: Unlock 8 weapons %s\n• 4 Slots: Unlock 12 weapons %s" % [
-		"✓",
-		"✓" if w_unlocked_count >= 4 else "(Locked)",
-		"✓" if w_unlocked_count >= 8 else "(Locked)",
-		"✓" if w_unlocked_count >= 12 else "(Locked)"
+	w_breakdown.text = "Milestones:\n- 1 Slot: Unlocked by default %s\n- 2 Slots: Unlock 4 weapons %s\n- 3 Slots: Unlock 8 weapons %s\n- 4 Slots: Unlock 12 weapons %s" % [
+		"(Unlocked)",
+		"(Unlocked)" if w_unlocked_count >= 4 else "(Locked)",
+		"(Unlocked)" if w_unlocked_count >= 8 else "(Locked)",
+		"(Unlocked)" if w_unlocked_count >= 12 else "(Locked)"
 	]
 	w_breakdown.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	w_breakdown.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -506,7 +512,7 @@ func _show_slots() -> void:
 	current_a_slots = min(4, current_a_slots)
 	
 	var a_slots_lbl = Label.new()
-	a_slots_lbl.text = "Active Aura Slots: %d / 4" % current_a_slots
+	a_slots_lbl.text = "Aura Slots: %d / 4" % current_a_slots
 	a_slots_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	a_slots_lbl.add_theme_font_size_override("font_size", 20)
 	avbox.add_child(a_slots_lbl)
@@ -519,11 +525,11 @@ func _show_slots() -> void:
 	
 	# Breakdown / milestones
 	var a_breakdown = Label.new()
-	a_breakdown.text = "Milestones:\n• 1 Slot: Unlocked by default %s\n• 2 Slots: Unlock 3 auras %s\n• 3 Slots: Unlock 6 auras %s\n• 4 Slots: Unlock 9 auras %s" % [
-		"✓",
-		"✓" if a_unlocked_count >= 3 else "(Locked)",
-		"✓" if a_unlocked_count >= 6 else "(Locked)",
-		"✓" if a_unlocked_count >= 9 else "(Locked)"
+	a_breakdown.text = "Milestones:\n- 1 Slot: Unlocked by default %s\n- 2 Slots: Unlock 3 auras %s\n- 3 Slots: Unlock 6 auras %s\n- 4 Slots: Unlock 9 auras %s" % [
+		"(Unlocked)",
+		"(Unlocked)" if a_unlocked_count >= 3 else "(Locked)",
+		"(Unlocked)" if a_unlocked_count >= 6 else "(Locked)",
+		"(Unlocked)" if a_unlocked_count >= 9 else "(Locked)"
 	]
 	a_breakdown.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	a_breakdown.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
