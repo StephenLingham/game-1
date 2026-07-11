@@ -7,6 +7,11 @@ const CHEST_STARTING_COUNT: int = 7
 const POWERUP_STARTING_COUNT: int = 6
 const GIFT_COUNT: int = 20
 const CHARGE_SHRINE_COUNT: int = 7
+const TORCH_COUNT: int = 7
+const BLUE_TORCH_XP_GAIN_BOOST: float = 0.03
+const RED_TORCH_SPAWN_RATE_BOOST: float = 0.03
+const TORCH_IMAGE_SCALE: float = 0.035
+const TORCH_PICKUP_RADIUS: float = 20.0
 
 # --- FEATURE FLAGS ---
 # Gifts now always roll a rarity-scaled stat; kept for compatibility.

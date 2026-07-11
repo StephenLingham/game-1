@@ -713,6 +713,7 @@ func get_thorns_percentage() -> float:
 func get_spawn_rate_multiplier() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_spawn_rate_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)
 	var mult = 1.0 + float(lvl) * 0.01 + _get_aura_bonus("spawn_rate_multiplier") # +1% spawn rate per level
+	mult += run_gift_bonuses.get("spawn_rate_multiplier", 0.0)
 	
 	match current_character:
 		"chaos":

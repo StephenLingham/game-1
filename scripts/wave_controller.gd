@@ -63,6 +63,14 @@ func _next_wave() -> void:
 			_spawn_tree_circle()
 		GameConstants.TOTAL_WAVES:
 			_spawn_boss()
+func refresh_spawn_rate(previous_multiplier: float) -> void:
+	if not spawning or previous_multiplier <= 0.0:
+		return
+	var new_multiplier := GameState.get_spawn_rate_multiplier()
+	if new_multiplier <= 0.0:
+		return
+	spawn_timer.wait_time *= previous_multiplier / new_multiplier
+
 
 func _process(delta: float) -> void:
 	if not spawning:

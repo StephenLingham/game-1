@@ -213,6 +213,7 @@ func _ready() -> void:
 	_spawn_initial_powerups()
 	_spawn_initial_crystal()
 	_spawn_charge_shrines()
+	_spawn_torches()
 	wave_controller.start_run()
 	
 	# Spawn dynamic Minimap and Full Screen Map overlay with Fog of War
@@ -461,6 +462,30 @@ func _spawn_charge_shrines() -> void:
 		shrine.charged.connect(_on_charge_shrine_charged)
 		get_node("PickupContainer").add_child(shrine)
 
+func _spawn_torches() -> void:
+	var floor_rect := $ArenaFloor as TextureRect
+	var arena_rect := Rect2(floor_rect.position, floor_rect.size)
+	var padding := 180.0
+	var torch_script = load("res://scripts/torch_pickup.gd")
+	var count := int(GameConstants.TORCH_COUNT * GameConstants.ARENA_SIZE_MULTIPLIER)
+	var torch_types: Array[int] = []
+	for i in range(count):
+		torch_types.append(i % 2)
+	torch_types.shuffle()
+
+	for torch_type in torch_types:
+		var torch = torch_script.new()
+		torch.torch_type = torch_type
+		var rx := randf_range(arena_rect.position.x + padding, arena_rect.end.x - padding)
+		var ry := randf_range(arena_rect.position.y + padding, arena_rect.end.y - padding)
+		torch.global_position = Vector2(rx, ry)
+		if torch.global_position.distance_to(arena_rect.get_center()) < 300.0:
+			var away: Vector2 = torch.global_position - arena_rect.get_center()
+			if away.is_zero_approx():
+				away = Vector2.RIGHT
+			torch.global_position = arena_rect.get_center() + away.normalized() * 300.0
+		get_node("PickupContainer").add_child(torch)
+
 func _process(delta: float) -> void:
 	if not game_over_panel.visible:
 		GameState.track_run_time(delta)
@@ -497,10 +522,10 @@ func open_shop(lvl: int) -> void:
 	shop_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	$UI/ShopPanel/Margin/VBox/Title.text = "Level Up! — Choose a Weapon"
-	$UI/ShopPanel/Margin/VBox/Title.text = "LEVEL UP!"
+	$UI/ShopPanel/Margin/VBox/Title.text = "Level up!"
 	$UI/ShopPanel/Margin/VBox/Title.add_theme_font_size_override("font_size", 42)
 	$UI/ShopPanel/Margin/VBox/Title.add_theme_color_override("font_color", Color(1.0, 0.86, 0.34))
-	shop_lvl_label.text = "RANK %d  |  CHOOSE YOUR POWER" % lvl
+	shop_lvl_label.text = "Level %d  |  Choose your power" % lvl
 	shop_lvl_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	shop_lvl_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	shop_lvl_label.add_theme_font_size_override("font_size", 18)

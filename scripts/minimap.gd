@@ -116,6 +116,10 @@ func is_uncovered(world_pos: Vector2) -> bool:
 func _is_crystal_pickup(node: Object) -> bool:
 	return is_instance_valid(node) and node.get("type") == 4
 
+func _torch_color(torch: Object) -> Color:
+	return Color(1.0, 0.24, 0.18, 1.0) if int(torch.get("torch_type")) == 1 else Color(0.2, 0.62, 1.0, 1.0)
+
+
 func _draw() -> void:
 	if not is_initialized or not is_instance_valid(player):
 		return
@@ -152,6 +156,16 @@ func _draw_minimap() -> void:
 				draw_circle(pos, 4.0, Color(0.4, 0.85, 1.0, 1.0))
 				draw_circle(pos, 6.5, Color(0.4, 0.85, 1.0, 0.28))
 				
+	# 1c. Torches (Blue XP / Red Spawn Rate)
+	for torch in get_tree().get_nodes_in_group("torches"):
+		if is_instance_valid(torch):
+			var pos = mm_center + (torch.global_position - player_pos) * minimap_scale
+			if pos.distance_to(mm_center) <= minimap_radius:
+				var color := _torch_color(torch)
+				draw_circle(pos, 3.25, Color.WHITE)
+				draw_circle(pos, 2.25, color)
+				draw_circle(pos, 6.0, Color(color.r, color.g, color.b, 0.28))
+
 	# 2. Chests (Gold)
 	for c in get_tree().get_nodes_in_group("chests"):
 		if is_instance_valid(c):
@@ -239,8 +253,18 @@ func _draw_full_map() -> void:
 			draw_circle(pos, 5.0, Color(0.4, 0.85, 1.0, 1.0))
 			draw_circle(pos, 7.0, Color(0.4, 0.85, 1.0, 0.28))
 			
-	# 2. Chests (Gold)
+	# 1c. Torches (Blue XP / Red Spawn Rate)
+	for torch in get_tree().get_nodes_in_group("torches"):
+		if is_instance_valid(torch) and is_uncovered(torch.global_position):
+			var local_offset = torch.global_position - arena_rect.position
+			var pos = bounds_rect.position + local_offset * fm_scale
+			var color := _torch_color(torch)
+			draw_circle(pos, 4.0, Color.WHITE)
+			draw_circle(pos, 2.75, color)
+			draw_circle(pos, 7.0, Color(color.r, color.g, color.b, 0.28))
+
 	for c in get_tree().get_nodes_in_group("chests"):
+	# 2. Chests (Gold)
 		if is_instance_valid(c) and is_uncovered(c.global_position):
 			var local_offset = c.global_position - arena_rect.position
 			var pos = bounds_rect.position + local_offset * fm_scale

@@ -44,7 +44,7 @@ theme_override_constants/separation = 20
 
 [node name="Title" type="Label" parent="VBox"]
 layout_mode = 2
-text = "Select Level"
+text = "Select Difficulty"
 label_settings = SubResource("LabelSettings_title")
 horizontal_alignment = 1
 
@@ -55,17 +55,17 @@ layout_mode = 2
 [node name="Level1" type="Button" parent="VBox"]
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
-text = "Level 1"
+text = "Difficulty 1"
 
 [node name="Level2" type="Button" parent="VBox"]
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
-text = "Level 2"
+text = "Difficulty 2"
 
 [node name="Level3" type="Button" parent="VBox"]
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
-text = "Level 3"
+text = "Difficulty 3"
 
 [node name="Spacer2" type="Control" parent="VBox"]
 custom_minimum_size = Vector2(0, 40)
