@@ -356,8 +356,8 @@ func _get_weapon_cooldown(id: String) -> float:
 
 func _fire_weapon(id: String, target: Node2D) -> void:
 	match id:
-		"arcane_missile": _fire_projectile_weapon(id, target, Color.PURPLE)
-		"fireball": _fire_projectile_weapon(id, target, Color.ORANGE_RED, true)
+		"arcane_missile": _fire_projectile_weapon(id, target, Color.WHITE)
+		"fireball": _fire_projectile_weapon(id, target, Color.WHITE, true)
 		"ice_shard": _fire_projectile_weapon(id, target, Color.AQUA)
 		"meteor": _fire_meteor()
 		"frozen_orb": _fire_frozen_orb(target)

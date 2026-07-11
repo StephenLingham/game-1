@@ -30,6 +30,9 @@ var current_shop_options: Array = []
 var pause_stats_panel: RunStatsPanel
 
 const SHOP_WEAPON_ICONS := {
+	"zap": preload("res://assets/Weapons/zap_projectile.png"),
+	"arcane_missile": preload("res://assets/Weapons/arcane_missile_projectile.png"),
+	"fireball": preload("res://assets/Weapons/fireball_projectile.png"),
 	"lightning_bolt": preload("res://assets/Weapons/lightning_bolt_projectile.png"),
 	"ice_bolt": preload("res://assets/Weapons/ice_bolt_projectile.png"),
 	"fire_bolt": preload("res://assets/Weapons/fire_bolt_projectile.png"),
