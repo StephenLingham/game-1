@@ -27,6 +27,7 @@ var current_charge_shrine: Node2D = null
 var reroll_btn: Button
 var banish_active: bool = false
 var current_shop_options: Array = []
+var pause_stats_panel: RunStatsPanel
 
 const SHOP_WEAPON_ICONS := {
 	"lightning_bolt": preload("res://assets/Weapons/lightning_bolt_projectile.png"),
@@ -180,6 +181,10 @@ func _ready() -> void:
 	# Pause buttons
 	$UI/PausePanel/VBox/Resume.pressed.connect(_resume)
 	$UI/PausePanel/VBox/Abandon.pressed.connect(_abandon_run)
+	pause_stats_panel = RunStatsPanel.new()
+	pause_stats_panel.name = "RunStatsPanel"
+	$UI/PausePanel/VBox.add_child(pause_stats_panel)
+	$UI/PausePanel/VBox.move_child(pause_stats_panel, $UI/PausePanel/VBox/Spacer.get_index())
 
 	# HP Bar Color (Red)
 	var hp_bar = $UI/HUD/HUDTopRow/HPBarContainer/HPBar
@@ -1021,6 +1026,8 @@ func _toggle_pause() -> void:
 	get_tree().paused = not is_paused
 	pause_panel.visible = not is_paused
 
+	if not is_paused and is_instance_valid(pause_stats_panel):
+		pause_stats_panel.refresh_stats()
 func _resume() -> void:
 	_toggle_pause()
 
