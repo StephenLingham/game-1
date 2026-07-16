@@ -4,6 +4,7 @@ extends Node2D
 @onready var wave_controller = $WaveController
 @onready var hud: CanvasLayer = $UI
 @onready var shop_panel: Control = $UI/ShopPanel
+@onready var shop_vbox: VBoxContainer = $UI/ShopPanel/Margin/VBox
 @onready var game_over_panel: Control = $UI/GameOverPanel
 @onready var pause_panel: Control = $UI/PausePanel
 var item_popup_panel: Control
@@ -28,6 +29,9 @@ var reroll_btn: Button
 var banish_active: bool = false
 var current_shop_options: Array = []
 var pause_stats_panel: RunStatsPanel
+var pause_inventory_panel: RunInventoryPanel
+var shop_stats_panel: RunStatsPanel
+var shop_inventory_panel: RunInventoryPanel
 
 const SHOP_WEAPON_ICONS := {
 	"zap": preload("res://assets/Weapons/zap_projectile.png"),
@@ -102,7 +106,7 @@ func _ready() -> void:
 	shop_continue.visible = false
 	shop_grid.columns = 1 # We will use HBoxContainers inside for true horizontal centering
 	shop_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	shop_grid.custom_minimum_size = Vector2(850, 0) # Force wide enough inside ScrollContainer
+	shop_grid.custom_minimum_size = Vector2(590, 0)
 	
 	var shop_scroll = shop_panel.get_node_or_null("Margin/VBox/Scroll")
 	if shop_scroll:
@@ -117,7 +121,7 @@ func _ready() -> void:
 	var shop_margin = shop_panel.get_node_or_null("Margin")
 	if shop_margin:
 		shop_margin.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-		shop_margin.custom_minimum_size = Vector2(1100, 650)
+		shop_margin.custom_minimum_size = Vector2(1180, 660)
 		shop_margin.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		shop_margin.grow_vertical = Control.GROW_DIRECTION_BOTH
 		# Add a background panel style to the margin
@@ -169,8 +173,8 @@ func _ready() -> void:
 	shop_capacity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	shop_capacity_label.add_theme_font_size_override("font_size", 16)
 	shop_capacity_label.add_theme_color_override("font_color", Color(0.7, 0.78, 0.9))
-	$UI/ShopPanel/Margin/VBox.add_child(shop_capacity_label)
-	$UI/ShopPanel/Margin/VBox.move_child(shop_capacity_label, $UI/ShopPanel/Margin/VBox/Scroll.get_index())
+	shop_vbox.add_child(shop_capacity_label)
+	shop_vbox.move_child(shop_capacity_label, shop_vbox.get_node("Scroll").get_index())
 
 	enemy_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	enemy_count_label.add_theme_font_size_override("font_size", 16)
@@ -184,10 +188,7 @@ func _ready() -> void:
 	# Pause buttons
 	$UI/PausePanel/VBox/Resume.pressed.connect(_resume)
 	$UI/PausePanel/VBox/Abandon.pressed.connect(_abandon_run)
-	pause_stats_panel = RunStatsPanel.new()
-	pause_stats_panel.name = "RunStatsPanel"
-	$UI/PausePanel/VBox.add_child(pause_stats_panel)
-	$UI/PausePanel/VBox.move_child(pause_stats_panel, $UI/PausePanel/VBox/Spacer.get_index())
+	_setup_reference_layouts()
 
 	# HP Bar Color (Red)
 	var hp_bar = $UI/HUD/HUDTopRow/HPBarContainer/HPBar
@@ -225,6 +226,71 @@ func _ready() -> void:
 	minimap.set_script(minimap_script)
 	minimap.name = "Minimap"
 	$UI.add_child(minimap)
+
+func _setup_reference_layouts() -> void:
+	var shop_margin := shop_panel.get_node("Margin") as MarginContainer
+	var shop_row := HBoxContainer.new()
+	shop_row.name = "ThreeColumnLayout"
+	shop_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	shop_row.add_theme_constant_override("separation", 18)
+	shop_margin.add_child(shop_row)
+
+	shop_inventory_panel = RunInventoryPanel.new()
+	shop_inventory_panel.name = "RunInventoryPanel"
+	shop_inventory_panel.set_ability_catalog(ALL_ABILITIES)
+	shop_row.add_child(shop_inventory_panel)
+	shop_vbox.reparent(shop_row)
+	shop_vbox.custom_minimum_size = Vector2(610, 0)
+	shop_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shop_stats_panel = RunStatsPanel.new()
+	shop_stats_panel.name = "RunStatsPanel"
+	shop_row.add_child(shop_stats_panel)
+
+	var pause_vbox := pause_panel.get_node("VBox") as VBoxContainer
+	pause_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	pause_panel.offset_left = 20
+	pause_panel.offset_top = 20
+	pause_panel.offset_right = -20
+	pause_panel.offset_bottom = -20
+	pause_panel.add_theme_stylebox_override("panel", _overlay_style())
+	var pause_row := HBoxContainer.new()
+	pause_row.name = "ThreeColumnLayout"
+	pause_row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	pause_row.offset_left = 18
+	pause_row.offset_top = 18
+	pause_row.offset_right = -18
+	pause_row.offset_bottom = -18
+	pause_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	pause_row.add_theme_constant_override("separation", 24)
+	pause_panel.add_child(pause_row)
+
+	pause_inventory_panel = RunInventoryPanel.new()
+	pause_inventory_panel.name = "RunInventoryPanel"
+	pause_inventory_panel.set_ability_catalog(ALL_ABILITIES)
+	pause_row.add_child(pause_inventory_panel)
+	pause_vbox.reparent(pause_row)
+	pause_vbox.custom_minimum_size = Vector2(380, 0)
+	pause_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pause_stats_panel = RunStatsPanel.new()
+	pause_stats_panel.name = "RunStatsPanel"
+	pause_row.add_child(pause_stats_panel)
+	_refresh_reference_panels()
+
+func _overlay_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.015, 0.025, 0.045, 0.96)
+	style.border_color = Color(0.24, 0.54, 0.7, 0.8)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(12)
+	return style
+
+func _refresh_reference_panels() -> void:
+	for inventory in [shop_inventory_panel, pause_inventory_panel]:
+		if is_instance_valid(inventory):
+			inventory.refresh_inventory()
+	for stats in [shop_stats_panel, pause_stats_panel]:
+		if is_instance_valid(stats):
+			stats.refresh_stats()
 
 func _exit_tree() -> void:
 	if is_instance_valid(item_popup_panel):
@@ -524,16 +590,17 @@ func open_shop(lvl: int) -> void:
 	shop_panel.visible = true
 	shop_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	$UI/ShopPanel/Margin/VBox/Title.text = "Level Up! — Choose a Weapon"
-	$UI/ShopPanel/Margin/VBox/Title.text = "Level up!"
-	$UI/ShopPanel/Margin/VBox/Title.add_theme_font_size_override("font_size", 42)
-	$UI/ShopPanel/Margin/VBox/Title.add_theme_color_override("font_color", Color(1.0, 0.86, 0.34))
+	var shop_title := shop_vbox.get_node("Title") as Label
+	shop_title.text = "LEVEL UP"
+	shop_title.add_theme_font_size_override("font_size", 36)
+	shop_title.add_theme_color_override("font_color", Color(1.0, 0.86, 0.34))
 	shop_lvl_label.text = "Level %d  |  Choose your power" % lvl
 	shop_lvl_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	shop_lvl_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	shop_lvl_label.add_theme_font_size_override("font_size", 18)
 	shop_lvl_label.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0))
 	
+	_refresh_reference_panels()
 	_refresh_shop_ui()
 	shop_panel.modulate = Color(1, 1, 1, 0)
 	var tween := create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
@@ -660,223 +727,112 @@ func _ability_subtitle(abi: Dictionary, level: int) -> String:
 
 
 func _refresh_shop_ui() -> void:
-	var abi_count = 0
-	var aura_count = 0
+	var weapon_count := 0
+	var aura_count := 0
 	for id in GameState.run_abilities:
-		if id.begins_with("aura_"): aura_count += 1
-		else: abi_count += 1
-		
-	shop_capacity_label.text = "Weapons: %d/%d  |  Auras: %d/%d" % [abi_count, GameState.get_ability_limit(), aura_count, GameState.get_aura_limit()]
-	
-	if abi_count >= GameState.get_ability_limit() and aura_count >= GameState.get_aura_limit():
-		shop_capacity_label.modulate = Color.VIOLET
-	else:
-		shop_capacity_label.modulate = Color.WHITE
-	
-	# Clear grid
+		if String(id).begins_with("aura_"):
+			aura_count += 1
+		else:
+			weapon_count += 1
+	shop_capacity_label.text = "WEAPONS %d/%d    AURAS %d/%d" % [weapon_count, GameState.get_ability_limit(), aura_count, GameState.get_aura_limit()]
+	shop_capacity_label.modulate = Color.VIOLET if weapon_count >= GameState.get_ability_limit() and aura_count >= GameState.get_aura_limit() else Color.WHITE
+
 	for child in shop_grid.get_children():
 		child.queue_free()
-	
-	# Headers and Boxes for Loadout
-	var h_weapons = Label.new()
-	h_weapons.text = "CURRENT WEAPONS  |  %d / %d SLOTS" % [abi_count, GameState.get_ability_limit()]
-	h_weapons.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_style_section_header(h_weapons, Color(0.35, 0.82, 1.0))
-	shop_grid.add_child(h_weapons)
-	
-	var weapons_box = HBoxContainer.new()
-	weapons_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	weapons_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	weapons_box.add_theme_constant_override("separation", 20)
-	shop_grid.add_child(weapons_box)
 
-	var h_auras = Label.new()
-	h_auras.text = "CURRENT AURAS  |  %d / %d SLOTS" % [aura_count, GameState.get_aura_limit()]
-	h_auras.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_style_section_header(h_auras, Color(0.94, 0.48, 1.0))
-	shop_grid.add_child(h_auras)
-	
-	var auras_box = HBoxContainer.new()
-	auras_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	auras_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	auras_box.add_theme_constant_override("separation", 20)
-	shop_grid.add_child(auras_box)
-	
-	# Show currently owned abilities
-	var owned_ids = GameState.run_abilities.keys()
-	for abi_id in owned_ids:
-		var abi_data = null
-		for a in ALL_ABILITIES:
-			if a.id == abi_id:
-				abi_data = a
-				break
-		if not abi_data: continue
-		
-		var level = GameState.run_abilities[abi_id]
-		
-		var panel = PanelContainer.new()
-		panel.add_theme_stylebox_override("panel", _shop_style(Color(0.065, 0.08, 0.135, 0.9), Color(0.22, 0.3, 0.46, 0.9), 12, 1))
-		var vbox = VBoxContainer.new()
-		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-		vbox.add_theme_constant_override("separation", 10)
-		vbox.custom_minimum_size = Vector2(145, 104)
-		panel.add_child(vbox)
-		
-		var lbl = Label.new()
-		lbl.text = abi_data.name + "\nLEVEL %d" % level
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.add_theme_font_size_override("font_size", 18)
-		vbox.add_child(lbl)
-		
-		var owned_icon = _create_shop_weapon_icon(abi_id, 0.6)
-		if owned_icon:
-			vbox.add_child(owned_icon)
-		else:
-			vbox.add_child(_make_ability_emblem(abi_id, abi_id.begins_with("aura_")))
-		
-		if abi_id.begins_with("aura_"):
-			panel.add_theme_stylebox_override("panel", _shop_style(Color(0.12, 0.055, 0.16, 0.92), Color(0.72, 0.3, 0.9, 0.75), 12, 1))
-			auras_box.add_child(panel)
-		else:
-			panel.add_theme_stylebox_override("panel", _shop_style(Color(0.045, 0.1, 0.16, 0.92), Color(0.2, 0.68, 0.95, 0.75), 12, 1))
-			weapons_box.add_child(panel)
-
-	# Optional vertical space
-	var spacer = Control.new()
-	spacer.custom_minimum_size = Vector2(0, 18)
-	shop_grid.add_child(spacer)
-
-	# --- SELECT UPGRADE ---
-	var h_shop = Label.new()
-	h_shop.text = "CHOOSE ONE REWARD"
-	h_shop.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_style_section_header(h_shop, Color(1.0, 0.82, 0.3))
-	
-	shop_grid.add_child(h_shop)
-	
-	# Create centered HBoxContainer for shop options
-	var upgrades_box = HBoxContainer.new()
-	upgrades_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	upgrades_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	upgrades_box.add_theme_constant_override("separation", 20)
-	shop_grid.add_child(upgrades_box)
+	var heading := Label.new()
+	heading.text = "UPGRADE OFFERS"
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_style_section_header(heading, Color(0.78, 0.9, 1.0))
+	shop_grid.add_child(heading)
 
 	for abi in current_shop_options:
-		var level = GameState.run_abilities.get(abi.id, 0)
-		var panel = PanelContainer.new()
-		var vbox = VBoxContainer.new()
-		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-		vbox.add_theme_constant_override("separation", 8)
-		vbox.custom_minimum_size = Vector2(260, 235)
-		panel.add_child(vbox)
-		
-		# --- Rarity data ---
+		var level: int = int(GameState.run_abilities.get(abi.id, 0))
 		var upgrade_roll: Dictionary = abi.get("upgrade_roll", {})
 		var has_roll := not upgrade_roll.is_empty()
-		var rarity: String = upgrade_roll.get("rarity", "common")
-		var rarity_color: Color = GameConstants.RARITY_COLORS.get(rarity, Color.WHITE)
-		
-		# Apply rarity-tinted background to the panel
-		panel.add_theme_stylebox_override("panel", _shop_style(Color(0.055, 0.07, 0.125, 0.98), Color(0.2, 0.32, 0.52, 0.9), 16, 2))
-		if has_roll:
-			var sb = StyleBoxFlat.new()
-			sb.bg_color = Color(rarity_color.r * 0.15, rarity_color.g * 0.15, rarity_color.b * 0.15, 1.0)
-			sb.border_width_left = 3
-			sb.border_width_top = 3
-			sb.border_width_right = 3
-			sb.border_width_bottom = 3
-			sb.border_color = rarity_color
-			sb.corner_radius_top_left = 8
-			sb.corner_radius_top_right = 8
-			sb.corner_radius_bottom_left = 8
-			sb.corner_radius_bottom_right = 8
-			panel.add_theme_stylebox_override("panel", sb)
-		
-		# --- Weapon name & level ---
-		var lbl = Label.new()
-		lbl.text = abi.name
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.add_theme_font_size_override("font_size", 20)
-		vbox.add_child(lbl)
-		
-		var shop_icon = _create_shop_weapon_icon(abi.id)
-		var subtitle := Label.new()
-		subtitle.text = _ability_subtitle(abi, level)
-		subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		subtitle.add_theme_font_size_override("font_size", 12)
-		subtitle.add_theme_color_override("font_color", Color(0.55, 0.68, 0.83))
-		vbox.add_child(subtitle)
-		if shop_icon:
-			vbox.add_child(shop_icon)
-		else:
-			vbox.add_child(_make_ability_emblem(abi.id, abi.get("is_aura", false)))
-		
-		# --- Rarity badge ---
-		if has_roll:
-			var rarity_lbl = Label.new()
-			var rarity_name: String = GameConstants.RARITY_NAMES.get(rarity, "Common")
-			rarity_lbl.text = "★  %s" % rarity_name.to_upper()
-			rarity_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			rarity_lbl.add_theme_font_size_override("font_size", 16)
-			rarity_lbl.modulate = rarity_color
-			vbox.add_child(rarity_lbl)
-			
-			# --- Trait stat line ---
-			var stat_lbl = Label.new()
-			stat_lbl.text = upgrade_roll.get("display", "")
-			stat_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			stat_lbl.add_theme_font_size_override("font_size", 18)
-			stat_lbl.modulate = Color.WHITE
-			vbox.add_child(stat_lbl)
-		
-		# --- Upgrade button ---
-		var buy_btn = Button.new()
-		
-		var is_limit_reached = false
-		if level == 0:
-			var cur_abi = 0
-			var cur_aur = 0
-			for rid in GameState.run_abilities:
-				if rid.begins_with("aura_"): cur_aur += 1
-				else: cur_abi += 1
-			
-			if abi.get("is_aura", false):
-				is_limit_reached = cur_aur >= GameState.get_aura_limit()
-			else:
-				is_limit_reached = cur_abi >= GameState.get_ability_limit()
-		
-		if is_limit_reached:
-			buy_btn.text = "Limit Reached"
-			buy_btn.disabled = true
-		else:
-			var prefix = "Select" if level == 0 else "Upgrade"
-			buy_btn.text = prefix
-			buy_btn.pressed.connect(_buy_ability.bind(abi.id, abi.get("upgrade_roll", {})))
-			
-		buy_btn.custom_minimum_size = Vector2(210, 46)
-		var card_accent := rarity_color if has_roll else (Color(0.9, 0.35, 1.0) if abi.get("is_aura", false) else Color(0.2, 0.72, 1.0))
-		_style_shop_button(buy_btn, card_accent)
-		vbox.add_child(buy_btn)
-		
-		upgrades_box.add_child(panel)
+		var rarity: String = String(upgrade_roll.get("rarity", "common"))
+		var rarity_color: Color = GameConstants.RARITY_COLORS.get(rarity, Color(0.35, 0.8, 1.0))
+		var accent := rarity_color if has_roll else (Color(0.92, 0.48, 1.0) if abi.get("is_aura", false) else Color(0.35, 0.8, 1.0))
 
-	# --- FOOTER (Reroll) ---
-	var footer_spacer = Control.new()
-	footer_spacer.custom_minimum_size = Vector2(0, 18)
-	shop_grid.add_child(footer_spacer)
-	
-	var footer_box = HBoxContainer.new()
-	footer_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	footer_box.add_theme_constant_override("separation", 50)
-	shop_grid.add_child(footer_box)
-	
-	var reroll_btn = Button.new()
-	reroll_btn.text = "Reroll (%d left)" % GameState.run_reroll_count
-	reroll_btn.disabled = GameState.run_reroll_count <= 0
-	reroll_btn.custom_minimum_size = Vector2(230, 46)
-	_style_shop_button(reroll_btn, Color(0.58, 0.65, 0.78), true)
-	reroll_btn.pressed.connect(_reroll_shop)
-	footer_box.add_child(reroll_btn)
+		var panel := PanelContainer.new()
+		panel.custom_minimum_size = Vector2(0, 112)
+		panel.add_theme_stylebox_override("panel", _shop_style(Color(accent.r * 0.11, accent.g * 0.11, accent.b * 0.11, 0.98), Color(accent, 0.86), 7, 2))
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 14)
+		panel.add_child(row)
+
+		var icon := _create_shop_weapon_icon(String(abi.id), 1.0)
+		if icon:
+			icon.custom_minimum_size = Vector2(70, 70)
+			row.add_child(icon)
+		else:
+			row.add_child(_create_question_mark_icon(Vector2(70, 70)))
+
+		var body := VBoxContainer.new()
+		body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		body.alignment = BoxContainer.ALIGNMENT_CENTER
+		body.add_theme_constant_override("separation", 3)
+		row.add_child(body)
+
+		var name_row := HBoxContainer.new()
+		body.add_child(name_row)
+		var name_label := Label.new()
+		name_label.text = String(abi.name)
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_label.add_theme_font_size_override("font_size", 19)
+		name_label.add_theme_color_override("font_color", Color.WHITE)
+		name_row.add_child(name_label)
+		var level_label := Label.new()
+		level_label.text = "NEW" if level == 0 else "LV %d > %d" % [level, level + 1]
+		level_label.add_theme_font_size_override("font_size", 12)
+		level_label.add_theme_color_override("font_color", accent.lightened(0.18))
+		name_row.add_child(level_label)
+
+		var detail_label := Label.new()
+		detail_label.text = _ability_subtitle(abi, level)
+		if has_roll and not String(upgrade_roll.get("display", "")).is_empty():
+			detail_label.text += "  |  " + String(upgrade_roll.display)
+		detail_label.add_theme_font_size_override("font_size", 13)
+		detail_label.add_theme_color_override("font_color", Color(0.7, 0.78, 0.9))
+		detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		body.add_child(detail_label)
+
+		if has_roll:
+			var rarity_label := Label.new()
+			rarity_label.text = String(GameConstants.RARITY_NAMES.get(rarity, "Common")).to_upper()
+			rarity_label.add_theme_font_size_override("font_size", 12)
+			rarity_label.add_theme_color_override("font_color", rarity_color)
+			body.add_child(rarity_label)
+
+		var buy_button := Button.new()
+		buy_button.text = "TAKE" if level == 0 else "UPGRADE"
+		buy_button.custom_minimum_size = Vector2(112, 52)
+		buy_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		_style_shop_button(buy_button, accent)
+		buy_button.pressed.connect(_buy_ability.bind(abi.id, upgrade_roll))
+		row.add_child(buy_button)
+		shop_grid.add_child(panel)
+
+	var footer := HBoxContainer.new()
+	footer.alignment = BoxContainer.ALIGNMENT_CENTER
+	footer.add_theme_constant_override("separation", 18)
+	shop_grid.add_child(footer)
+	var reroll_button := Button.new()
+	reroll_button.text = "REROLL  (%d LEFT)" % GameState.run_reroll_count
+	reroll_button.disabled = GameState.run_reroll_count <= 0
+	reroll_button.custom_minimum_size = Vector2(220, 42)
+	_style_shop_button(reroll_button, Color(0.58, 0.65, 0.78), true)
+	reroll_button.pressed.connect(_reroll_shop)
+	footer.add_child(reroll_button)
+
+func _create_question_mark_icon(icon_size: Vector2) -> TextureRect:
+	var icon := TextureRect.new()
+	icon.texture = load("res://assets/ui/question_mark.svg") as Texture2D
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.custom_minimum_size = icon_size
+	return icon
+
 
 func _create_shop_weapon_icon(weapon_id: String, scale: float = 0.75) -> TextureRect:
 	if not SHOP_WEAPON_ICONS.has(weapon_id):
@@ -1054,8 +1010,8 @@ func _toggle_pause() -> void:
 	get_tree().paused = not is_paused
 	pause_panel.visible = not is_paused
 
-	if not is_paused and is_instance_valid(pause_stats_panel):
-		pause_stats_panel.refresh_stats()
+	if not is_paused:
+		_refresh_reference_panels()
 func _resume() -> void:
 	_toggle_pause()
 
