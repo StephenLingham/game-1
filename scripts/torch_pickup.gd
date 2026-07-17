@@ -14,9 +14,6 @@ func _ready() -> void:
 	add_to_group("torches")
 	body_entered.connect(_on_body_entered)
 	_setup_visuals()
-	var pulse := create_tween().set_loops()
-	pulse.tween_property(self, "scale", Vector2(1.08, 1.08), 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	pulse.tween_property(self, "scale", Vector2.ONE, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 func _setup_visuals() -> void:
 	var gradient := Gradient.new()

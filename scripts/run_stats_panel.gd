@@ -111,7 +111,7 @@ func refresh_stats() -> void:
 func _current_damage(player: Node) -> int:
 	if player and player.has_method("get_damage"):
 		return int(player.get_damage())
-	return GameState.get_total_damage(GameConstants.ZAP_BASE_DAMAGE)
+	return GameState.get_total_damage(GameConstants.ZAP_BASE_DAMAGE + GameState.get_zap_damage_bonus())
 
 func _set_value(key: String, value: String) -> void:
 	var label: Label = _values.get(key)

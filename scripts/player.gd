@@ -256,53 +256,53 @@ func _physics_process(delta: float) -> void:
 			var visible_enemies = _get_visible_enemies()
 			if not visible_enemies.is_empty():
 				_fire_shotgun(visible_enemies.pick_random())
-				shotgun_timer = GameConstants.SHOTGUN_BASE_COOLDOWN / _atk_speed_boost_multiplier
+				shotgun_timer = GameConstants.SHOTGUN_BASE_COOLDOWN / _get_attack_speed_multiplier()
 
 	# Sniper logic
 	if GameState.run_abilities.get("sniper", 0) > 0:
 		sniper_timer -= delta
 		if sniper_timer <= 0:
 			_fire_sniper()
-			sniper_timer = GameState.get_sniper_cooldown() / _atk_speed_boost_multiplier
+			sniper_timer = GameState.get_sniper_cooldown() / _get_attack_speed_multiplier()
 
 	# Rocket logic
 	if GameState.run_abilities.get("rocket", 0) > 0:
 		rocket_timer -= delta
 		if rocket_timer <= 0:
 			_fire_rocket()
-			rocket_timer = GameState.get_rocket_cooldown() / _atk_speed_boost_multiplier
+			rocket_timer = GameState.get_rocket_cooldown() / _get_attack_speed_multiplier()
 
 	# New Abilities
 	if GameState.run_abilities.get("bouncing_disk", 0) > 0:
 		disk_timer -= delta
 		if disk_timer <= 0:
 			_fire_disk()
-			disk_timer = GameConstants.DISK_BASE_COOLDOWN / _atk_speed_boost_multiplier
+			disk_timer = GameConstants.DISK_BASE_COOLDOWN / _get_attack_speed_multiplier()
 			
 	if GameState.run_abilities.get("floor_spikes", 0) > 0:
 		spikes_timer -= delta
 		if spikes_timer <= 0:
 			_drop_spikes()
-			spikes_timer = GameConstants.SPIKES_BASE_COOLDOWN / _atk_speed_boost_multiplier
+			spikes_timer = GameConstants.SPIKES_BASE_COOLDOWN / _get_attack_speed_multiplier()
 
 	if GameState.run_abilities.get("turret", 0) > 0:
 		turret_timer -= delta
 		if turret_timer <= 0:
 			_place_turret()
 			var lvl = GameState.run_abilities.get("turret", 1)
-			turret_timer = (GameConstants.TURRET_BASE_COOLDOWN - lvl * GameConstants.TURRET_COOLDOWN_REDUCTION)
+			turret_timer = (GameConstants.TURRET_BASE_COOLDOWN - lvl * GameConstants.TURRET_COOLDOWN_REDUCTION) / _get_attack_speed_multiplier()
 
 	if GameState.run_abilities.get("ice_wave", 0) > 0:
 		ice_timer -= delta
 		if ice_timer <= 0:
 			_trigger_ice_wave()
-			ice_timer = GameConstants.ICE_BASE_COOLDOWN / _atk_speed_boost_multiplier
+			ice_timer = GameConstants.ICE_BASE_COOLDOWN / _get_attack_speed_multiplier()
 
 	if GameState.run_abilities.get("machine_gun", 0) > 0:
 		mg_timer -= delta
 		if mg_timer <= 0:
 			_fire_machine_gun(nearest_enemy)
-			mg_timer = GameConstants.MG_BASE_COOLDOWN / _atk_speed_boost_multiplier
+			mg_timer = GameConstants.MG_BASE_COOLDOWN / _get_attack_speed_multiplier()
 
 	_process_new_weapons(delta, nearest_enemy)
 	_update_arcane_field_visual()
@@ -352,7 +352,7 @@ func _get_weapon_cooldown(id: String) -> float:
 	
 	var lvl = GameState.run_abilities.get(id, 1)
 	var cooldown = base / (1.0 + (lvl - 1) * 0.2)
-	return max(0.1, cooldown / _atk_speed_boost_multiplier)
+	return max(0.1, cooldown / _get_attack_speed_multiplier())
 
 func _fire_weapon(id: String, target: Node2D) -> void:
 	match id:
@@ -541,6 +541,12 @@ func _leave_fire_trail() -> void:
 	var fire = spikes_scene.instantiate() # Reuse floor spikes for trail
 	fire.global_position = global_position
 	fire.modulate = Color.RED
+	var effective_dmg = _get_weapon_base_damage("fire_trail") + GameState.get_weapon_damage_bonus("fire_trail")
+	var res = _get_final_damage_for_weapon(effective_dmg, "fire_trail")
+	fire.damage = res.damage
+	fire.weapon_source = "fire_trail"
+	if "is_crit" in fire:
+		fire.is_crit = res.is_crit
 	get_tree().current_scene.add_child(fire)
 
 func _apply_area_damage(pos: Vector2, radius: float, base_dmg: int, source: String) -> void:
@@ -548,8 +554,8 @@ func _apply_area_damage(pos: Vector2, radius: float, base_dmg: int, source: Stri
 	for e in enemies:
 		if is_instance_valid(e) and pos.distance_to(e.global_position) <= radius:
 			var res = _get_final_damage(base_dmg)
-			e.take_damage(res.damage, source, res.is_crit)
-			GameState.run_damage_stats[source] = GameState.run_damage_stats.get(source, 0) + res.damage
+			var actual_dmg: int = e.take_damage(res.damage, source, res.is_crit)
+			GameState.run_damage_stats[source] = GameState.run_damage_stats.get(source, 0) + actual_dmg
 
 ## Weapon-trait-aware area damage: includes per-weapon crit chance bonus.
 func _apply_area_damage_for_weapon(pos: Vector2, radius: float, effective_dmg: int, source: String) -> void:
@@ -557,8 +563,8 @@ func _apply_area_damage_for_weapon(pos: Vector2, radius: float, effective_dmg: i
 	for e in enemies:
 		if is_instance_valid(e) and pos.distance_to(e.global_position) <= radius:
 			var res = _get_final_damage_for_weapon(effective_dmg, source)
-			e.take_damage(res.damage, source, res.is_crit)
-			GameState.run_damage_stats[source] = GameState.run_damage_stats.get(source, 0) + res.damage
+			var actual_dmg: int = e.take_damage(res.damage, source, res.is_crit)
+			GameState.run_damage_stats[source] = GameState.run_damage_stats.get(source, 0) + actual_dmg
 
 func _apply_blizzard_hit(pos: Vector2, radius: float, effective_dmg: int) -> void:
 	_show_blizzard_strike(pos, radius)
@@ -615,6 +621,12 @@ func _get_final_damage_for_weapon(base_dmg: int, weapon_id: String) -> Dictionar
 	if is_crit:
 		dmg = int(round(float(dmg) * GameState.get_crit_multiplier()))
 	return {"damage": dmg, "is_crit": is_crit}
+
+func roll_weapon_damage(base_dmg: int, weapon_id: String) -> Dictionary:
+	return _get_final_damage_for_weapon(base_dmg, weapon_id)
+
+func _get_attack_speed_multiplier() -> float:
+	return max(GameState.get_atkspd_multiplier() * _atk_speed_boost_multiplier, 0.05)
 
 func _get_fire_interval() -> float:
 	var atk_mult := GameState.get_atkspd_multiplier() * GameState.get_zap_atk_speed_mult() * _atk_speed_boost_multiplier
@@ -684,7 +696,7 @@ func fire(target: Node2D) -> void:
 		bullet.rotation = bullet_dir.angle()
 		bullet.direction = bullet_dir
 		
-		var zap_dmg = GameConstants.ZAP_BASE_DAMAGE + GameState.get_weapon_damage_bonus("zap")
+		var zap_dmg = GameConstants.ZAP_BASE_DAMAGE + GameState.get_zap_damage_bonus() + GameState.get_weapon_damage_bonus("zap")
 		var res = _get_final_damage_for_weapon(zap_dmg, "zap")
 		bullet.damage = res.damage
 		if "is_crit" in bullet: bullet.is_crit = res.is_crit
@@ -842,7 +854,7 @@ func take_damage(amount: int = 1, attacker: Node2D = null) -> void:
 func _get_spike_ball_cooldown() -> float:
 	var lvl = GameState.run_abilities.get("spike_ball", 0)
 	var cooldown = GameConstants.SPIKE_BALL_BASE_COOLDOWN - (lvl - 1) * GameConstants.SPIKE_BALL_COOLDOWN_REDUCTION_PER_LEVEL
-	return max(0.5, cooldown)
+	return max(0.5, cooldown / _get_attack_speed_multiplier())
 
 func _fire_spike_ball(target: Node2D) -> void:
 	var ball = spike_ball_scene.instantiate() as Area2D
@@ -930,6 +942,7 @@ func _drop_spikes() -> void:
 	var spike_dmg = GameConstants.SPIKES_BASE_DAMAGE + GameState.get_weapon_damage_bonus("floor_spikes")
 	var res = _get_final_damage_for_weapon(spike_dmg, "floor_spikes")
 	spikes.damage = res.damage
+	spikes.weapon_source = "floor_spikes"
 	if "is_crit" in spikes: spikes.is_crit = res.is_crit
 	get_tree().current_scene.add_child(spikes)
 
@@ -966,7 +979,10 @@ func _trigger_ice_wave() -> void:
 			if e.has_method("freeze"):
 				e.freeze(GameConstants.ICE_FREEZE_DURATION)
 			if e.has_method("take_damage"):
-				e.take_damage(GameConstants.ICE_BASE_DAMAGE, "ice_wave")
+				var effective_dmg := GameConstants.ICE_BASE_DAMAGE + GameState.get_weapon_damage_bonus("ice_wave")
+				var res := _get_final_damage_for_weapon(effective_dmg, "ice_wave")
+				var actual_dmg: int = e.take_damage(res.damage, "ice_wave", res.is_crit)
+				GameState.run_damage_stats["ice_wave"] = GameState.run_damage_stats.get("ice_wave", 0) + actual_dmg
 
 func _fire_machine_gun(target: Node2D) -> void:
 	if not target: return

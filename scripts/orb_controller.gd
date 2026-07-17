@@ -56,9 +56,13 @@ func _get_orb_count() -> int:
 
 func _get_orb_speed() -> float:
 	var lvl = GameState.run_abilities.get(ability_id, 0)
+	var attack_speed_mult := GameState.get_atkspd_multiplier()
+	var player := get_tree().get_first_node_in_group("player")
+	if player and "_atk_speed_boost_multiplier" in player:
+		attack_speed_mult *= player._atk_speed_boost_multiplier
 	if lvl >= 2:
-		return GameConstants.ORB_UPGRADE_ROTATE_SPEED
-	return GameConstants.ORB_BASE_ROTATE_SPEED
+		return GameConstants.ORB_UPGRADE_ROTATE_SPEED * attack_speed_mult
+	return GameConstants.ORB_BASE_ROTATE_SPEED * attack_speed_mult
 
 func _refresh_orbs(count: int) -> void:
 	# Clear old

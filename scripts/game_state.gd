@@ -378,12 +378,12 @@ func add_weapon_trait(weapon_id: String, trait_name: String, amount: float) -> v
 ## Fractional accumulations are floored. Minimum is always 1.
 func get_weapon_projectiles(weapon_id: String) -> int:
 	var trait_bonus := get_weapon_trait(weapon_id, "projectiles")
-	return max(1, int(floor(float(GameConstants.BASE_PROJECTILES) + trait_bonus)))
+	return max(1, int(floor(float(get_projectiles()) + trait_bonus)))
 
 ## Returns bounce count for a weapon from its trait bonus. Fractional values are floored.
 func get_weapon_bounces(weapon_id: String) -> int:
 	var trait_bonus := get_weapon_trait(weapon_id, "bounces")
-	return max(0, int(floor(float(GameConstants.BASE_BOUNCES) + trait_bonus)))
+	return max(0, int(floor(float(get_bounces()) + trait_bonus)))
 
 ## Returns a size multiplier (e.g. 1.30 = +30% radius) for area-based weapon attacks.
 func get_weapon_size_multiplier(weapon_id: String) -> float:
@@ -436,8 +436,8 @@ func roll_weapon_upgrade(weapon_id: String) -> Dictionary:
 	match trait_name:
 		"damage":      display = "+%d Damage" % int(round(value))
 		"crit_chance": display = "+%d%% Crit Chance" % int(round(value * 100.0))
-		"projectiles": display = "+%.1f Projectiles (%d to %d)" % [value, get_weapon_projectiles(weapon_id), int(floor(get_weapon_trait(weapon_id, "projectiles") + value)) + GameConstants.BASE_PROJECTILES]
-		"bounces":     display = "+%.1f Bounces (%d to %d)" % [value, get_weapon_bounces(weapon_id), int(floor(get_weapon_trait(weapon_id, "bounces") + value)) + GameConstants.BASE_BOUNCES]
+		"projectiles": display = "+%.1f Projectiles (%d to %d)" % [value, get_weapon_projectiles(weapon_id), int(floor(float(get_projectiles()) + get_weapon_trait(weapon_id, "projectiles") + value))]
+		"bounces":     display = "+%.1f Bounces (%d to %d)" % [value, get_weapon_bounces(weapon_id), int(floor(float(get_bounces()) + get_weapon_trait(weapon_id, "bounces") + value))]
 		"size":        display = "+%d%% Area Size" % int(round(value * 100.0))
 		_:             display = ""
 	return {
@@ -609,7 +609,7 @@ func get_total_damage(base: int) -> int:
 		var stats = GameConstants.ITEMS.get(item_id, {}).get("stats", {})
 		bonus_flat += stats.get("damage", 0)
 		
-	var dmg = float(base + get_zap_damage_bonus() + bonus_flat)
+	var dmg = float(base + bonus_flat)
 	dmg += run_gift_bonuses.get("damage_bonus", 0.0)
 	dmg *= get_damage_multiplier()
 	return int(round(dmg))

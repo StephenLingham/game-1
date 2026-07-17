@@ -8,9 +8,14 @@ func _ready() -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
-		var stat_source := weapon_source
-		if stat_source == "arcane_orbs":
-			stat_source = "orbs"
-		var actual_dmg = body.take_damage(damage, weapon_source)
-		GameState.run_damage_orbs += actual_dmg
-		GameState.run_damage_stats[stat_source] = GameState.run_damage_stats.get(stat_source, 0) + actual_dmg
+		var final_damage := damage
+		var is_crit := false
+		var player := get_tree().get_first_node_in_group("player")
+		if player and player.has_method("roll_weapon_damage"):
+			var result: Dictionary = player.roll_weapon_damage(damage, weapon_source)
+			final_damage = int(result.damage)
+			is_crit = bool(result.is_crit)
+		else:
+			final_damage = GameState.get_total_damage(damage)
+		var actual_dmg: int = body.take_damage(final_damage, weapon_source, is_crit)
+		GameState.run_damage_stats[weapon_source] = GameState.run_damage_stats.get(weapon_source, 0) + actual_dmg

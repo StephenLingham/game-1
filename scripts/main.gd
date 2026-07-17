@@ -234,41 +234,43 @@ func _setup_reference_layouts() -> void:
 
 	var pause_vbox := pause_panel.get_node("VBox") as VBoxContainer
 	pause_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	pause_panel.offset_left = 20
-	pause_panel.offset_top = 20
-	pause_panel.offset_right = -20
-	pause_panel.offset_bottom = -20
-	pause_panel.add_theme_stylebox_override("panel", _overlay_style())
+	pause_panel.offset_left = 0
+	pause_panel.offset_top = 0
+	pause_panel.offset_right = 0
+	pause_panel.offset_bottom = 0
+	pause_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	var pause_row := HBoxContainer.new()
 	pause_row.name = "ThreeColumnLayout"
 	pause_row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	pause_row.offset_left = 18
-	pause_row.offset_top = 18
-	pause_row.offset_right = -18
-	pause_row.offset_bottom = -18
+	pause_row.offset_left = 20
+	pause_row.offset_top = 20
+	pause_row.offset_right = -20
+	pause_row.offset_bottom = -20
 	pause_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	pause_row.add_theme_constant_override("separation", 24)
+	pause_row.add_theme_constant_override("separation", 36)
 	pause_panel.add_child(pause_row)
 
 	pause_inventory_panel = RunInventoryPanel.new()
 	pause_inventory_panel.name = "RunInventoryPanel"
 	pause_inventory_panel.set_ability_catalog(ALL_ABILITIES)
 	pause_row.add_child(pause_inventory_panel)
-	pause_vbox.reparent(pause_row)
-	pause_vbox.custom_minimum_size = Vector2(380, 0)
+	pause_inventory_panel.add_theme_stylebox_override("panel", _level_up_panel_style())
+	var pause_content_panel := PanelContainer.new()
+	pause_content_panel.name = "PauseContentPanel"
+	pause_content_panel.custom_minimum_size = Vector2(600, 0)
+	pause_content_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pause_content_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	pause_content_panel.add_theme_stylebox_override("panel", _level_up_panel_style())
+	pause_row.add_child(pause_content_panel)
+	pause_vbox.reparent(pause_content_panel)
+	pause_vbox.custom_minimum_size = Vector2(0, 0)
 	pause_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pause_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	pause_stats_panel = RunStatsPanel.new()
 	pause_stats_panel.name = "RunStatsPanel"
 	pause_row.add_child(pause_stats_panel)
+	pause_stats_panel.add_theme_stylebox_override("panel", _level_up_panel_style())
 	_refresh_reference_panels()
-
-func _overlay_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.015, 0.025, 0.045, 0.96)
-	style.border_color = Color(0.24, 0.54, 0.7, 0.8)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(12)
-	return style
 
 func _level_up_panel_style() -> StyleBoxTexture:
 	var style := StyleBoxTexture.new()
@@ -282,6 +284,9 @@ func _level_up_panel_style() -> StyleBoxTexture:
 	style.content_margin_right = 22.0
 	style.content_margin_bottom = 20.0
 	return style
+
+func get_run_ability_catalog() -> Array:
+	return ALL_ABILITIES
 
 func _refresh_reference_panels() -> void:
 	for inventory in [shop_inventory_panel, pause_inventory_panel]:
@@ -916,34 +921,8 @@ func end_run(won: bool, waves_completed: int) -> void:
 	var stats_vbox = $UI/GameOverPanel/Margin/VBox/StatsScroll/StatsVBox
 	stats_vbox.get_node("KillsLabel").text = "Enemies Killed: %d" % GameState.run_enemies_killed
 
-	# Damage breakdown
-	var dmg_grid = stats_vbox.get_node("DmgGrid")
-	var dmg_stats = [
-		["DmgZap", GameState.run_damage_zap],
-		["DmgShotgun", GameState.run_damage_shotgun],
-		["DmgSniper", GameState.run_damage_sniper],
-		["DmgRocket", GameState.run_damage_rocket],
-		["DmgSpike", GameState.run_damage_spike_ball],
-		["DmgOrbs", GameState.run_damage_orbs],
-		["DmgTurret", GameState.run_damage_turret],
-		["DmgDisk", GameState.run_damage_bouncing_disk],
-		["DmgFloorSpikes", GameState.run_damage_floor_spikes],
-		["DmgExplosion", GameState.run_damage_explosion_pickup]
-	]
-
-	for stat in dmg_stats:
-		var prefix = stat[0]
-		var amt = stat[1]
-		var lbl_node = dmg_grid.get_node_or_null(prefix + "Label")
-		var val_node = dmg_grid.get_node_or_null(prefix + "Value")
-		if lbl_node and val_node:
-			if amt > 0:
-				lbl_node.visible = true
-				val_node.visible = true
-				val_node.text = str(amt)
-			else:
-				lbl_node.visible = false
-				val_node.visible = false
+	# Build this from the live damage dictionary so every current and future weapon appears.
+	_populate_damage_breakdown(stats_vbox.get_node("DmgGrid") as GridContainer)
 
 	# XP stats
 	var gold_grid = stats_vbox.get_node("GoldGrid")
@@ -962,7 +941,6 @@ func end_run(won: bool, waves_completed: int) -> void:
 		unlock_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		unlock_lbl.modulate = Color.GOLD
 		stats_vbox.add_child(unlock_lbl)
-		
 		for id in newly_unlocked:
 			var item_name = id
 			# Check abilities first
@@ -972,15 +950,76 @@ func end_run(won: bool, waves_completed: int) -> void:
 					item_name = abi.name
 					found = true
 					break
-			
+
 			# If not an ability, check treasure items
 			if not found and GameConstants.ITEMS.has(id):
 				item_name = GameConstants.ITEMS[id].name
-			
+
 			var l = Label.new()
 			l.text = "★ %s" % item_name
 			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			stats_vbox.add_child(l)
+
+func _populate_damage_breakdown(dmg_grid: GridContainer) -> void:
+	for child in dmg_grid.get_children():
+		child.free()
+
+	var sources: Array[String] = []
+	for ability_id in GameState.run_abilities:
+		var source := String(ability_id)
+		if not source.begins_with("aura_"):
+			sources.append(source)
+	for source_id in GameState.run_damage_stats:
+		var source := String(source_id)
+		if int(GameState.run_damage_stats.get(source, 0)) > 0 and not sources.has(source):
+			sources.append(source)
+
+	sources.sort_custom(func(a: String, b: String) -> bool:
+		var damage_a := int(GameState.run_damage_stats.get(a, 0))
+		var damage_b := int(GameState.run_damage_stats.get(b, 0))
+		if damage_a == damage_b:
+			return _damage_source_display_name(a) < _damage_source_display_name(b)
+		return damage_a > damage_b
+	)
+
+	if sources.is_empty():
+		var empty_label := Label.new()
+		empty_label.text = "No damage dealt"
+		empty_label.add_theme_color_override("font_color", Color(0.62, 0.68, 0.78))
+		dmg_grid.add_child(empty_label)
+		return
+
+	for source in sources:
+		var name_label := Label.new()
+		name_label.text = _damage_source_display_name(source) + ":"
+		name_label.add_theme_font_size_override("font_size", 16)
+		name_label.add_theme_color_override("font_color", Color(0.78, 0.84, 0.94))
+		dmg_grid.add_child(name_label)
+
+		var value_label := Label.new()
+		value_label.text = str(int(GameState.run_damage_stats.get(source, 0)))
+		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		value_label.add_theme_font_size_override("font_size", 16)
+		value_label.add_theme_color_override("font_color", Color.WHITE)
+		dmg_grid.add_child(value_label)
+
+func _damage_source_display_name(source: String) -> String:
+	for ability in ALL_ABILITIES:
+		if String(ability.get("id", "")) == source:
+			return String(ability.get("name", source.capitalize()))
+	var special_names := {
+		"explosion_pickup": "Explosion Pickup",
+		"crit_explosion": "Critical Explosion",
+		"crit_chain": "Critical Chain",
+		"close_quarters_bonus": "Close Quarters",
+		"execute_health": "Execution",
+		"giant_slayer": "Giant Slayer",
+		"longshot_bonus": "Longshot",
+		"reflect": "Reflected Damage",
+		"shockwave_shell": "Shockwave Shell",
+		"thorns": "Thorns"
+	}
+	return String(special_names.get(source, source.replace("_", " ").capitalize()))
 
 func _back_to_lobby() -> void:
 	get_tree().paused = false

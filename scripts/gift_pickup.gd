@@ -16,10 +16,6 @@ func _ready() -> void:
 	_setup_visuals()
 	body_entered.connect(_on_body_entered)
 
-	var tween = create_tween().set_loops()
-	tween.tween_property(self, "scale", Vector2(1.05, 1.05), 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-
 func _process(_delta: float) -> void:
 	if not GameState.has_run_item("gift_vacuum"):
 		return

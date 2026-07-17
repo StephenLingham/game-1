@@ -3,6 +3,7 @@ extends Area2D
 var direction := Vector2.RIGHT
 var speed := GameConstants.DISK_SPEED
 var damage := GameConstants.DISK_BASE_DAMAGE
+var is_crit := false
 var bounces_left := 0
 var last_enemy_hit: Node2D = null
 
@@ -37,7 +38,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies"):
 		if is_instance_valid(body) and body != last_enemy_hit:
 			if body.has_method("take_damage"):
-				GameState.run_damage_stats["bouncing_disk"] = GameState.run_damage_stats.get("bouncing_disk", 0) + body.take_damage(damage, "bouncing_disk")
+				GameState.run_damage_stats["bouncing_disk"] = GameState.run_damage_stats.get("bouncing_disk", 0) + body.take_damage(damage, "bouncing_disk", is_crit)
 			
 			last_enemy_hit = body
 			

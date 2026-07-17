@@ -1,6 +1,8 @@
 extends Area2D
 
 var damage := GameConstants.SPIKES_BASE_DAMAGE
+var weapon_source := "floor_spikes"
+var is_crit := false
 
 func _ready() -> void:
 	add_to_group("projectiles")
@@ -35,4 +37,5 @@ func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies"):
 		if is_instance_valid(body):
 			if body.has_method("take_damage"):
-				GameState.run_damage_stats["floor_spikes"] = GameState.run_damage_stats.get("floor_spikes", 0) + body.take_damage(damage, "floor_spikes")
+				var actual_dmg: int = body.take_damage(damage, weapon_source, is_crit)
+				GameState.run_damage_stats[weapon_source] = GameState.run_damage_stats.get(weapon_source, 0) + actual_dmg

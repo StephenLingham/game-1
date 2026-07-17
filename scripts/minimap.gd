@@ -9,6 +9,7 @@ var arena_rect: Rect2
 var player: Node2D = null
 var is_initialized: bool = false
 var crystal_marker_texture: Texture2D = preload("res://assets/gem_icon.png")
+const PANEL_BACKGROUND := preload("res://assets/ui/level_up/panel_background.webp")
 
 # Circular Minimap Properties
 var minimap_radius: float = 80.0
@@ -18,13 +19,64 @@ var minimap_scale: float = 80.0 / 1200.0 # 1200 world units map to 80 units in m
 # Full Screen Map Properties
 var full_map_size: Vector2 = Vector2(600, 600)
 var is_tab_held: bool = false
+var full_map_layout: HBoxContainer
+var map_inventory_panel: RunInventoryPanel
+var map_stats_panel: RunStatsPanel
+var full_map_panel_style: StyleBoxTexture
 
 func _ready() -> void:
 	# Add to group or do general setups
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	full_map_panel_style = _create_map_panel_style()
+	_build_full_map_layout()
 	_try_auto_initialize()
+
+func _build_full_map_layout() -> void:
+	full_map_layout = HBoxContainer.new()
+	full_map_layout.name = "FullMapThreeColumnLayout"
+	full_map_layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	full_map_layout.offset_left = 20.0
+	full_map_layout.offset_top = 20.0
+	full_map_layout.offset_right = -20.0
+	full_map_layout.offset_bottom = -20.0
+	full_map_layout.alignment = BoxContainer.ALIGNMENT_CENTER
+	full_map_layout.add_theme_constant_override("separation", 36)
+	full_map_layout.visible = false
+	add_child(full_map_layout)
+
+	map_inventory_panel = RunInventoryPanel.new()
+	map_inventory_panel.name = "RunInventoryPanel"
+	var main_scene := get_tree().current_scene
+	if main_scene and main_scene.has_method("get_run_ability_catalog"):
+		map_inventory_panel.set_ability_catalog(main_scene.get_run_ability_catalog())
+	full_map_layout.add_child(map_inventory_panel)
+	map_inventory_panel.add_theme_stylebox_override("panel", full_map_panel_style)
+
+	var map_space := Control.new()
+	map_space.name = "MapSpace"
+	map_space.custom_minimum_size = full_map_size
+	map_space.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	full_map_layout.add_child(map_space)
+
+	map_stats_panel = RunStatsPanel.new()
+	map_stats_panel.name = "RunStatsPanel"
+	full_map_layout.add_child(map_stats_panel)
+	map_stats_panel.add_theme_stylebox_override("panel", full_map_panel_style)
+
+func _create_map_panel_style() -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = PANEL_BACKGROUND
+	style.texture_margin_left = 24.0
+	style.texture_margin_top = 24.0
+	style.texture_margin_right = 24.0
+	style.texture_margin_bottom = 24.0
+	style.content_margin_left = 22.0
+	style.content_margin_top = 20.0
+	style.content_margin_right = 22.0
+	style.content_margin_bottom = 20.0
+	return style
 
 func initialize(rect: Rect2, p_node: Node2D) -> void:
 	arena_rect = rect
@@ -77,6 +129,10 @@ func _process(_delta: float) -> void:
 	var tab_pressed = Input.is_key_pressed(KEY_TAB)
 	if tab_pressed != is_tab_held:
 		is_tab_held = tab_pressed
+		full_map_layout.visible = is_tab_held
+		if is_tab_held:
+			map_inventory_panel.refresh_inventory()
+			map_stats_panel.refresh_stats()
 		queue_redraw()
 		
 	# Uncover fog around player
@@ -198,15 +254,12 @@ func _draw_minimap() -> void:
 	draw_circle_arc(mm_center, minimap_radius, Color(0.4, 0.8, 1.0, 1.0), 3.0)
 
 func _draw_full_map() -> void:
-	# Semi-transparent screen overlay dimming
-	draw_rect(get_viewport_rect(), Color(0.0, 0.0, 0.0, 0.65))
-	
 	var screen_size = get_viewport_rect().size
 	var fm_rect = Rect2((screen_size - full_map_size) / 2.0, full_map_size)
 	
 	# Map background panel
-	draw_rect(fm_rect, Color(0.06, 0.06, 0.08, 0.9))
-	draw_rect(fm_rect, Color(0.4, 0.8, 1.0, 1.0), false, 4.0) # Sleek border
+	draw_style_box(full_map_panel_style, fm_rect.grow(10.0))
+	draw_rect(fm_rect, Color(0.035, 0.055, 0.052, 1.0))
 	
 	# Scale calculations keeping aspect ratio
 	var fm_scale = min(full_map_size.x / arena_rect.size.x, full_map_size.y / arena_rect.size.y)

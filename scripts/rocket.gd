@@ -4,6 +4,7 @@ class_name Rocket
 var speed: float = GameConstants.ROCKET_SPEED
 var turn_speed: float = GameConstants.ROCKET_TURN_SPEED
 var damage: int = 1
+var is_crit: bool = false
 var blast_radius: float = 100.0
 var target: Node2D = null
 
@@ -67,8 +68,7 @@ func _do_aoe_damage() -> void:
 			var dist = global_position.distance_to(enemy.global_position)
 			if dist <= blast_radius:
 				if enemy.has_method("take_damage"):
-					var actual_dmg = enemy.take_damage(damage, "rocket")
-					GameState.run_damage_rocket += actual_dmg
+					var actual_dmg = enemy.take_damage(damage, "rocket", is_crit)
 					GameState.run_damage_stats["rocket"] = GameState.run_damage_stats.get("rocket", 0) + actual_dmg
 					# If enemy died from this explosion, spawn another visual explosion there
 					if enemy.health <= 0:

@@ -47,11 +47,19 @@ func _fire(target: Node2D) -> void:
 	b.direction = dir
 	b.rotation = dir.angle()
 	
-	var final_dmg = GameState.get_total_damage(damage)
-	var is_crit = randf() < GameState.get_crit_chance()
-	if is_crit:
-		final_dmg = int(round(float(final_dmg) * GameState.get_crit_multiplier()))
+	var final_dmg := GameState.get_total_damage(damage)
+	var is_crit := false
+	var player := get_tree().get_first_node_in_group("player")
+	if player and player.has_method("roll_weapon_damage"):
+		var result: Dictionary = player.roll_weapon_damage(damage, "turret")
+		final_dmg = int(result.damage)
+		is_crit = bool(result.is_crit)
+	else:
+		is_crit = randf() < GameState.get_crit_chance()
+		if is_crit:
+			final_dmg = int(round(float(final_dmg) * GameState.get_crit_multiplier()))
 		
 	b.damage = final_dmg
+	b.is_crit = is_crit
 	b.weapon_source = "turret"
 	get_tree().current_scene.add_child(b)
