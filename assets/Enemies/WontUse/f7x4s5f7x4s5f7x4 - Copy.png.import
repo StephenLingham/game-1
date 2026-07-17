@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3ewv4g7hklvj"
-path="res://.godot/imported/f7x4s5f7x4s5f7x4 - Copy.png-c40d06cf9a1a2eb0e83f8b5c69df5bc9.ctex"
+path="res://.godot/imported/f7x4s5f7x4s5f7x4 - Copy.png-5e6c2eeec5cf799da8548508f2ef25cc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Enemies/f7x4s5f7x4s5f7x4 - Copy.png"
-dest_files=["res://.godot/imported/f7x4s5f7x4s5f7x4 - Copy.png-c40d06cf9a1a2eb0e83f8b5c69df5bc9.ctex"]
+source_file="res://assets/Enemies/WontUse/f7x4s5f7x4s5f7x4 - Copy.png"
+dest_files=["res://.godot/imported/f7x4s5f7x4s5f7x4 - Copy.png-5e6c2eeec5cf799da8548508f2ef25cc.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://qgxo3olcbumi"
-path="res://.godot/imported/enemy4.png-1261c2d1e51ea8bad55d230909edb8f2.ctex"
+uid="uid://bdycy3v0ybjnw"
+path="res://.godot/imported/fox-boss-2.png-fc128cd5a98bc9824eb793d1e35236bf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Enemies/WontUse/enemy4.png"
-dest_files=["res://.godot/imported/enemy4.png-1261c2d1e51ea8bad55d230909edb8f2.ctex"]
+source_file="res://assets/Enemies/Bosses/fox-boss-2.png"
+dest_files=["res://.godot/imported/fox-boss-2.png-fc128cd5a98bc9824eb793d1e35236bf.ctex"]
 
 [params]
 

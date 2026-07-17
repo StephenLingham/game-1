@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://qgxo3olcbumi"
-path="res://.godot/imported/enemy4.png-1261c2d1e51ea8bad55d230909edb8f2.ctex"
+uid="uid://cg0ojnwsu7hnp"
+path="res://.godot/imported/squirrel-boss.png-3f00b0587bb9c2a56a970688b8c0219b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Enemies/WontUse/enemy4.png"
-dest_files=["res://.godot/imported/enemy4.png-1261c2d1e51ea8bad55d230909edb8f2.ctex"]
+source_file="res://assets/Enemies/Bosses/squirrel-boss.png"
+dest_files=["res://.godot/imported/squirrel-boss.png-3f00b0587bb9c2a56a970688b8c0219b.ctex"]
 
 [params]
 
