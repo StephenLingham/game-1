@@ -13,9 +13,7 @@ var charge_shrine_popup_panel: Control
 
 
 @onready var shop_grid: GridContainer = $UI/ShopPanel/Margin/VBox/Scroll/Grid
-@onready var shop_lvl_label: Label = $UI/ShopPanel/Margin/VBox/InfoRow/LevelLabel
 @onready var shop_continue: Button = $UI/ShopPanel/Margin/VBox/Continue
-@onready var shop_capacity_label: Label = Label.new() # Will add to UI
 @onready var enemy_count_label: Label = Label.new()
 @onready var xp_bar: ProgressBar = $UI/HUD/XPBar
 @onready var lvl_xp_label: Label = $UI/HUD/LevelXPLabel
@@ -42,6 +40,8 @@ const SHOP_WEAPON_ICONS := {
 	"fire_bolt": preload("res://assets/Weapons/fire_bolt_projectile.png"),
 	"arcane_bolt": preload("res://assets/Weapons/arcane_bolt_projectile.png")
 }
+const LEVEL_UP_PANEL_TEXTURE := preload("res://assets/ui/level_up/panel_background.webp")
+const LEVEL_UP_OFFER_TEXTURE := preload("res://assets/ui/level_up/offer_background.webp")
 
 const ALL_ABILITIES = [
 	{"id": "zap", "name": "Zap", "weapon": true},
@@ -104,48 +104,30 @@ func _ready() -> void:
 
 	# Shop Panel Styling
 	shop_continue.visible = false
-	shop_grid.columns = 1 # We will use HBoxContainers inside for true horizontal centering
-	shop_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	shop_grid.custom_minimum_size = Vector2(590, 0)
-	
-	var shop_scroll = shop_panel.get_node_or_null("Margin/VBox/Scroll")
-	if shop_scroll:
-		shop_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	
-	# Make shop a popup overlay
+	shop_vbox.get_node("Title").hide()
+	shop_vbox.get_node("InfoRow").hide()
+	shop_grid.columns = 1
+	shop_grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	shop_grid.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	shop_grid.custom_minimum_size = Vector2(560, 0)
+
+	# Leave the game unobscured outside the three opaque panels.
 	var overlay = shop_panel.get_node_or_null("ColorRect")
 	if overlay:
-		overlay.color = Color(0.012, 0.016, 0.045, 0.92)
+		overlay.hide()
+		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 	# Center the content container
 	var shop_margin = shop_panel.get_node_or_null("Margin")
 	if shop_margin:
 		shop_margin.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-		shop_margin.custom_minimum_size = Vector2(1180, 660)
+		shop_margin.custom_minimum_size = Vector2(1260, 700)
 		shop_margin.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		shop_margin.grow_vertical = Control.GROW_DIRECTION_BOTH
-		# Add a background panel style to the margin
-		var sb = StyleBoxFlat.new()
-		sb.bg_color = Color(0.035, 0.045, 0.09, 0.98)
-		sb.border_width_left = 2
-		sb.border_width_top = 2
-		sb.border_width_right = 2
-		sb.border_width_bottom = 2
-		sb.border_color = Color(0.25, 0.72, 1.0, 0.9)
-		sb.corner_radius_top_left = 22
-		sb.corner_radius_top_right = 22
-		sb.corner_radius_bottom_left = 22
-		sb.corner_radius_bottom_right = 22
-		sb.shadow_color = Color(0, 0, 0, 0.65)
-		sb.shadow_size = 24
-		
-		var pop_bg = Panel.new()
-		pop_bg.name = "PopupBG"
-		pop_bg.add_theme_stylebox_override("panel", sb)
-		shop_margin.add_child(pop_bg)
-		shop_margin.move_child(pop_bg, 0)
-		pop_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		pop_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		shop_margin.add_theme_constant_override("margin_left", 12)
+		shop_margin.add_theme_constant_override("margin_top", 10)
+		shop_margin.add_theme_constant_override("margin_right", 12)
+		shop_margin.add_theme_constant_override("margin_bottom", 10)
 		
 	# HUD Styling
 	var hud_margin = hud.get_node_or_null("HUD/HUDMargin")
@@ -169,13 +151,6 @@ func _ready() -> void:
 	bar_bg.corner_radius_bottom_right = 4
 	xp_bar.add_theme_stylebox_override("background", bar_bg)
 	
-	# Capacity Label
-	shop_capacity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	shop_capacity_label.add_theme_font_size_override("font_size", 16)
-	shop_capacity_label.add_theme_color_override("font_color", Color(0.7, 0.78, 0.9))
-	shop_vbox.add_child(shop_capacity_label)
-	shop_vbox.move_child(shop_capacity_label, shop_vbox.get_node("Scroll").get_index())
-
 	enemy_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	enemy_count_label.add_theme_font_size_override("font_size", 16)
 	enemy_count_label.modulate = Color(0.9, 0.9, 0.9, 1.0)
@@ -232,19 +207,30 @@ func _setup_reference_layouts() -> void:
 	var shop_row := HBoxContainer.new()
 	shop_row.name = "ThreeColumnLayout"
 	shop_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	shop_row.add_theme_constant_override("separation", 18)
+	shop_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shop_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	shop_row.add_theme_constant_override("separation", 36)
 	shop_margin.add_child(shop_row)
 
 	shop_inventory_panel = RunInventoryPanel.new()
 	shop_inventory_panel.name = "RunInventoryPanel"
 	shop_inventory_panel.set_ability_catalog(ALL_ABILITIES)
 	shop_row.add_child(shop_inventory_panel)
-	shop_vbox.reparent(shop_row)
-	shop_vbox.custom_minimum_size = Vector2(610, 0)
+	shop_inventory_panel.add_theme_stylebox_override("panel", _level_up_panel_style())
+	var selection_panel := PanelContainer.new()
+	selection_panel.name = "UpgradeSelectionPanel"
+	selection_panel.custom_minimum_size = Vector2(600, 0)
+	selection_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	selection_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	selection_panel.add_theme_stylebox_override("panel", _level_up_panel_style())
+	shop_row.add_child(selection_panel)
+	shop_vbox.reparent(selection_panel)
 	shop_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shop_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	shop_stats_panel = RunStatsPanel.new()
 	shop_stats_panel.name = "RunStatsPanel"
 	shop_row.add_child(shop_stats_panel)
+	shop_stats_panel.add_theme_stylebox_override("panel", _level_up_panel_style())
 
 	var pause_vbox := pause_panel.get_node("VBox") as VBoxContainer
 	pause_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -284,6 +270,19 @@ func _overlay_style() -> StyleBoxFlat:
 	style.set_corner_radius_all(12)
 	return style
 
+func _level_up_panel_style() -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = LEVEL_UP_PANEL_TEXTURE
+	style.texture_margin_left = 24.0
+	style.texture_margin_top = 24.0
+	style.texture_margin_right = 24.0
+	style.texture_margin_bottom = 24.0
+	style.content_margin_left = 22.0
+	style.content_margin_top = 20.0
+	style.content_margin_right = 22.0
+	style.content_margin_bottom = 20.0
+	return style
+
 func _refresh_reference_panels() -> void:
 	for inventory in [shop_inventory_panel, pause_inventory_panel]:
 		if is_instance_valid(inventory):
@@ -297,8 +296,6 @@ func _exit_tree() -> void:
 		item_popup_panel.queue_free()
 	if is_instance_valid(charge_shrine_popup_panel):
 		charge_shrine_popup_panel.queue_free()
-	if is_instance_valid(shop_capacity_label):
-		shop_capacity_label.queue_free()
 	if is_instance_valid(shop_grid):
 		for child in shop_grid.get_children():
 			child.queue_free()
@@ -584,21 +581,11 @@ func on_wave_started(w: int) -> void:
 func on_wave_time(t: float) -> void:
 	lbl_time.text = "Time: %.0fs" % t
 
-func open_shop(lvl: int) -> void:
+func open_shop(_lvl: int) -> void:
 	# Options already generated by _on_level_up or caller
 	get_tree().paused = true
 	shop_panel.visible = true
 	shop_panel.process_mode = Node.PROCESS_MODE_ALWAYS
-	
-	var shop_title := shop_vbox.get_node("Title") as Label
-	shop_title.text = "LEVEL UP"
-	shop_title.add_theme_font_size_override("font_size", 36)
-	shop_title.add_theme_color_override("font_color", Color(1.0, 0.86, 0.34))
-	shop_lvl_label.text = "Level %d  |  Choose your power" % lvl
-	shop_lvl_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	shop_lvl_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	shop_lvl_label.add_theme_font_size_override("font_size", 18)
-	shop_lvl_label.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0))
 	
 	_refresh_reference_panels()
 	_refresh_shop_ui()
@@ -692,12 +679,25 @@ func _style_shop_button(button: Button, accent: Color, quiet: bool = false) -> v
 	button.add_theme_color_override("font_disabled_color", Color(0.42, 0.45, 0.53))
 	button.add_theme_font_size_override("font_size", 16)
 
-func _style_section_header(label: Label, color: Color) -> void:
-	label.add_theme_font_size_override("font_size", 15)
-	label.add_theme_color_override("font_color", color)
-	label.add_theme_color_override("font_shadow_color", Color(color, 0.25))
-	label.add_theme_constant_override("shadow_offset_x", 0)
-	label.add_theme_constant_override("shadow_offset_y", 2)
+func _offer_card_style(modulate_color: Color) -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = LEVEL_UP_OFFER_TEXTURE
+	style.texture_margin_left = 30.0
+	style.texture_margin_top = 24.0
+	style.texture_margin_right = 30.0
+	style.texture_margin_bottom = 24.0
+	style.content_margin_left = 18.0
+	style.content_margin_top = 12.0
+	style.content_margin_right = 18.0
+	style.content_margin_bottom = 12.0
+	style.modulate_color = modulate_color
+	return style
+
+func _make_offer_content_click_through(control: Control) -> void:
+	control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in control.get_children():
+		if child is Control:
+			_make_offer_content_click_through(child)
 
 func _make_ability_emblem(ability_id: String, is_aura: bool) -> PanelContainer:
 	var emblem := PanelContainer.new()
@@ -727,24 +727,8 @@ func _ability_subtitle(abi: Dictionary, level: int) -> String:
 
 
 func _refresh_shop_ui() -> void:
-	var weapon_count := 0
-	var aura_count := 0
-	for id in GameState.run_abilities:
-		if String(id).begins_with("aura_"):
-			aura_count += 1
-		else:
-			weapon_count += 1
-	shop_capacity_label.text = "WEAPONS %d/%d    AURAS %d/%d" % [weapon_count, GameState.get_ability_limit(), aura_count, GameState.get_aura_limit()]
-	shop_capacity_label.modulate = Color.VIOLET if weapon_count >= GameState.get_ability_limit() and aura_count >= GameState.get_aura_limit() else Color.WHITE
-
 	for child in shop_grid.get_children():
 		child.queue_free()
-
-	var heading := Label.new()
-	heading.text = "UPGRADE OFFERS"
-	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_style_section_header(heading, Color(0.78, 0.9, 1.0))
-	shop_grid.add_child(heading)
 
 	for abi in current_shop_options:
 		var level: int = int(GameState.run_abilities.get(abi.id, 0))
@@ -754,11 +738,23 @@ func _refresh_shop_ui() -> void:
 		var rarity_color: Color = GameConstants.RARITY_COLORS.get(rarity, Color(0.35, 0.8, 1.0))
 		var accent := rarity_color if has_roll else (Color(0.92, 0.48, 1.0) if abi.get("is_aura", false) else Color(0.35, 0.8, 1.0))
 
-		var panel := PanelContainer.new()
-		panel.custom_minimum_size = Vector2(0, 112)
-		panel.add_theme_stylebox_override("panel", _shop_style(Color(accent.r * 0.11, accent.g * 0.11, accent.b * 0.11, 0.98), Color(accent, 0.86), 7, 2))
+		var panel := Button.new()
+		panel.text = ""
+		panel.tooltip_text = "Select %s" % String(abi.name)
+		panel.custom_minimum_size = Vector2(560, 124)
+		panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		panel.add_theme_stylebox_override("normal", _offer_card_style(Color.WHITE))
+		panel.add_theme_stylebox_override("hover", _offer_card_style(Color(1.12, 1.12, 1.12, 1.0)))
+		panel.add_theme_stylebox_override("pressed", _offer_card_style(Color(0.72, 0.82, 0.82, 1.0)))
+		panel.add_theme_stylebox_override("focus", _offer_card_style(Color(1.1, 1.03, 0.82, 1.0)))
+		panel.pressed.connect(_buy_ability.bind(abi.id, upgrade_roll))
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 14)
+		row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		row.offset_left = 22.0
+		row.offset_top = 14.0
+		row.offset_right = -22.0
+		row.offset_bottom = -14.0
 		panel.add_child(row)
 
 		var icon := _create_shop_weapon_icon(String(abi.id), 1.0)
@@ -804,13 +800,7 @@ func _refresh_shop_ui() -> void:
 			rarity_label.add_theme_color_override("font_color", rarity_color)
 			body.add_child(rarity_label)
 
-		var buy_button := Button.new()
-		buy_button.text = "TAKE" if level == 0 else "UPGRADE"
-		buy_button.custom_minimum_size = Vector2(112, 52)
-		buy_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		_style_shop_button(buy_button, accent)
-		buy_button.pressed.connect(_buy_ability.bind(abi.id, upgrade_roll))
-		row.add_child(buy_button)
+		_make_offer_content_click_through(row)
 		shop_grid.add_child(panel)
 
 	var footer := HBoxContainer.new()

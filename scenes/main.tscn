@@ -254,6 +254,7 @@ grow_vertical = 2
 theme = ExtResource("5")
 
 [node name="ColorRect" type="ColorRect" parent="UI/ShopPanel"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -279,23 +280,25 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="UI/ShopPanel/Margin/VBox"]
+visible = false
 layout_mode = 2
-text = "— Armory —"
+text = ""
 label_settings = SubResource("LabelSettings_shop_title")
 horizontal_alignment = 1
 
 [node name="InfoRow" type="HBoxContainer" parent="UI/ShopPanel/Margin/VBox"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 60
 
 [node name="LevelLabel" type="Label" parent="UI/ShopPanel/Margin/VBox/InfoRow"]
 layout_mode = 2
-text = "Level Up!"
+text = ""
 label_settings = SubResource("LabelSettings_shop_info")
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
 
-[node name="Scroll" type="ScrollContainer" parent="UI/ShopPanel/Margin/VBox"]
+[node name="Scroll" type="CenterContainer" parent="UI/ShopPanel/Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -651,5 +654,3 @@ text = "Resume"
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Abandon Run"
-
-
