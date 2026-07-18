@@ -9,7 +9,7 @@ var arena_rect: Rect2
 var player: Node2D = null
 var is_initialized: bool = false
 var crystal_marker_texture: Texture2D = preload("res://assets/gem_icon.png")
-const PANEL_BACKGROUND := preload("res://assets/ui/level_up/panel_background.webp")
+const PANEL_BACKGROUND := preload("res://assets/ui/level_up/panel_background_wood.webp")
 
 # Circular Minimap Properties
 var minimap_radius: float = 80.0

@@ -40,8 +40,8 @@ const SHOP_WEAPON_ICONS := {
 	"fire_bolt": preload("res://assets/Weapons/fire_bolt_projectile.png"),
 	"arcane_bolt": preload("res://assets/Weapons/arcane_bolt_projectile.png")
 }
-const LEVEL_UP_PANEL_TEXTURE := preload("res://assets/ui/level_up/panel_background.webp")
-const LEVEL_UP_OFFER_TEXTURE := preload("res://assets/ui/level_up/offer_background.webp")
+const LEVEL_UP_PANEL_TEXTURE := preload("res://assets/ui/level_up/panel_background_wood.webp")
+const LEVEL_UP_OFFER_TEXTURE := preload("res://assets/ui/level_up/offer_background_wood.webp")
 
 const ALL_ABILITIES = [
 	{"id": "zap", "name": "Zap", "weapon": true},
