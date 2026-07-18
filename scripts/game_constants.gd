@@ -2,6 +2,12 @@ class_name GameConstants extends RefCounted
 
 const GAME_VERSION: String = "v0.21.0"
 
+# --- UI SHAPE ---
+# These values match the alpha-rounded corners baked into the wood textures.
+const UI_PANEL_CORNER_RADIUS_PX: int = 8
+const UI_OFFER_CORNER_RADIUS_PX: int = 8
+const UI_BUTTON_CORNER_RADIUS_PX: int = 10
+
 # --- INITIAL SPAWN COUNTS ---
 const CHEST_STARTING_COUNT: int = 7
 const POWERUP_STARTING_COUNT: int = 6

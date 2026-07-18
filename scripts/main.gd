@@ -42,6 +42,7 @@ const SHOP_WEAPON_ICONS := {
 }
 const LEVEL_UP_PANEL_TEXTURE := preload("res://assets/ui/level_up/panel_background_wood.webp")
 const LEVEL_UP_OFFER_TEXTURE := preload("res://assets/ui/level_up/offer_background_wood.webp")
+const PAUSE_BUTTON_TEXTURE := preload("res://assets/ui/level_up/button_background_wood.webp")
 
 const ALL_ABILITIES = [
 	{"id": "zap", "name": "Zap", "weapon": true},
@@ -692,9 +693,9 @@ func _style_shop_button(button: Button, accent: Color, quiet: bool = false) -> v
 	button.add_theme_color_override("font_disabled_color", Color(0.42, 0.45, 0.53))
 	button.add_theme_font_size_override("font_size", 16)
 
-func _offer_card_style(modulate_color: Color) -> StyleBoxTexture:
+func _offer_card_style(modulate_color: Color, texture: Texture2D = LEVEL_UP_OFFER_TEXTURE) -> StyleBoxTexture:
 	var style := StyleBoxTexture.new()
-	style.texture = LEVEL_UP_OFFER_TEXTURE
+	style.texture = texture
 	style.texture_margin_left = 30.0
 	style.texture_margin_top = 24.0
 	style.texture_margin_right = 30.0
@@ -707,10 +708,10 @@ func _offer_card_style(modulate_color: Color) -> StyleBoxTexture:
 	return style
 
 func _style_pause_button(button: Button) -> void:
-	button.add_theme_stylebox_override("normal", _offer_card_style(Color(0.82, 0.72, 0.58, 1.0)))
-	button.add_theme_stylebox_override("hover", _offer_card_style(Color(1.08, 0.98, 0.78, 1.0)))
-	button.add_theme_stylebox_override("pressed", _offer_card_style(Color(0.62, 0.52, 0.42, 1.0)))
-	button.add_theme_stylebox_override("focus", _offer_card_style(Color(1.0, 0.84, 0.5, 1.0)))
+	button.add_theme_stylebox_override("normal", _offer_card_style(Color(0.82, 0.72, 0.58, 1.0), PAUSE_BUTTON_TEXTURE))
+	button.add_theme_stylebox_override("hover", _offer_card_style(Color(1.08, 0.98, 0.78, 1.0), PAUSE_BUTTON_TEXTURE))
+	button.add_theme_stylebox_override("pressed", _offer_card_style(Color(0.62, 0.52, 0.42, 1.0), PAUSE_BUTTON_TEXTURE))
+	button.add_theme_stylebox_override("focus", _offer_card_style(Color(1.0, 0.84, 0.5, 1.0), PAUSE_BUTTON_TEXTURE))
 	button.add_theme_color_override("font_color", Color(1.0, 0.92, 0.72))
 	button.add_theme_color_override("font_hover_color", Color.WHITE)
 	button.add_theme_color_override("font_pressed_color", Color(0.9, 0.78, 0.58))
