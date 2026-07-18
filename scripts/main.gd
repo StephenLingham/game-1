@@ -163,6 +163,7 @@ func _ready() -> void:
 	# Pause buttons
 	$UI/PausePanel/VBox/Resume.pressed.connect(_resume)
 	$UI/PausePanel/VBox/Abandon.pressed.connect(_abandon_run)
+	($UI/PausePanel as PauseMenu).escape_requested.connect(_resume)
 	_setup_reference_layouts()
 
 	# HP Bar Color (Red)
@@ -266,6 +267,13 @@ func _setup_reference_layouts() -> void:
 	pause_vbox.custom_minimum_size = Vector2(0, 0)
 	pause_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pause_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	pause_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	pause_vbox.get_node("Spacer").hide()
+	for button_name in ["Resume", "Abandon"]:
+		var pause_button := pause_vbox.get_node(button_name) as Button
+		pause_button.custom_minimum_size = Vector2(320, 60)
+		pause_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		_style_pause_button(pause_button)
 	pause_stats_panel = RunStatsPanel.new()
 	pause_stats_panel.name = "RunStatsPanel"
 	pause_row.add_child(pause_stats_panel)
@@ -698,6 +706,16 @@ func _offer_card_style(modulate_color: Color) -> StyleBoxTexture:
 	style.modulate_color = modulate_color
 	return style
 
+func _style_pause_button(button: Button) -> void:
+	button.add_theme_stylebox_override("normal", _offer_card_style(Color(0.82, 0.72, 0.58, 1.0)))
+	button.add_theme_stylebox_override("hover", _offer_card_style(Color(1.08, 0.98, 0.78, 1.0)))
+	button.add_theme_stylebox_override("pressed", _offer_card_style(Color(0.62, 0.52, 0.42, 1.0)))
+	button.add_theme_stylebox_override("focus", _offer_card_style(Color(1.0, 0.84, 0.5, 1.0)))
+	button.add_theme_color_override("font_color", Color(1.0, 0.92, 0.72))
+	button.add_theme_color_override("font_hover_color", Color.WHITE)
+	button.add_theme_color_override("font_pressed_color", Color(0.9, 0.78, 0.58))
+	button.add_theme_font_size_override("font_size", 20)
+
 func _make_offer_content_click_through(control: Control) -> void:
 	control.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for child in control.get_children():
@@ -1033,6 +1051,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		if not shop_panel.visible and not game_over_panel.visible:
 			_toggle_pause()
+			get_viewport().set_input_as_handled()
 
 func _toggle_pause() -> void:
 	var is_paused := get_tree().paused

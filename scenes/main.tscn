@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="3"]
 [ext_resource type="Script" path="res://scripts/wave_controller.gd" id="4"]
 [ext_resource type="Theme" path="res://ui_theme.tres" id="5"]
+[ext_resource type="Script" path="res://scripts/pause_menu.gd" id="6_pause"]
 
 [sub_resource type="RectangleShape2D" id="wall_top"]
 size = Vector2(1920, 20)
@@ -621,6 +622,7 @@ offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("5")
+script = ExtResource("6_pause")
 
 [node name="VBox" type="VBoxContainer" parent="UI/PausePanel"]
 layout_mode = 1
