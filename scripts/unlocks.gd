@@ -122,6 +122,7 @@ func _show_weapons() -> void:
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		title.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(title)
+		_add_catalog_icon(id, vbox, is_unlocked)
 		
 		var status = Label.new()
 		status.text = "Unlocked" if is_unlocked else "Locked"
@@ -271,6 +272,7 @@ func _show_auras() -> void:
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		title.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(title)
+		_add_catalog_icon(id, vbox, is_unlocked)
 		
 		var status = Label.new()
 		status.text = "Unlocked" if is_unlocked else "Locked"
@@ -331,6 +333,18 @@ func _get_aura_precursor(id: String) -> String:
 	if idx > 0:
 		return aura_chain[idx-1]
 	return ""
+
+func _add_catalog_icon(id: String, container: VBoxContainer, is_unlocked: bool) -> void:
+	var icon_path := "res://assets/Auras/%s.png" % id if id.begins_with("aura_") else "res://assets/Weapons/Icons/%s.png" % id
+	if not ResourceLoader.exists(icon_path):
+		return
+	var icon := TextureRect.new()
+	icon.texture = load(icon_path) as Texture2D
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.custom_minimum_size = Vector2(72, 72)
+	icon.modulate = Color.WHITE if is_unlocked else Color(0.28, 0.28, 0.28, 0.82)
+	container.add_child(icon)
 
 func _get_weapon_unlock_text(id: String) -> String:
 	var precursor = _get_precursor(id)

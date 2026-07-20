@@ -3,6 +3,7 @@ extends Area2D
 var damage := GameConstants.SPIKES_BASE_DAMAGE
 var weapon_source := "floor_spikes"
 var is_crit := false
+const FIRE_TRAIL_TEXTURE = preload("res://assets/Weapons/Effects/fire_trail.png")
 
 func _ready() -> void:
 	add_to_group("projectiles")
@@ -19,6 +20,10 @@ func _ready() -> void:
 	create_tween().tween_property(self, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK)
 
 func _draw() -> void:
+	if weapon_source == "fire_trail":
+		draw_texture_rect(FIRE_TRAIL_TEXTURE, Rect2(-24, -24, 48, 48), false, Color.WHITE)
+		return
+
 	# Draw 4 small triangular spikes in a cluster
 	var spike_color = Color(0.7, 0.7, 0.75)
 	var spike_points = [

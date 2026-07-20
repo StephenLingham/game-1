@@ -48,6 +48,8 @@ var weapon_timers: Dictionary = {}
 
 var _arcane_field_visual: Node2D = null
 const ARCANE_FIELD_VISUAL_SCRIPT = preload("res://scripts/arcane_field_visual.gd")
+const METEOR_EFFECT_TEXTURE = preload("res://assets/Weapons/Effects/meteor.png")
+const BLIZZARD_EFFECT_TEXTURE = preload("res://assets/Weapons/Effects/blizzard.png")
 
 var disk_scene: PackedScene = preload("res://scenes/bouncing_disk.tscn")
 var spikes_scene: PackedScene = preload("res://scenes/floor_spikes.tscn")
@@ -472,20 +474,19 @@ func _fire_meteor() -> void:
 	var effective_dmg = _get_weapon_base_damage("meteor") + GameState.get_weapon_damage_bonus("meteor")
 	for i in range(count):
 		var pos = global_position + Vector2(randf_range(-400, 400), randf_range(-400, 400))
-		# Visual circle for meteor impact
-		var circle = Polygon2D.new()
-		var pts = []
-		for j in range(32):
-			pts.append(Vector2.RIGHT.rotated(j * TAU / 32) * radius)
-		circle.polygon = PackedVector2Array(pts)
-		circle.color = Color(1.0, 0.4, 0.0, 0.5)
-		circle.global_position = pos
-		get_tree().current_scene.add_child(circle)
+		var meteor_visual := Sprite2D.new()
+		meteor_visual.texture = METEOR_EFFECT_TEXTURE
+		meteor_visual.modulate = Color(1.0, 1.0, 1.0, 0.82)
+		meteor_visual.scale = Vector2.ONE * (radius * 2.0 / 128.0)
+		meteor_visual.rotation = randf_range(-0.18, 0.18)
+		meteor_visual.add_to_group("projectiles")
+		get_tree().current_scene.add_child(meteor_visual)
+		meteor_visual.global_position = pos
 		
 		var timer = get_tree().create_timer(0.5)
 		timer.timeout.connect(func():
 			_apply_area_damage_for_weapon(pos, radius, effective_dmg, "meteor")
-			circle.queue_free()
+			meteor_visual.queue_free()
 		)
 
 func _fire_frozen_orb(target: Node2D) -> void:
@@ -540,7 +541,7 @@ func _trigger_arcane_field() -> void:
 func _leave_fire_trail() -> void:
 	var fire = spikes_scene.instantiate() # Reuse floor spikes for trail
 	fire.global_position = global_position
-	fire.modulate = Color.RED
+	fire.modulate = Color.WHITE
 	var effective_dmg = _get_weapon_base_damage("fire_trail") + GameState.get_weapon_damage_bonus("fire_trail")
 	var res = _get_final_damage_for_weapon(effective_dmg, "fire_trail")
 	fire.damage = res.damage
@@ -576,24 +577,20 @@ func _apply_blizzard_hit(pos: Vector2, radius: float, effective_dmg: int) -> voi
 			e.freeze(GameConstants.ICE_FREEZE_DURATION)
 
 func _show_blizzard_strike(pos: Vector2, radius: float) -> void:
-	var circle := Polygon2D.new()
-	var pts := []
-	for i in range(24):
-		var angle := i * TAU / 24.0
-		var wobble := randf_range(0.82, 1.08)
-		pts.append(Vector2.RIGHT.rotated(angle) * radius * wobble)
-	circle.polygon = PackedVector2Array(pts)
-	circle.color = Color(0.75, 0.9, 1.0, 0.32)
-	circle.global_position = pos
-	circle.scale = Vector2(0.45, 0.45)
-	circle.rotation = randf_range(-0.35, 0.35)
-	circle.add_to_group("projectiles")
-	get_tree().current_scene.add_child(circle)
+	var burst := Sprite2D.new()
+	burst.texture = BLIZZARD_EFFECT_TEXTURE
+	burst.modulate = Color(1.0, 1.0, 1.0, 0.76)
+	var target_scale := Vector2.ONE * (radius * 2.0 / 128.0)
+	burst.scale = target_scale * 0.45
+	burst.rotation = randf_range(-0.35, 0.35)
+	burst.add_to_group("projectiles")
+	get_tree().current_scene.add_child(burst)
+	burst.global_position = pos
 
 	var tween := create_tween()
-	tween.tween_property(circle, "scale", Vector2.ONE, 0.12)
-	tween.parallel().tween_property(circle, "modulate:a", 0.0, 0.28)
-	tween.tween_callback(circle.queue_free)
+	tween.tween_property(burst, "scale", target_scale, 0.12)
+	tween.parallel().tween_property(burst, "modulate:a", 0.0, 0.28)
+	tween.tween_callback(burst.queue_free)
 
 func get_damage() -> int:
 	var dmg := float(base_damage + GameState.get_zap_damage_bonus())

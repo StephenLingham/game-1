@@ -2,15 +2,6 @@ class_name RunInventoryPanel
 extends PanelContainer
 
 const PLACEHOLDER_ICON := "res://assets/ui/question_mark.svg"
-const WEAPON_ICON_PATHS := {
-	"zap": "res://assets/Weapons/zap_projectile.png",
-	"arcane_missile": "res://assets/Weapons/arcane_missile_projectile.png",
-	"fireball": "res://assets/Weapons/fireball_projectile.png",
-	"lightning_bolt": "res://assets/Weapons/lightning_bolt_projectile.png",
-	"ice_bolt": "res://assets/Weapons/ice_bolt_projectile.png",
-	"fire_bolt": "res://assets/Weapons/fire_bolt_projectile.png",
-	"arcane_bolt": "res://assets/Weapons/arcane_bolt_projectile.png",
-}
 
 var _ability_names: Dictionary = {}
 var _list: VBoxContainer
@@ -140,8 +131,8 @@ func _make_icon(id: String, kind: String) -> TextureRect:
 
 func _icon_path(id: String, kind: String) -> String:
 	var candidates: Array[String] = []
-	if kind == "weapon" and WEAPON_ICON_PATHS.has(id):
-		candidates.append(String(WEAPON_ICON_PATHS[id]))
+	if kind == "weapon":
+		candidates.append("res://assets/Weapons/Icons/%s.png" % id)
 	if kind == "weapon":
 		candidates.append("res://assets/Weapons/%s.png" % id)
 	elif kind == "aura":

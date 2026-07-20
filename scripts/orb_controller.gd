@@ -79,8 +79,8 @@ func _refresh_orbs(count: int) -> void:
 		if "damage" in orb:
 			orb.damage = base_damage + GameState.get_weapon_damage_bonus(damage_source)
 		if damage_source == "arcane_orbs":
-			orb.modulate = Color(0.75, 0.45, 1.0)
+			orb.modulate = Color.WHITE
 		else:
-			orb.modulate = Color(0.0, 0.8, 1.0)
+			orb.modulate = Color(0.55, 0.9, 1.0)
 		add_child(orb)
 		orbs.append(orb)

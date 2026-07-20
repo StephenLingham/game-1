@@ -63,6 +63,15 @@ func _refresh_ui() -> void:
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		title.add_theme_font_size_override("font_size", 24)
 		vbox.add_child(title)
+
+		var icon_path := "res://assets/Weapons/Icons/%s.png" % id
+		if ResourceLoader.exists(icon_path):
+			var icon := TextureRect.new()
+			icon.texture = load(icon_path) as Texture2D
+			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon.custom_minimum_size = Vector2(82, 82)
+			vbox.add_child(icon)
 		
 		var desc = Label.new()
 		desc.text = data.desc

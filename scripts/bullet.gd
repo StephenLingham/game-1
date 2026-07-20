@@ -1,13 +1,16 @@
 extends Area2D
 
 const BOLT_TEXTURES := {
-	"zap": preload("res://assets/Weapons/zap_projectile.png"),
-	"arcane_missile": preload("res://assets/Weapons/arcane_missile_projectile.png"),
-	"fireball": preload("res://assets/Weapons/fireball_projectile.png"),
-	"lightning_bolt": preload("res://assets/Weapons/lightning_bolt_projectile.png"),
-	"ice_bolt": preload("res://assets/Weapons/ice_bolt_projectile.png"),
-	"fire_bolt": preload("res://assets/Weapons/fire_bolt_projectile.png"),
-	"arcane_bolt": preload("res://assets/Weapons/arcane_bolt_projectile.png")
+	"zap": preload("res://assets/Weapons/Projectiles/zap.png"),
+	"arcane_missile": preload("res://assets/Weapons/Projectiles/arcane_missile.png"),
+	"fireball": preload("res://assets/Weapons/Projectiles/fireball.png"),
+	"ice_shard": preload("res://assets/Weapons/Projectiles/ice_shard.png"),
+	"frozen_orb": preload("res://assets/Weapons/Projectiles/frozen_orb.png"),
+	"lightning_bolt": preload("res://assets/Weapons/Projectiles/lightning_bolt.png"),
+	"ice_bolt": preload("res://assets/Weapons/Projectiles/ice_bolt.png"),
+	"fire_bolt": preload("res://assets/Weapons/Projectiles/fire_bolt.png"),
+	"arcane_bolt": preload("res://assets/Weapons/Projectiles/arcane_bolt.png"),
+	"lightning_fork": preload("res://assets/Weapons/Projectiles/lightning_fork.png")
 }
 
 @export var speed: float = 800.0
@@ -47,16 +50,10 @@ func _setup_visuals() -> void:
 		sprite.visible = false
 	if cr:
 		if weapon_source == "frozen_orb":
-			if not is_frozen_orb_shard:
-				cr.visible = false
-				if sprite:
-					sprite.visible = false
-				queue_redraw()
-			else:
-				# Shard base color to white so modulation is pure blue
-				cr.color = Color.WHITE
-				if sprite:
-					sprite.visible = false
+			cr.visible = false
+			if sprite:
+				sprite.texture = BOLT_TEXTURES["ice_shard"] if is_frozen_orb_shard else BOLT_TEXTURES["frozen_orb"]
+				sprite.visible = true
 		elif BOLT_TEXTURES.has(weapon_source):
 			cr.visible = false
 			if sprite:

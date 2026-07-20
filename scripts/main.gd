@@ -31,15 +31,6 @@ var pause_inventory_panel: RunInventoryPanel
 var shop_stats_panel: RunStatsPanel
 var shop_inventory_panel: RunInventoryPanel
 
-const SHOP_WEAPON_ICONS := {
-	"zap": preload("res://assets/Weapons/zap_projectile.png"),
-	"arcane_missile": preload("res://assets/Weapons/arcane_missile_projectile.png"),
-	"fireball": preload("res://assets/Weapons/fireball_projectile.png"),
-	"lightning_bolt": preload("res://assets/Weapons/lightning_bolt_projectile.png"),
-	"ice_bolt": preload("res://assets/Weapons/ice_bolt_projectile.png"),
-	"fire_bolt": preload("res://assets/Weapons/fire_bolt_projectile.png"),
-	"arcane_bolt": preload("res://assets/Weapons/arcane_bolt_projectile.png")
-}
 const LEVEL_UP_PANEL_TEXTURE := preload("res://assets/ui/level_up/panel_background_wood.webp")
 const LEVEL_UP_OFFER_TEXTURE := preload("res://assets/ui/level_up/offer_background_wood.webp")
 const PAUSE_BUTTON_TEXTURE := preload("res://assets/ui/level_up/button_background_wood.webp")
@@ -772,7 +763,7 @@ func _refresh_shop_ui() -> void:
 		row.offset_bottom = -14.0
 		panel.add_child(row)
 
-		var icon := _create_shop_weapon_icon(String(abi.id), 1.0)
+		var icon := _create_shop_ability_icon(String(abi.id), 1.0)
 		if icon:
 			icon.custom_minimum_size = Vector2(70, 70)
 			row.add_child(icon)
@@ -839,15 +830,21 @@ func _create_question_mark_icon(icon_size: Vector2) -> TextureRect:
 	return icon
 
 
-func _create_shop_weapon_icon(weapon_id: String, scale: float = 0.75) -> TextureRect:
-	if not SHOP_WEAPON_ICONS.has(weapon_id):
+func _create_shop_ability_icon(ability_id: String, scale: float = 0.75) -> TextureRect:
+	var icon_path := _ability_icon_path(ability_id)
+	if not ResourceLoader.exists(icon_path):
 		return null
 	var icon := TextureRect.new()
-	icon.texture = SHOP_WEAPON_ICONS[weapon_id]
+	icon.texture = load(icon_path) as Texture2D
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.custom_minimum_size = Vector2(64, 40) * scale
+	icon.custom_minimum_size = Vector2(64, 64) * scale
 	return icon
+
+func _ability_icon_path(ability_id: String) -> String:
+	if ability_id.begins_with("aura_"):
+		return "res://assets/Auras/%s.png" % ability_id
+	return "res://assets/Weapons/Icons/%s.png" % ability_id
 
 
 func _buy_ability(id: String, upgrade_roll: Dictionary = {}) -> void:

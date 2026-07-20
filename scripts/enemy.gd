@@ -259,10 +259,10 @@ func _get_collision_shape_radius(collision_shape: CollisionShape2D, fallback: fl
 	return fallback
 
 func _load_boss_texture() -> Texture2D:
-	var image := Image.load_from_file(BOSS_TEXTURE_PATH)
-	if image == null:
-		return null
-	return ImageTexture.create_from_image(image)
+	# Load the imported Texture2D resource so Godot owns and releases its GPU RID.
+	# Creating an ImageTexture manually here bypassed the importer and leaked it
+	# when a run containing a boss was stopped from the editor.
+	return load(BOSS_TEXTURE_PATH) as Texture2D
 
 func _set_collision_radius(body_radius: float, hitbox_radius: float) -> void:
 	if body_shape and body_shape.shape is CircleShape2D:
