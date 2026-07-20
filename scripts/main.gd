@@ -305,15 +305,6 @@ func _refresh_reference_panels() -> void:
 		if is_instance_valid(stats):
 			stats.refresh_stats()
 
-func _exit_tree() -> void:
-	if is_instance_valid(item_popup_panel):
-		item_popup_panel.queue_free()
-	if is_instance_valid(charge_shrine_popup_panel):
-		charge_shrine_popup_panel.queue_free()
-	if is_instance_valid(shop_grid):
-		for child in shop_grid.get_children():
-			child.queue_free()
-
 func _on_level_up(new_level: int) -> void:
 	_generate_shop_options()
 	if current_shop_options.is_empty():
@@ -1121,19 +1112,7 @@ func _ensure_item_popup_exists() -> void:
 	item_popup_panel = PanelContainer.new()
 	item_popup_panel.name = "ItemPopupPanel"
 	
-	# Solid dark background with gold border
-	var sb = StyleBoxFlat.new()
-	sb.bg_color = Color(0.1, 0.1, 0.15, 1.0) # Solid, no transparency
-	sb.border_width_left = 5
-	sb.border_width_top = 5
-	sb.border_width_right = 5
-	sb.border_width_bottom = 5
-	sb.border_color = Color(0.8, 0.6, 0.1, 1.0) # Gold border
-	sb.corner_radius_top_left = 12
-	sb.corner_radius_top_right = 12
-	sb.corner_radius_bottom_left = 12
-	sb.corner_radius_bottom_right = 12
-	item_popup_panel.add_theme_stylebox_override("panel", sb)
+	item_popup_panel.add_theme_stylebox_override("panel", WoodUI.panel_style())
 
 	item_popup_panel.custom_minimum_size = Vector2(900, 450)
 	
@@ -1261,28 +1240,16 @@ func _show_charge_shrine_window() -> void:
 	for idx in range(current_charge_shrine_options.size()):
 		var option: Dictionary = current_charge_shrine_options[idx]
 		var rarity_color: Color = option.get("rarity_color", Color.WHITE)
-		var sb = StyleBoxFlat.new()
-		sb.bg_color = Color(rarity_color.r * 0.15, rarity_color.g * 0.15, rarity_color.b * 0.15, 1.0)
-		sb.border_width_left = 3
-		sb.border_width_top = 3
-		sb.border_width_right = 3
-		sb.border_width_bottom = 3
-		sb.border_color = rarity_color
-		sb.corner_radius_top_left = 8
-		sb.corner_radius_top_right = 8
-		sb.corner_radius_bottom_left = 8
-		sb.corner_radius_bottom_right = 8
-
 		var choose_btn = Button.new()
 		choose_btn.text = "★ %s\n%s" % [String(option.get("rarity_name", "Common")).to_upper(), String(option.get("display", ""))]
 		choose_btn.custom_minimum_size = Vector2(250, 180)
 		choose_btn.add_theme_font_size_override("font_size", 18)
 		choose_btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
 		choose_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-		choose_btn.add_theme_stylebox_override("normal", sb)
-		choose_btn.add_theme_stylebox_override("hover", sb)
-		choose_btn.add_theme_stylebox_override("pressed", sb)
-		choose_btn.add_theme_stylebox_override("focus", sb)
+		choose_btn.add_theme_stylebox_override("normal", WoodUI.card_style(Color(rarity_color, 0.86)))
+		choose_btn.add_theme_stylebox_override("hover", WoodUI.card_style(Color(rarity_color.lightened(0.25), 1.0)))
+		choose_btn.add_theme_stylebox_override("pressed", WoodUI.card_style(Color(rarity_color.darkened(0.25), 1.0)))
+		choose_btn.add_theme_stylebox_override("focus", WoodUI.card_style(Color(rarity_color.lightened(0.18), 1.0)))
 		choose_btn.pressed.connect(_on_charge_shrine_option_chosen.bind(idx))
 		grid.add_child(choose_btn)
 
@@ -1293,18 +1260,7 @@ func _ensure_charge_shrine_popup_exists() -> void:
 	charge_shrine_popup_panel = PanelContainer.new()
 	charge_shrine_popup_panel.name = "ChargeShrinePopupPanel"
 	
-	var sb = StyleBoxFlat.new()
-	sb.bg_color = Color(0.08, 0.08, 0.11, 1.0)
-	sb.border_width_left = 5
-	sb.border_width_top = 5
-	sb.border_width_right = 5
-	sb.border_width_bottom = 5
-	sb.border_color = Color(0.45, 0.85, 1.0, 1.0)
-	sb.corner_radius_top_left = 12
-	sb.corner_radius_top_right = 12
-	sb.corner_radius_bottom_left = 12
-	sb.corner_radius_bottom_right = 12
-	charge_shrine_popup_panel.add_theme_stylebox_override("panel", sb)
+	charge_shrine_popup_panel.add_theme_stylebox_override("panel", WoodUI.panel_style(Color(0.82, 0.94, 1.0, 1.0)))
 	charge_shrine_popup_panel.custom_minimum_size = Vector2(980, 420)
 	charge_shrine_popup_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	charge_shrine_popup_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH

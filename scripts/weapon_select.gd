@@ -56,19 +56,7 @@ func _refresh_ui() -> void:
 		vbox.add_theme_constant_override("separation", 10)
 		panel.add_child(vbox)
 		
-		# Visual styling
-		var sb = StyleBoxFlat.new()
-		sb.bg_color = Color(0.15, 0.15, 0.2)
-		sb.border_width_left = 2
-		sb.border_width_top = 2
-		sb.border_width_right = 2
-		sb.border_width_bottom = 2
-		sb.border_color = Color.WHITE
-		sb.corner_radius_top_left = 8
-		sb.corner_radius_top_right = 8
-		sb.corner_radius_bottom_left = 8
-		sb.corner_radius_bottom_right = 8
-		panel.add_theme_stylebox_override("panel", sb)
+		panel.add_theme_stylebox_override("panel", WoodUI.card_style())
 		
 		var title = Label.new()
 		title.text = data.name
@@ -80,7 +68,7 @@ func _refresh_ui() -> void:
 		desc.text = data.desc
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		desc.modulate = Color(0.8, 0.8, 0.9)
+		desc.modulate = WoodUI.TEXT_MUTED
 		vbox.add_child(desc)
 		
 		panel.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND

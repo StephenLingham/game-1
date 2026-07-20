@@ -26,29 +26,17 @@ func _refresh_ui() -> void:
 		var panel = PanelContainer.new()
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var vbox = VBoxContainer.new()
-		vbox.custom_minimum_size = Vector2(350, 250)
-		panel.custom_minimum_size = Vector2(350, 250)
+		vbox.custom_minimum_size = Vector2(280, 220)
+		panel.custom_minimum_size = Vector2(320, 250)
 		panel.add_child(vbox)
 		
-		# Visual styling for panel
-		var sb = StyleBoxFlat.new()
-		sb.bg_color = Color(0.15, 0.15, 0.2) if is_unlocked else Color(0.1, 0.1, 0.12)
-		sb.border_width_left = 2
-		sb.border_width_top = 2
-		sb.border_width_right = 2
-		sb.border_width_bottom = 2
-		sb.border_color = Color.WHITE if is_unlocked else Color.GRAY
-		sb.corner_radius_top_left = 8
-		sb.corner_radius_top_right = 8
-		sb.corner_radius_bottom_left = 8
-		sb.corner_radius_bottom_right = 8
-		panel.add_theme_stylebox_override("panel", sb)
+		panel.add_theme_stylebox_override("panel", WoodUI.card_style(Color.WHITE if is_unlocked else Color(0.46, 0.43, 0.4, 0.92)))
 
 		var title = Label.new()
 		title.text = cdata.name
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		title.add_theme_font_size_override("font_size", 24)
-		title.modulate = Color.WHITE if is_unlocked else Color.GRAY
+		title.modulate = WoodUI.TEXT_PRIMARY if is_unlocked else WoodUI.TEXT_MUTED
 		vbox.add_child(title)
 		
 		var status = Label.new()
@@ -62,7 +50,7 @@ func _refresh_ui() -> void:
 		desc.text = cdata.desc if is_unlocked else "???"
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		desc.modulate = Color(0.8, 0.8, 0.9)
+		desc.modulate = WoodUI.TEXT_MUTED
 		
 		if is_unlocked and cdata.has("texture"):
 			var tex_rect = TextureRect.new()

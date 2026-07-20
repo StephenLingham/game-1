@@ -48,7 +48,7 @@ func _refresh_ui() -> void:
 		]
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		desc.modulate = Color(0.8, 0.8, 0.9)
+		desc.modulate = WoodUI.TEXT_MUTED
 		vbox.add_child(desc)
 		
 		var btn = Button.new()
