@@ -9,6 +9,7 @@ var _tex_speed = preload("res://assets/powerup_speed_2.png")
 var _tex_heal = preload("res://assets/powerup_heal_2.png")
 var _tex_explosion = preload("res://assets/powerup_explosion_2.png")
 var _tex_crystal = preload("res://assets/gem_icon.png")
+var _tex_atk_speed = preload("res://assets/powerup_atkspeed.png")
 
 func _ready() -> void:
 	add_to_group("powerups")
@@ -24,12 +25,7 @@ func _ready() -> void:
 			Type.HEAL: tex = _tex_heal
 			Type.ROCKET: tex = _tex_explosion
 			Type.CRYSTAL: tex = _tex_crystal
-			Type.ATK_SPEED:
-				if ResourceLoader.exists("res://assets/powerup_atkspeed.png"):
-					tex = load("res://assets/powerup_atkspeed.png")
-				else:
-					tex = _tex_speed
-					sprite.modulate = Color(1.0, 0.2, 0.2) # Red for attack speed
+			Type.ATK_SPEED: tex = _tex_atk_speed
 		
 		if tex:
 			sprite.texture = tex
