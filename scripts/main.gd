@@ -897,7 +897,6 @@ func end_run(won: bool, waves_completed: int) -> void:
 
 	# Crystals reward: Removed as per new requirement (crystals now drop during run)
 	var crystals_reward := 0
-	var newly_unlocked = []
 	if won:
 		GameState.mark_level_completed(GameState.run_level_name)
 		GameState.record_successful_run()
@@ -910,11 +909,9 @@ func end_run(won: bool, waves_completed: int) -> void:
 			if not GameState.unlocked_characters.has(next_char):
 				GameState.unlocked_characters.append(next_char)
 				# We'll show this in the endgame screen if possible
-		for id in GameState.run_unlocked_items:
-			newly_unlocked.append(id)
-		GameState.finalize_run_unlocks()
-	else:
-		GameState.discard_run_unlocks()
+	# Kill, chest, and upgrade requirements are permanent progression and apply
+	# after every run. Victory-only rewards remain inside the block above.
+	var newly_unlocked: Array = GameState.finalize_run_unlocks()
 	GameState.finalize_run_stats()
 	
 	GameState.award_crystals(crystals_reward)

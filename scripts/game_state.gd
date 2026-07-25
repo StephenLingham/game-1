@@ -123,6 +123,7 @@ func _ready() -> void:
 		unlocked_items = ["zap"]
 		unlocked_auras = []
 		unlocked_treasure_items = []
+		run_unlocked_items = []
 		lifetime_kills = {"zap": 0}
 		lifetime_chests_opened = 0
 		completed_levels = []
@@ -148,6 +149,7 @@ func _ready() -> void:
 			unlocked_items = ["zap"]
 			unlocked_auras = []
 			unlocked_treasure_items = []
+			run_unlocked_items = []
 			lifetime_kills = {"zap": 0}
 			lifetime_chests_opened = 0
 			completed_levels = []
@@ -177,6 +179,11 @@ func _ready() -> void:
 			if not unlocked_items.has(id):
 				unlocked_items.append(id)
 		changed = true
+
+	# Repair saves where the requirement was reached but the pending unlock was
+	# discarded by a defeat or lost when the game closed before the run ended.
+	if not _reconcile_progression_unlocks().is_empty():
+		changed = true
 	
 	if changed:
 		save()
@@ -186,6 +193,7 @@ func reset_all_data() -> void:
 	unlocked_items = ["zap"]
 	unlocked_auras = []
 	unlocked_treasure_items = []
+	run_unlocked_items = []
 	lifetime_kills = {"zap": 0}
 	lifetime_chests_opened = 0
 	completed_levels = []
@@ -950,6 +958,7 @@ func record_ability_upgrade(id: String, level: int) -> void:
 	if _is_ability_at_max(id, level):
 		max_levels_reached[id] = true
 	
+	_check_unlocks()
 	save()
 
 func _is_ability_at_max(id: String, level: int) -> bool:
@@ -964,23 +973,29 @@ func is_item_unlocked(id: String) -> bool:
 		return unlocked_auras.has(id)
 	return unlocked_items.has(id)
 
-func discard_run_unlocks() -> void:
-	run_unlocked_items = []
+func finalize_run_unlocks() -> Array:
+	var newly_unlocked := _reconcile_progression_unlocks()
 	save()
+	return newly_unlocked
 
-func finalize_run_unlocks() -> void:
+func _reconcile_progression_unlocks() -> Array:
+	_check_unlocks()
+	var newly_unlocked: Array = []
 	for item in run_unlocked_items:
 		if item in GameConstants.ITEMS:
 			if not unlocked_treasure_items.has(item):
 				unlocked_treasure_items.append(item)
+				newly_unlocked.append(item)
 		elif item.begins_with("aura_"):
 			if not unlocked_auras.has(item):
 				unlocked_auras.append(item)
+				newly_unlocked.append(item)
 		else:
 			if not unlocked_items.has(item):
 				unlocked_items.append(item)
+				newly_unlocked.append(item)
 	run_unlocked_items = []
-	save()
+	return newly_unlocked
 
 func mark_level_completed(level_name: String) -> void:
 	if not completed_levels.has(level_name):
