@@ -3,10 +3,13 @@
 func _ready() -> void:
 	add_to_group("chests")
 
+	$Sprite2D.scale = Vector2.ONE * GameConstants.CHEST_SPRITE_SCALE
+	var collision_shape := $CollisionShape2D.shape as CircleShape2D
+	collision_shape.radius = GameConstants.CHEST_COLLISION_RADIUS
+
 	var texture: Texture2D = null
 	var potential_paths = [
-		"res://assets/treasure_chest.png",
-		"res://assets/treasure_chest.jpg"
+		"res://assets/chest2.png"
 	]
 
 	for path in potential_paths:
@@ -23,7 +26,6 @@ func _ready() -> void:
 		$Sprite2D.visible = false
 		$Visual.visible = true
 
-	scale = Vector2(0.5, 0.5)
 	body_entered.connect(_on_body_entered)
 
 func _process(_delta: float) -> void:

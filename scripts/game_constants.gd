@@ -8,6 +8,10 @@ const UI_PANEL_CORNER_RADIUS_PX: int = 8
 const UI_OFFER_CORNER_RADIUS_PX: int = 8
 const UI_BUTTON_CORNER_RADIUS_PX: int = 10
 
+# Sprite and collision scales
+const CHEST_SPRITE_SCALE: float = 0.07
+const CHEST_COLLISION_RADIUS: float = 25.0
+
 # --- INITIAL SPAWN COUNTS ---
 const CHEST_STARTING_COUNT: int = 7
 const POWERUP_STARTING_COUNT: int = 6
