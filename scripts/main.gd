@@ -314,7 +314,7 @@ func _setup_arena() -> void:
 	var floor_rect := $ArenaFloor as TextureRect
 	floor_rect.size = arena_size
 	floor_rect.position = center - (arena_size / 2.0)
-	floor_rect.texture = load("res://assets/grass-texture-2.png")
+	floor_rect.texture = load("res://assets/grass-5.png")
 	floor_rect.stretch_mode = TextureRect.STRETCH_TILE
 	floor_rect.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	
