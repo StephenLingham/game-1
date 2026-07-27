@@ -165,7 +165,7 @@ func _physics_process(delta: float) -> void:
 			var dir := to_target / distance
 			desired_velocity = dir * speed * _slow_factor
 			if desired_velocity.x != 0.0:
-				if enemy_type == "Tree" or enemy_type == "Elite" or enemy_type == "Fast" or enemy_type == "Big":
+				if enemy_type == "Normal" or enemy_type == "Tree" or enemy_type == "Elite" or enemy_type == "Fast" or enemy_type == "Big":
 					sprite.flip_h = desired_velocity.x < 0
 				else:
 					sprite.flip_h = desired_velocity.x > 0

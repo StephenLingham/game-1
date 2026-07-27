@@ -77,7 +77,7 @@ const PROB_ELITE_ENEMY: float = 0.10
 const PROB_GOLEM_ENEMY: float = 0.15
 
 # --- ENEMY SETTINGS ---
-const ENEMY_NORMAL_SPRITE_SCALE: float = 0.07
+const ENEMY_NORMAL_SPRITE_SCALE: float = 0.13
 const ENEMY_NORMAL_SPEED: float = 60.0
 const ENEMY_NORMAL_HEALTH: int = 100
 const ENEMY_NORMAL_DAMAGE: int = 20
