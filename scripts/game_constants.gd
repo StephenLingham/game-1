@@ -1,6 +1,6 @@
 class_name GameConstants extends RefCounted
 
-const GAME_VERSION: String = "v0.23.0"
+const GAME_VERSION: String = "v0.24.0"
 
 # --- UI SHAPE ---
 # These values match the alpha-rounded corners baked into the wood textures.
