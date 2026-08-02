@@ -491,22 +491,23 @@ func _fire_meteor() -> void:
 
 func _fire_frozen_orb(target: Node2D) -> void:
 	# Simplified: fire a big slow projectile that fires small ones
-	var orb = bullet_scene.instantiate()
-	orb.global_position = global_position
-	orb.speed = 150.0
-	orb.scale = Vector2(2, 2)
-	orb.modulate = Color.CYAN
-	orb.weapon_source = "frozen_orb"
-	
 	var effective_base = GameConstants.FROZEN_ORB_DAMAGE + GameState.get_weapon_damage_bonus("frozen_orb")
-	var res = _get_final_damage_for_weapon(effective_base, "frozen_orb")
-	orb.damage = res.damage
-	if "is_crit" in orb:
-		orb.is_crit = res.is_crit
-		
-	if is_instance_valid(target):
-		orb.direction = (target.global_position - global_position).normalized()
-	get_tree().current_scene.add_child(orb)
+	var count := GameState.get_projectiles()
+	for i in range(count):
+		var orb = bullet_scene.instantiate()
+		orb.global_position = global_position
+		orb.speed = 150.0
+		orb.scale = Vector2(2, 2)
+		orb.modulate = Color.CYAN
+		orb.weapon_source = "frozen_orb"
+		var res = _get_final_damage_for_weapon(effective_base, "frozen_orb")
+		orb.damage = res.damage
+		if "is_crit" in orb:
+			orb.is_crit = res.is_crit
+		if is_instance_valid(target):
+			var spread := (float(i) - float(count - 1) / 2.0) * 0.12
+			orb.direction = (target.global_position - global_position).normalized().rotated(spread)
+		get_tree().current_scene.add_child(orb)
 
 func _fire_blizzard() -> void:
 	var size_mult = GameState.get_weapon_size_multiplier("blizzard")
@@ -673,7 +674,7 @@ func fire(target: Node2D) -> void:
 	can_fire = false
 	fire_timer = _get_fire_interval()
 	
-	var count = 1 + GameState.run_extra_projectiles
+	var count := GameState.get_weapon_projectiles("zap")
 	var dir = (target.global_position - global_position).normalized()
 	
 	for i in range(count):
@@ -760,14 +761,12 @@ func _fire_sniper() -> void:
 	var visible_enemies = _get_visible_enemies()
 	if visible_enemies.is_empty():
 		return
-	
-	# Target the enemy with the highest health
-	var target = visible_enemies[0]
-	for e in visible_enemies:
-		if e.health > target.health:
-			target = e
-	
-	if is_instance_valid(target):
+	visible_enemies.sort_custom(func(a, b): return a.health > b.health)
+	var count: int = min(GameState.get_projectiles(), visible_enemies.size())
+	for i in range(count):
+		var target = visible_enemies[i]
+		if not is_instance_valid(target):
+			continue
 		# Create visuals at target position
 		_create_blood_effect(target.global_position)
 		_create_crosshair_effect(target.global_position)
@@ -816,7 +815,7 @@ func take_damage(amount: int = 1, attacker: Node2D = null) -> void:
 
 	if GameState.count_run_item("mirror_sigil") > 0 and _reflect_cooldown <= 0.0 and attacker and is_instance_valid(attacker) and attacker.has_method("take_damage"):
 		_reflect_cooldown = 10.0
-		attacker.take_damage(reduced, "reflect")
+		GameState.record_damage("reflect", attacker.take_damage(reduced, "reflect"))
 
 	health -= reduced
 
@@ -826,7 +825,7 @@ func take_damage(amount: int = 1, attacker: Node2D = null) -> void:
 	var thorns_pct = GameState.get_thorns_percentage()
 	if thorns_pct > 0 and attacker and is_instance_valid(attacker):
 		if attacker.has_method("take_damage"):
-			attacker.take_damage(int(round(float(amount) * thorns_pct)), "thorns")
+			GameState.record_damage("thorns", attacker.take_damage(int(round(float(amount) * thorns_pct)), "thorns"))
 
 	if GameState.count_run_item("pain_furnace") > 0:
 		_add_run_bonus("damage_bonus", float(GameState.count_run_item("pain_furnace")))
@@ -854,21 +853,22 @@ func _get_spike_ball_cooldown() -> float:
 	return max(0.5, cooldown / _get_attack_speed_multiplier())
 
 func _fire_spike_ball(target: Node2D) -> void:
-	var ball = spike_ball_scene.instantiate() as Area2D
-	ball.global_position = global_position
-	
 	var dir := Vector2.RIGHT
 	if is_instance_valid(target):
 		dir = (target.global_position - global_position).normalized()
-	
-	ball.direction = dir
 	var spike_dmg = GameConstants.SPIKE_BALL_BASE_DAMAGE + GameState.get_weapon_damage_bonus("spike_ball")
-	var res = _get_final_damage_for_weapon(spike_dmg, "spike_ball")
-	ball.damage = res.damage
-	if "is_crit" in ball: ball.is_crit = res.is_crit
 	var lvl = GameState.run_abilities.get("spike_ball", 0)
-	ball.max_distance = GameConstants.SPIKE_BALL_BASE_DISTANCE + (lvl - 1) * GameConstants.SPIKE_BALL_DISTANCE_PER_LEVEL
-	get_tree().current_scene.add_child(ball)
+	var count := GameState.get_projectiles()
+	for i in range(count):
+		var ball = spike_ball_scene.instantiate() as Area2D
+		ball.global_position = global_position
+		var spread := (float(i) - float(count - 1) / 2.0) * 0.12
+		ball.direction = dir.rotated(spread)
+		var res = _get_final_damage_for_weapon(spike_dmg, "spike_ball")
+		ball.damage = res.damage
+		if "is_crit" in ball: ball.is_crit = res.is_crit
+		ball.max_distance = GameConstants.SPIKE_BALL_BASE_DISTANCE + (lvl - 1) * GameConstants.SPIKE_BALL_DISTANCE_PER_LEVEL
+		get_tree().current_scene.add_child(ball)
 
 func _fire_rocket() -> void:
 	var all_enemies = get_tree().get_nodes_in_group("enemies")
@@ -883,8 +883,12 @@ func _fire_rocket() -> void:
 	if candidates.is_empty():
 		return
 	
-	var target = candidates.pick_random()
-	if is_instance_valid(target):
+	candidates.shuffle()
+	var count := GameState.get_projectiles()
+	for i in range(count):
+		var target = candidates[i % candidates.size()]
+		if not is_instance_valid(target):
+			continue
 		var rocket = rocket_scene.instantiate()
 		rocket.global_position = muzzle.global_position
 		rocket.target = target
@@ -923,15 +927,18 @@ func apply_atk_speed_boost(multiplier: float, duration: float) -> void:
 	tween.tween_property(sprite, "modulate", Color.WHITE, 0.5)
 
 func _fire_disk() -> void:
-	var disk = disk_scene.instantiate()
-	disk.global_position = global_position
 	var lvl = GameState.run_abilities.get("bouncing_disk", 1)
-	disk.bounces_left = GameState.get_weapon_bounces("bouncing_disk") if GameState.get_weapon_bounces("bouncing_disk") > 0 else lvl
 	var disk_dmg = GameConstants.DISK_BASE_DAMAGE + GameState.get_weapon_damage_bonus("bouncing_disk")
-	var res = _get_final_damage_for_weapon(disk_dmg, "bouncing_disk")
-	disk.damage = res.damage
-	if "is_crit" in disk: disk.is_crit = res.is_crit
-	get_tree().current_scene.add_child(disk)
+	var count := GameState.get_projectiles()
+	for i in range(count):
+		var disk = disk_scene.instantiate()
+		disk.global_position = global_position
+		disk.direction = Vector2.RIGHT.rotated((float(i) - float(count - 1) / 2.0) * 0.18)
+		disk.bounces_left = lvl + GameState.get_weapon_bounces("bouncing_disk")
+		var res = _get_final_damage_for_weapon(disk_dmg, "bouncing_disk")
+		disk.damage = res.damage
+		if "is_crit" in disk: disk.is_crit = res.is_crit
+		get_tree().current_scene.add_child(disk)
 
 func _drop_spikes() -> void:
 	var spikes = spikes_scene.instantiate()
@@ -983,17 +990,20 @@ func _trigger_ice_wave() -> void:
 
 func _fire_machine_gun(target: Node2D) -> void:
 	if not target: return
-	var b = bullet_scene.instantiate()
-	b.global_position = muzzle.global_position
 	var dir = (target.global_position - global_position).normalized()
-	b.direction = dir
-	b.rotation = dir.angle()
 	var mg_dmg = GameConstants.MG_DAMAGE + GameState.get_weapon_damage_bonus("machine_gun")
-	var res = _get_final_damage_for_weapon(mg_dmg, "machine_gun")
-	b.damage = res.damage
-	if "is_crit" in b: b.is_crit = res.is_crit
-	b.weapon_source = "machine_gun"
-	get_tree().current_scene.add_child(b)
+	var count := GameState.get_projectiles()
+	for i in range(count):
+		var b = bullet_scene.instantiate()
+		b.global_position = muzzle.global_position
+		var shot_dir: Vector2 = dir.rotated((float(i) - float(count - 1) / 2.0) * 0.06)
+		b.direction = shot_dir
+		b.rotation = shot_dir.angle()
+		var res = _get_final_damage_for_weapon(mg_dmg, "machine_gun")
+		b.damage = res.damage
+		if "is_crit" in b: b.is_crit = res.is_crit
+		b.weapon_source = "machine_gun"
+		get_tree().current_scene.add_child(b)
 
 func on_item_added(item_id: String) -> void:
 	if item_id == "ninja_wizard_cat" and not _ninja_cat_spawned:
@@ -1058,18 +1068,18 @@ func on_enemy_hit(enemy: Node2D, actual_damage: int, source: String, is_crit: bo
 
 	var execute_count := GameState.count_run_item("execution_pin")
 	if execute_count > 0 and enemy.has_method("take_damage") and "max_health" in enemy:
-		enemy.take_damage(int(round(float(enemy.max_health) * 0.01 * float(execute_count))), "execute_health")
+		GameState.record_damage("execute_health", enemy.take_damage(int(round(float(enemy.max_health) * 0.01 * float(execute_count))), "execute_health"))
 
 	var close_bonus := _get_close_quarters_bonus(enemy)
 	if close_bonus > 0:
-		enemy.take_damage(close_bonus, "close_quarters_bonus")
+		GameState.record_damage("close_quarters_bonus", enemy.take_damage(close_bonus, "close_quarters_bonus"))
 
 	var longshot_bonus := _get_longshot_bonus(enemy, actual_damage)
 	if longshot_bonus > 0:
-		enemy.take_damage(longshot_bonus, "longshot_bonus")
+		GameState.record_damage("longshot_bonus", enemy.take_damage(longshot_bonus, "longshot_bonus"))
 
 	if _is_boss(enemy) and GameState.count_run_item("giant_slayer") > 0:
-		enemy.take_damage(int(round(float(actual_damage) * 0.10 * float(GameState.count_run_item("giant_slayer")))), "giant_slayer")
+		GameState.record_damage("giant_slayer", enemy.take_damage(int(round(float(actual_damage) * 0.10 * float(GameState.count_run_item("giant_slayer")))), "giant_slayer"))
 
 	if GameState.count_run_item("ember_plague") > 0 and GameState.roll_proc(0.10 * float(GameState.count_run_item("ember_plague")), GameState.count_run_item("echo_trigger")) and enemy.has_method("apply_burn"):
 		enemy.apply_burn(max(10.0, float(actual_damage) * 0.25), 4.0)
@@ -1223,7 +1233,7 @@ func _damage_nearby_enemies(center_enemy: Node2D, damage_amount: int, radius: fl
 		if enemy == center_enemy or not is_instance_valid(enemy):
 			continue
 		if enemy.global_position.distance_to(center_enemy.global_position) <= radius and enemy.has_method("take_damage"):
-			enemy.take_damage(max(1, damage_amount), source)
+			GameState.record_damage(source, enemy.take_damage(max(1, damage_amount), source))
 
 func _chain_crit(enemy: Node2D, damage_amount: int, visited: Array) -> void:
 	var next_target = _find_nearby_enemy(enemy, visited)
@@ -1231,7 +1241,7 @@ func _chain_crit(enemy: Node2D, damage_amount: int, visited: Array) -> void:
 		return
 	visited.append(next_target)
 	var next_is_crit := randf() < GameState.get_crit_chance()
-	next_target.take_damage(max(1, damage_amount), "crit_chain", next_is_crit)
+	GameState.record_damage("crit_chain", next_target.take_damage(max(1, damage_amount), "crit_chain", next_is_crit))
 	if next_is_crit and GameState.roll_proc(0.5, GameState.count_run_item("echo_trigger")):
 		_chain_crit(next_target, damage_amount, visited)
 

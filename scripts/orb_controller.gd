@@ -46,13 +46,16 @@ func _get_orb_count() -> int:
 
 	# Legacy behavior: orb count based on ability level
 	var lvl = GameState.run_abilities.get(ability_id, 0)
+	var base_count := 0
 	if lvl >= 5:
-		return 3
-	if lvl >= 3:
-		return 2
-	if lvl >= 1:
-		return 1
-	return 0
+		base_count = 3
+	elif lvl >= 3:
+		base_count = 2
+	elif lvl >= 1:
+		base_count = 1
+	if base_count == 0:
+		return 0
+	return base_count + max(0, GameState.get_projectiles() - GameConstants.BASE_PROJECTILES)
 
 func _get_orb_speed() -> float:
 	var lvl = GameState.run_abilities.get(ability_id, 0)

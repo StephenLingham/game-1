@@ -53,7 +53,7 @@ func _process_chaser(delta: float) -> void:
 		velocity = Vector2.ZERO
 		if _attack_timer <= 0.0 and target.has_method("take_damage"):
 			_attack_timer = attack_cooldown
-			target.take_damage(damage, "pet")
+			GameState.record_damage("pet", target.take_damage(damage, "pet"))
 	else:
 		velocity = to_target.normalized() * move_speed
 	move_and_slide()
@@ -89,7 +89,7 @@ func _start_cat_dash() -> void:
 func _destroy_touched_enemies() -> void:
 	for enemy in get_tree().get_nodes_in_group("enemies"):
 		if is_instance_valid(enemy) and global_position.distance_to(enemy.global_position) <= 48.0:
-			enemy.take_damage(max(enemy.health, damage), "ninja_wizard_cat")
+			GameState.record_damage("ninja_wizard_cat", enemy.take_damage(max(enemy.health, damage), "ninja_wizard_cat"))
 
 func take_damage(amount: int = 1, _attacker: Node2D = null) -> void:
 	if invulnerable or amount <= 0:

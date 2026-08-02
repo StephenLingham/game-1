@@ -849,6 +849,7 @@ func _ability_icon_path(ability_id: String) -> String:
 
 func _buy_ability(id: String, upgrade_roll: Dictionary = {}) -> void:
 	var level = GameState.run_abilities.get(id, 0)
+	var previous_spawn_rate := GameState.get_spawn_rate_multiplier()
 	
 	GameState.run_abilities[id] = level + 1
 	GameState.record_ability_upgrade(id, level + 1)
@@ -863,6 +864,10 @@ func _buy_ability(id: String, upgrade_roll: Dictionary = {}) -> void:
 				GameState.add_aura_rarity_bonus(id, aura_data.value)
 	elif not upgrade_roll.is_empty():
 		GameState.add_weapon_trait(id, upgrade_roll["trait"], upgrade_roll["value"])
+	if id == "aura_max_health" and player.has_method("refresh_stats"):
+		player.refresh_stats()
+	if id == "aura_spawn_rate":
+		wave_controller.refresh_spawn_rate(previous_spawn_rate)
 	_close_shop()
 
 func _reroll_shop() -> void:

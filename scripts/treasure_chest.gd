@@ -44,7 +44,6 @@ func _collect() -> void:
 	if main and main.has_method("show_item_window"):
 		main.show_item_window()
 
-	_spawn_particles()
 	GameState.record_chest_opened()
 
 	var player = get_tree().get_first_node_in_group("player")
@@ -52,24 +51,3 @@ func _collect() -> void:
 		player.on_chest_opened()
 
 	queue_free()
-
-func _spawn_particles() -> void:
-	var p = CPUParticles2D.new()
-	p.global_position = global_position
-	p.emitting = true
-	p.one_shot = true
-	p.explosiveness = 1.0
-	p.amount = 30
-	p.lifetime = 1.0
-	p.spread = 180.0
-	p.gravity = Vector2.ZERO
-	p.initial_velocity_min = 100.0
-	p.initial_velocity_max = 200.0
-	p.scale_amount_min = 4.0
-	p.scale_amount_max = 8.0
-	p.color = Color.GOLD
-
-	get_tree().current_scene.add_child(p)
-
-	var timer = get_tree().create_timer(1.2)
-	timer.timeout.connect(p.queue_free)

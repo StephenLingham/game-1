@@ -18,6 +18,7 @@ var run_unlocked_items: Array = [] # Items unlocked IN THE CURRENT RUN (delayed 
 var completed_levels: Array = []
 var lifetime_kills: Dictionary = {"zap": 0}
 var lifetime_chests_opened: int = 0
+var lifetime_crystals_collected: int = 0
 var sealed_items: Array = [] # IDs of items the player has sealed
 var unlocked_characters: Array = ["starter"]
 var current_character: String = "starter"
@@ -126,6 +127,7 @@ func _ready() -> void:
 		run_unlocked_items = []
 		lifetime_kills = {"zap": 0}
 		lifetime_chests_opened = 0
+		lifetime_crystals_collected = 0
 		completed_levels = []
 		aura_max_levels_reached = {}
 		best_run_player_level = 1
@@ -196,6 +198,7 @@ func reset_all_data() -> void:
 	run_unlocked_items = []
 	lifetime_kills = {"zap": 0}
 	lifetime_chests_opened = 0
+	lifetime_crystals_collected = 0
 	completed_levels = []
 	aura_max_levels_reached = {}
 	sealed_items = []
@@ -524,12 +527,17 @@ func get_turret_atk_speed_mult() -> float:
 
 func get_shotgun_bullet_count() -> int:
 	var lvl = run_abilities.get("shotgun", 0)
+	var base_count := 0
 	match lvl:
-		1: return 3
-		2: return 5
-		3: return 7
-		4: return 9
-	return 0
+		1: base_count = 3
+		2: base_count = 5
+		3: base_count = 7
+		_:
+			if lvl >= 4:
+				base_count = 9
+	if base_count == 0:
+		return 0
+	return base_count + max(0, get_projectiles() - GameConstants.BASE_PROJECTILES)
 
 # Legacy properties for scripts I haven't fully updated yet
 var run_damage_zap: int:
@@ -812,9 +820,16 @@ func add_run_item(item_id: String) -> void:
 			p.on_item_added(item_id)
 
 func award_crystals(amount: int) -> void:
-	crystals += max(amount, 0)
-	run_crystals_collected += max(amount, 0)
+	var awarded: int = max(amount, 0)
+	crystals += awarded
+	run_crystals_collected += awarded
+	lifetime_crystals_collected += awarded
 	save()
+
+func record_damage(source: String, amount: int) -> void:
+	if source == "" or amount <= 0:
+		return
+	run_damage_stats[source] = int(run_damage_stats.get(source, 0)) + amount
 
 func award_gems(amount: int) -> void:
 	award_crystals(amount)
@@ -1081,6 +1096,7 @@ func save() -> void:
 		"unlocked_treasure_items": unlocked_treasure_items,
 		"lifetime_kills": lifetime_kills,
 		"lifetime_chests_opened": lifetime_chests_opened,
+		"lifetime_crystals_collected": lifetime_crystals_collected,
 		"completed_levels": completed_levels,
 		"aura_max_levels_reached": aura_max_levels_reached,
 		"sealed_items": sealed_items,
@@ -1164,6 +1180,20 @@ func load_save() -> void:
 	lifetime_successful_runs = int(parsed.get("lifetime_successful_runs", 0))
 	total_game_seconds = float(parsed.get("total_game_seconds", 0.0))
 	total_run_seconds = float(parsed.get("total_run_seconds", 0.0))
+	lifetime_crystals_collected = int(parsed.get("lifetime_crystals_collected", crystals + _current_crystal_investment()))
+
+func _current_crystal_investment() -> int:
+	var total := 0
+	for level in [
+		perm_damage_level, perm_atkspd_level, perm_pickup_radius_level,
+		perm_max_health_level, perm_regen_level, perm_crit_level,
+		perm_armor_level, perm_armor_percent_level, perm_gold_drop_level,
+		perm_luck_level, perm_speed_level, perm_thorns_level,
+		perm_spawn_rate_level, perm_crit_damage_level,
+		perm_projectiles_level, perm_bounces_level
+	]:
+		total += _calculate_spent(int(level))
+	return total
 
 
 func _sum_lifetime_kills() -> int:

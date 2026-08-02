@@ -139,7 +139,7 @@ func _physics_process(delta: float) -> void:
 		_burn_accumulator += _burn_dps * delta
 		while _burn_accumulator >= 1.0 and health > 0:
 			_burn_accumulator -= 1.0
-			take_damage(1, "burn")
+			GameState.record_damage("burn", take_damage(1, "burn"))
 		_burn_spread_timer -= delta
 		if _burn_spread_timer <= 0.0:
 			_burn_spread_timer = 0.25
@@ -153,7 +153,7 @@ func _physics_process(delta: float) -> void:
 		while _curse_accumulator >= 1.0 and health > 0:
 			var curse_damage := int(floor(_curse_accumulator))
 			_curse_accumulator -= float(curse_damage)
-			take_damage(curse_damage, "curse")
+			GameState.record_damage("curse", take_damage(curse_damage, "curse"))
 
 	target = _get_nearest_ally()
 	var desired_velocity := Vector2.ZERO

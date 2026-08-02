@@ -21,6 +21,7 @@ func _ready() -> void:
 	_add_stat_row("Total time in game", _format_seconds(GameState.total_game_seconds))
 	_add_stat_row("Time spent in runs", _format_seconds(GameState.total_run_seconds))
 	_add_stat_row("Total enemies killed", str(GameState.lifetime_enemies_killed_total))
+	_add_stat_row("Total crystals collected", str(GameState.lifetime_crystals_collected))
 	for level_name in ["Level 1", "Level 2", "Level 3"]:
 		_add_stat_row("Enemies killed on " + level_name, str(GameState.lifetime_enemies_killed_by_level.get(level_name, 0)))
 	for level_name in ["Level 1", "Level 2", "Level 3"]:
