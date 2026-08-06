@@ -150,17 +150,8 @@ func _show_weapons() -> void:
 		vbox.add_child(desc)
 		grid.add_child(panel)
 		
-		# Sealing
-		var total_upgrades = GameState.lifetime_upgrades.get(id, 0)
-		if is_unlocked and total_upgrades >= 20:
-			_add_seal_button(id, vbox, "weapons")
-		elif is_unlocked:
-			var prog = Label.new()
-			prog.text = "Lifetime Upgrades: %d / 20" % total_upgrades
-			prog.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			prog.modulate = Color(0.5, 0.5, 0.5)
-			prog.add_theme_font_size_override("font_size", 12)
-			vbox.add_child(prog)
+		if is_unlocked:
+			_add_seal_progress(id, vbox, "weapons")
 
 func _show_items() -> void:
 	var items = GameConstants.ITEMS
@@ -239,17 +230,8 @@ func _show_items() -> void:
 			vbox.add_child(lock_info)
 		grid.add_child(panel)
 		
-		# Sealing
-		var picks = GameState.lifetime_item_picks.get(id, 0)
-		if is_unlocked and picks >= 5:
-			_add_seal_button(id, vbox, "items")
-		elif is_unlocked:
-			var prog = Label.new()
-			prog.text = "Times Chosen: %d / 5" % picks
-			prog.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			prog.modulate = Color(0.5, 0.5, 0.5)
-			prog.add_theme_font_size_override("font_size", 12)
-			vbox.add_child(prog)
+		if is_unlocked:
+			_add_seal_progress(id, vbox, "items")
 
 func _show_auras() -> void:
 	var auras = GameConstants.AURAS
@@ -295,7 +277,7 @@ func _show_auras() -> void:
 			var precursor = _get_aura_precursor(id)
 			if precursor != "":
 				var prec_name = auras[precursor].name
-				desc.text = "Upgrade %s %d times in total to unlock" % [prec_name, GameConstants.AURA_UNLOCK_UPGRADES_NEEDED]
+				desc.text = "Select %s %d times in the shop to unlock" % [prec_name, GameConstants.AURA_UNLOCK_SELECTIONS_NEEDED]
 			else:
 				desc.text = "Kill %d enemies with Zap to unlock" % GameConstants.AURA_INITIAL_KILLS_NEEDED
 				
@@ -307,25 +289,16 @@ func _show_auras() -> void:
 		if not is_unlocked:
 			var precursor = _get_aura_precursor(id)
 			if precursor != "":
-				var upgrades = GameState.lifetime_upgrades.get(precursor, 0)
+				var selections := GameState.get_lifetime_selections(precursor)
 				var progress = Label.new()
-				progress.text = "Total Upgrades Progress: %d / %d" % [upgrades, GameConstants.AURA_UNLOCK_UPGRADES_NEEDED]
+				progress.text = "Selections: %d / %d" % [selections, GameConstants.AURA_UNLOCK_SELECTIONS_NEEDED]
 				progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 				progress.modulate = Color.CYAN
 				vbox.add_child(progress)
 		grid.add_child(panel)
 		
-		# Sealing
-		var total_upgrades = GameState.lifetime_upgrades.get(id, 0)
-		if is_unlocked and total_upgrades >= 5:
-			_add_seal_button(id, vbox, "auras")
-		elif is_unlocked:
-			var prog = Label.new()
-			prog.text = "Lifetime Upgrades: %d / 5" % total_upgrades
-			prog.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			prog.modulate = Color(0.5, 0.5, 0.5)
-			prog.add_theme_font_size_override("font_size", 12)
-			vbox.add_child(prog)
+		if is_unlocked:
+			_add_seal_progress(id, vbox, "auras")
 
 func _get_aura_precursor(id: String) -> String:
 	var aura_chain = GameConstants.AURAS.keys()
@@ -415,12 +388,28 @@ func _show_characters() -> void:
 				
 		grid.add_child(panel)
 
+func _add_seal_progress(id: String, container: Control, category: String) -> void:
+	var is_sealed := GameState.sealed_items.has(id)
+	if is_sealed or GameState.is_seal_unlocked(id, category):
+		_add_seal_button(id, container, category)
+		return
+
+	var progress := Label.new()
+	progress.text = "Selections: %d / %d" % [GameState.get_lifetime_selections(id), GameState.get_seal_selection_threshold(category)]
+	progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	progress.modulate = Color(0.5, 0.5, 0.5)
+	progress.add_theme_font_size_override("font_size", 12)
+	container.add_child(progress)
+
 func _add_seal_button(id: String, container: Control, category: String) -> void:
 	var btn = Button.new()
 	var is_sealed = GameState.sealed_items.has(id)
 	
 	btn.text = "Unseal" if is_sealed else "Seal"
 	btn.modulate = Color.ORANGE if is_sealed else Color.WHITE
+	if not is_sealed and not _can_seal_more(category):
+		btn.disabled = true
+		btn.tooltip_text = "At least %d unlocked entries in this category must remain unsealed." % GameConstants.MIN_UNSEALED_COUNT
 	
 	btn.pressed.connect(_on_seal_toggled.bind(id, category))
 	container.add_child(btn)
@@ -429,36 +418,40 @@ func _on_seal_toggled(id: String, category: String) -> void:
 	var is_sealed = GameState.sealed_items.has(id)
 	
 	if not is_sealed:
-		# Enforce 6-left rule
-		var total_count = 0
-		var sealed_count = 0
-		
-		if category == "weapons":
-			total_count = GameConstants.CHARACTER_UNLOCK_CHAIN.size() # Wait, no.
-			# I need the count of all weapons in GameConstants
-			# Actually, I'll just check against the list in the current view
-			total_count = WEAPONS.size()
-			for wid in WEAPONS:
-				if GameState.sealed_items.has(wid): sealed_count += 1
-		elif category == "items":
-			total_count = GameConstants.ITEMS.size()
-			for iid in GameConstants.ITEMS:
-				if GameState.sealed_items.has(iid): sealed_count += 1
-		elif category == "auras":
-			total_count = GameConstants.AURAS.size()
-			for aid in GameConstants.AURAS:
-				if GameState.sealed_items.has(aid): sealed_count += 1
-				
-		if total_count - sealed_count <= GameConstants.MIN_UNSEALED_COUNT:
-			# Show warning or just return
+		if not GameState.is_seal_unlocked(id, category):
 			return
-			
+		if not _can_seal_more(category):
+			return
 		GameState.sealed_items.append(id)
 	else:
 		GameState.sealed_items.erase(id)
 		
 	GameState.save()
 	_refresh_ui()
+
+func _can_seal_more(category: String) -> bool:
+	var unsealed_unlocked := 0
+	for entry_id in _get_unlocked_category_ids(category):
+		if not GameState.sealed_items.has(entry_id):
+			unsealed_unlocked += 1
+	return unsealed_unlocked > GameConstants.MIN_UNSEALED_COUNT
+
+func _get_unlocked_category_ids(category: String) -> Array:
+	var ids: Array = []
+	match category:
+		"weapons":
+			for weapon_id in GameConstants.WEAPON_UNLOCK_CHAIN:
+				if GameState.is_item_unlocked(weapon_id):
+					ids.append(weapon_id)
+		"auras":
+			for aura_id in GameConstants.AURAS:
+				if GameState.is_item_unlocked(aura_id):
+					ids.append(aura_id)
+		"items":
+			for item_id in GameState.unlocked_treasure_items:
+				if GameConstants.ITEMS.has(item_id):
+					ids.append(item_id)
+	return ids
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")

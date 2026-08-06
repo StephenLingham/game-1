@@ -305,7 +305,7 @@ const TRAIT_BASE_SIZE: float        = 0.10  # +10% area radius
 # --- AURA SETTINGS ---
 const AURA_MAX_LEVEL: int = 20
 const AURA_MAX_COUNT: int = 6
-const AURA_UNLOCK_UPGRADES_NEEDED: int = 20
+const AURA_UNLOCK_SELECTIONS_NEEDED: int = 20
 
 
 # Aura Stat Values (per level)
@@ -510,6 +510,9 @@ const ZEPHYROS_MAX_SPEED_BONUS: float = 2.0
 
 # --- SEALING ---
 const MIN_UNSEALED_COUNT: int = 6
+const WEAPON_SEAL_SELECTIONS_NEEDED: int = 20
+const AURA_SEAL_SELECTIONS_NEEDED: int = 5
+const ITEM_SEAL_SELECTIONS_NEEDED: int = 5
 
 # --- MAP SETTINGS ---
 const ENABLE_LARGE_MAP_FOG_OF_WAR: bool = true

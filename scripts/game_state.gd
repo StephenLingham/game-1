@@ -24,8 +24,7 @@ var unlocked_characters: Array = ["starter"]
 var current_character: String = "starter"
 var max_levels_reached: Dictionary = {} # item_id -> reached_max (bool)
 var selected_starter_weapon: String = "zap"
-var lifetime_upgrades: Dictionary = {} # id -> total upgrades across all runs
-var lifetime_item_picks: Dictionary = {} # id -> total picks across all runs
+var lifetime_selections: Dictionary = {} # id -> total shop/chest selections across all runs
 var best_run_player_level: int = 1
 var best_run_enemies_killed: int = 0
 var best_run_gifts_collected: int = 0
@@ -141,6 +140,7 @@ func _ready() -> void:
 		lifetime_enemies_killed_by_level = {"Level 1": 0, "Level 2": 0, "Level 3": 0}
 		fastest_boss_kill_by_level = {"Level 1": -1.0, "Level 2": -1.0, "Level 3": -1.0}
 		lifetime_successful_runs = 0
+		lifetime_selections = {}
 		total_game_seconds = 0.0
 		total_run_seconds = 0.0
 		_reset_all_perm_levels()
@@ -205,8 +205,7 @@ func reset_all_data() -> void:
 	unlocked_characters = ["starter"]
 	current_character = "starter"
 	max_levels_reached = {}
-	lifetime_upgrades = {}
-	lifetime_item_picks = {}
+	lifetime_selections = {}
 	best_run_player_level = 1
 	best_run_enemies_killed = 0
 	best_run_gifts_collected = 0
@@ -825,7 +824,7 @@ func add_run_item(item_id: String) -> void:
 	if GameConstants.UNIQUE_RUN_ITEMS.has(item_id) and has_run_item(item_id):
 		return
 	run_items.append(item_id)
-	lifetime_item_picks[item_id] = lifetime_item_picks.get(item_id, 0) + 1
+	lifetime_selections[item_id] = get_lifetime_selections(item_id) + 1
 
 	var p = get_tree().get_first_node_in_group("player")
 	if p:
@@ -966,9 +965,9 @@ func finalize_run_stats() -> void:
 	best_run_shrines_activated = max(best_run_shrines_activated, run_shrines_activated)
 	save()
 
-func record_ability_upgrade(id: String, level: int) -> void:
-	# Tracking total upgrades across all runs for sealing
-	lifetime_upgrades[id] = lifetime_upgrades.get(id, 0) + 1
+func record_ability_selection(id: String, level: int) -> void:
+	# The initial purchase and every later upgrade each count as one selection.
+	lifetime_selections[id] = get_lifetime_selections(id) + 1
 	
 	if id.begins_with("aura_"):
 		best_aura_level_reached = max(best_aura_level_reached, level)
@@ -978,21 +977,22 @@ func record_ability_upgrade(id: String, level: int) -> void:
 	else:
 		best_weapon_level_reached = max(best_weapon_level_reached, level)
 	
-	# General max level tracking for sealing
-	var max_lvl = 5 # Default
-	# Note: I should probably move _get_max_level to a utility or Constants, 
-	# but for now I'll just check if it's max.
-	# Actually, Main.gd has _get_max_level. I'll just assume 5 if not specified.
-	# To be safe, I'll just check if it's "high enough" or if we know the max.
-	# I'll add a helper to check if an ID is maxed.
-	if _is_ability_at_max(id, level):
-		max_levels_reached[id] = true
-	
 	_check_unlocks()
 	save()
 
-func _is_ability_at_max(id: String, level: int) -> bool:
-	return false
+func get_lifetime_selections(id: String) -> int:
+	return int(lifetime_selections.get(id, 0))
+
+func get_seal_selection_threshold(category: String) -> int:
+	match category:
+		"weapons": return GameConstants.WEAPON_SEAL_SELECTIONS_NEEDED
+		"auras": return GameConstants.AURA_SEAL_SELECTIONS_NEEDED
+		"items": return GameConstants.ITEM_SEAL_SELECTIONS_NEEDED
+	return 0
+
+func is_seal_unlocked(id: String, category: String) -> bool:
+	var threshold := get_seal_selection_threshold(category)
+	return threshold > 0 and get_lifetime_selections(id) >= threshold
 
 func is_item_unlocked(id: String) -> bool:
 	if GameConstants.DEBUG_UNLOCK_ALL_WEAPONS:
@@ -1069,7 +1069,7 @@ func _check_unlocks() -> void:
 				if current_total >= should_have_total:
 					break
 	
-	# Aura chain: previous upgraded 20 times in total unlocks next
+	# Aura chain: selecting the previous aura enough times unlocks the next.
 	var aura_chain = GameConstants.AURAS.keys()
 	
 	# Initial aura unlock: Kill 100 enemies with Zap
@@ -1082,7 +1082,7 @@ func _check_unlocks() -> void:
 		var current = aura_chain[i]
 		var next = aura_chain[i+1]
 		if unlocked_auras.has(current):
-			if lifetime_upgrades.get(current, 0) >= GameConstants.AURA_UNLOCK_UPGRADES_NEEDED:
+			if get_lifetime_selections(current) >= GameConstants.AURA_UNLOCK_SELECTIONS_NEEDED:
 				if not unlocked_auras.has(next) and not run_unlocked_items.has(next):
 					run_unlocked_items.append(next)
 
@@ -1118,8 +1118,7 @@ func save() -> void:
 		"unlocked_characters": unlocked_characters,
 		"current_character": current_character,
 		"max_levels_reached": max_levels_reached,
-		"lifetime_upgrades": lifetime_upgrades,
-		"lifetime_item_picks": lifetime_item_picks,
+		"lifetime_selections": lifetime_selections,
 		"best_run_player_level": best_run_player_level,
 		"best_run_enemies_killed": best_run_enemies_killed,
 		"best_run_gifts_collected": best_run_gifts_collected,
@@ -1178,8 +1177,7 @@ func load_save() -> void:
 	unlocked_characters = parsed.get("unlocked_characters", ["starter"])
 	current_character = parsed.get("current_character", "starter")
 	max_levels_reached = parsed.get("max_levels_reached", {})
-	lifetime_upgrades = parsed.get("lifetime_upgrades", {})
-	lifetime_item_picks = parsed.get("lifetime_item_picks", {})
+	lifetime_selections = _load_lifetime_selections(parsed)
 	best_run_player_level = int(parsed.get("best_run_player_level", 1))
 	best_run_enemies_killed = int(parsed.get("best_run_enemies_killed", 0))
 	best_run_gifts_collected = int(parsed.get("best_run_gifts_collected", 0))
@@ -1196,6 +1194,20 @@ func load_save() -> void:
 	total_game_seconds = float(parsed.get("total_game_seconds", 0.0))
 	total_run_seconds = float(parsed.get("total_run_seconds", 0.0))
 	lifetime_crystals_collected = int(parsed.get("lifetime_crystals_collected", crystals + _current_crystal_investment()))
+
+func _load_lifetime_selections(parsed: Dictionary) -> Dictionary:
+	if parsed.has("lifetime_selections"):
+		return parsed.get("lifetime_selections", {}).duplicate()
+
+	# Save migration: abilities and chest items used separate counters before
+	# selections were unified. Their ID spaces are distinct; max() also avoids
+	# double-counting any malformed legacy entry that appears in both.
+	var migrated: Dictionary = {}
+	for id in parsed.get("lifetime_upgrades", {}):
+		migrated[id] = int(parsed["lifetime_upgrades"].get(id, 0))
+	for id in parsed.get("lifetime_item_picks", {}):
+		migrated[id] = max(int(migrated.get(id, 0)), int(parsed["lifetime_item_picks"].get(id, 0)))
+	return migrated
 
 func _current_crystal_investment() -> int:
 	var total := 0

@@ -862,7 +862,7 @@ func _buy_ability(id: String, upgrade_roll: Dictionary = {}) -> void:
 	var previous_spawn_rate := GameState.get_spawn_rate_multiplier()
 	
 	GameState.run_abilities[id] = level + 1
-	GameState.record_ability_upgrade(id, level + 1)
+	GameState.record_ability_selection(id, level + 1)
 	if id.begins_with("aura_"):
 		if not upgrade_roll.is_empty():
 			# Upgrade (level > 0): apply the rarity-scaled value
