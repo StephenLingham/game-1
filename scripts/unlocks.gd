@@ -285,7 +285,7 @@ func _show_auras() -> void:
 		if is_unlocked:
 			var val = aura_data.value
 			if aura_data.desc != "":
-				if aura_data.stat.ends_with("_multiplier") or aura_data.stat.ends_with("_percent") or aura_data.stat.ends_with("_chance") or aura_data.stat == "thorns_percentage" or aura_data.stat == "gem_drop_chance_bonus" or aura_data.stat == "spawn_rate_multiplier":
+				if aura_data.stat.ends_with("_multiplier") or aura_data.stat.ends_with("_percent") or aura_data.stat.ends_with("_chance") or aura_data.stat == "thorns_percentage" or aura_data.stat == "gem_drop_chance_bonus" or aura_data.stat == "spawn_rate_multiplier" or aura_data.stat == "lifesteal":
 					desc.text = aura_data.desc % int(val * 100)
 				else:
 					desc.text = aura_data.desc % val
@@ -336,6 +336,10 @@ func _get_aura_precursor(id: String) -> String:
 
 func _add_catalog_icon(id: String, container: VBoxContainer, is_unlocked: bool) -> void:
 	var icon_path := "res://assets/Auras/%s.png" % id if id.begins_with("aura_") else "res://assets/Weapons/Icons/%s.png" % id
+	if id.begins_with("aura_"):
+		var aura_data: Dictionary = GameConstants.AURAS.get(id, {})
+		if not aura_data.is_empty() and aura_data.has("icon"):
+			icon_path = String(aura_data.icon)
 	if not ResourceLoader.exists(icon_path):
 		return
 	var icon := TextureRect.new()

@@ -33,6 +33,7 @@ const PLAYER_SPEED: float = 300.0
 const PLAYER_FIRE_RATE: float = 0.50
 const PLAYER_MAX_HEALTH: int = 100
 const PLAYER_BASE_DAMAGE: int = 50
+const PLAYER_SPRITE_SCALE: float = 0.05
 
 # --- XP SETTINGS ---
 const XP_BASE_LEVEL: int = 100
@@ -323,6 +324,9 @@ const AURA_XP_BOOST: float = 0.1    # +10% XP drop
 const AURA_SPEED_BOOST: float = 0.10  # +10% movement speed
 const AURA_PROJECTILES_BOOST: float = 1.0 # +1.0 projectiles per level by default
 const AURA_BOUNCES_BOOST: float = 1.0     # +1.0 bounces per level by default
+const AURA_LIFESTEAL_BOOST: float = 0.01  # +1% lifesteal
+const AURA_EVASION_BOOST: float = 0.01    # +1% chance to evade damage
+const MAX_EVASION_CHANCE: float = 0.90
 
 
 # --- SHOP SETTINGS ---
@@ -861,100 +865,131 @@ const UNIQUE_RUN_ITEMS: Array = ["phoenix_idol", "ninja_wizard_cat"]
 const AURAS: Dictionary = {
 	"aura_damage": {
 		"name": "Power Aura",
-		"display_name": "Damage",
+		"display_name": "damage",
 		"stat": "damage_multiplier",
 		"value": AURA_DAMAGE_BOOST,
 		"desc": ""
 	},
 	"aura_atkspd": {
 		"name": "Swiftness Aura",
+		"display_name": "attack speed",
 		"stat": "atkspd_multiplier",
 		"value": AURA_ATKSPD_BOOST,
 		"desc": "Increases attack speed by %d%% per level."
 	},
 	"aura_pickup_radius": {
 		"name": "Magnet Aura",
+		"display_name": "collection range",
 		"stat": "pickup_radius",
 		"value": AURA_PICKUP_BOOST,
 		"desc": "Increases collection range by %d per level."
 	},
 	"aura_max_health": {
 		"name": "Vitality Aura",
+		"display_name": "max health",
 		"stat": "max_health",
 		"value": AURA_HEALTH_BOOST,
 		"desc": "Increases max health by %d per level."
 	},
 	"aura_regen": {
 		"name": "Recovery Aura",
+		"display_name": "health regeneration",
 		"stat": "health_regen",
 		"value": AURA_REGEN_BOOST,
 		"desc": "Increases health regeneration by %.1f HP/sec per level."
 	},
 	"aura_crit": {
 		"name": "Precision Aura",
+		"display_name": "critical hit chance",
 		"stat": "crit_chance",
 		"value": AURA_CRIT_BOOST,
 		"desc": "Increases critical hit chance by %d%% per level."
 	},
 	"aura_crit_damage": {
 		"name": "Ferocity Aura",
+		"display_name": "critical damage multiplier",
 		"stat": "crit_multiplier",
 		"value": AURA_CRIT_DMG_BOOST,
 		"desc": "Increases critical damage multiplier by %.2fx per level."
 	},
 	"aura_armor": {
 		"name": "Sentinel Aura",
+		"display_name": "armor",
 		"stat": "armor",
 		"value": AURA_ARMOR_BOOST,
 		"desc": "Increases flat armor reduction by %d per level."
 	},
 	"aura_armor_percent": {
 		"name": "Guardian Aura",
+		"display_name": "damage reduction",
 		"stat": "armor_percent",
 		"value": AURA_ARMOR_PCT_BOOST,
 		"desc": "Increases percentage damage reduction by %d%% per level."
 	},
 	"aura_thorns": {
 		"name": "Spike Aura",
+		"display_name": "thorns",
 		"stat": "thorns_percentage",
 		"value": AURA_THORNS_BOOST,
 		"desc": "Reflects %d%% of incoming damage back to attackers per level."
 	},
 	"aura_speed": {
 		"name": "Haste Aura",
+		"display_name": "movement speed",
 		"stat": "speed_multiplier",
 		"value": AURA_SPEED_BOOST,
 		"desc": "Increases movement speed by %d%% per level."
 	},
 	"aura_xp_drop": {
 		"name": "Learning Aura",
+		"display_name": "XP gain",
 		"stat": "xp_drop_multiplier",
 		"value": AURA_XP_BOOST,
 		"desc": "Increases XP gained from drops by %d%% per level."
 	},
 	"aura_spawn_rate": {
 		"name": "Chaos Aura",
+		"display_name": "enemy spawn rate",
 		"stat": "spawn_rate_multiplier",
 		"value": AURA_SPAWN_BOOST,
 		"desc": "Increases enemy spawn rate by %d%% per level (more XP!)."
 	},
 	"aura_luck": {
 		"name": "Luck Aura",
+		"display_name": "luck",
 		"stat": "luck",
 		"value": 0.10,
 		"desc": "Increases overall luck by %d%% per level."
 	},
 	"aura_projectiles": {
 		"name": "Volley Aura",
+		"display_name": "projectiles",
 		"stat": "projectiles",
 		"value": AURA_PROJECTILES_BOOST,
 		"desc": "Increases global projectile count by +%.1f per level (more for higher rarity)."
 	},
 	"aura_bounces": {
 		"name": "Ricochet Aura",
+		"display_name": "bounces",
 		"stat": "bounces",
 		"value": AURA_BOUNCES_BOOST,
 		"desc": "Increases global weapon bounces by +%.1f per level (more for higher rarity)."
+	},
+	"aura_lifesteal": {
+		"name": "Vampiric Aura",
+		"display_name": "lifesteal",
+		"icon": "res://assets/Auras/aura_lifesteal.png",
+		"stat": "lifesteal",
+		"value": AURA_LIFESTEAL_BOOST,
+		"desc": "Restores health equal to %d%% of weapon damage dealt per level."
+	},
+	"aura_evasion": {
+		"name": "Elusive Aura",
+		"display_name": "evasion",
+		"icon": "res://assets/Auras/aura_evasion.png",
+		"stat": "evasion_chance",
+		"value": AURA_EVASION_BOOST,
+		"desc": "Adds a %d%% chance to evade incoming damage per level."
 	}
 }
 

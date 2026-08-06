@@ -80,7 +80,9 @@ const ALL_ABILITIES = [
 	{"id": "aura_spawn_rate", "name": "Chaos Aura", "is_aura": true},
 	{"id": "aura_luck", "name": "Luck Aura", "is_aura": true},
 	{"id": "aura_projectiles", "name": "Volley Aura", "is_aura": true},
-	{"id": "aura_bounces", "name": "Ricochet Aura", "is_aura": true}
+	{"id": "aura_bounces", "name": "Ricochet Aura", "is_aura": true},
+	{"id": "aura_lifesteal", "name": "Vampiric Aura", "is_aura": true},
+	{"id": "aura_evasion", "name": "Elusive Aura", "is_aura": true}
 ]
 
 @onready var lbl_wave: Label = $UI/HUD/HUDTopRow/CenterInfo/WaveLabel
@@ -792,8 +794,13 @@ func _refresh_shop_ui() -> void:
 
 		var detail_label := Label.new()
 		detail_label.text = _ability_subtitle(abi, level)
-		if has_roll and not String(upgrade_roll.get("display", "")).is_empty():
-			detail_label.text += "  |  " + String(upgrade_roll.display)
+		var upgrade_display := String(upgrade_roll.get("display", ""))
+		if abi.get("is_aura", false) and not has_roll:
+			var aura_data: Dictionary = GameConstants.AURAS.get(String(abi.id), {})
+			if not aura_data.is_empty():
+				upgrade_display = GameState.get_aura_upgrade_display(String(abi.id), float(aura_data.value))
+		if not upgrade_display.is_empty():
+			detail_label.text += "  |  " + upgrade_display
 		detail_label.add_theme_font_size_override("font_size", 13)
 		detail_label.add_theme_color_override("font_color", Color(0.7, 0.78, 0.9))
 		detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -843,6 +850,9 @@ func _create_shop_ability_icon(ability_id: String, scale: float = 0.75) -> Textu
 
 func _ability_icon_path(ability_id: String) -> String:
 	if ability_id.begins_with("aura_"):
+		var aura_data: Dictionary = GameConstants.AURAS.get(ability_id, {})
+		if not aura_data.is_empty() and aura_data.has("icon"):
+			return String(aura_data.icon)
 		return "res://assets/Auras/%s.png" % ability_id
 	return "res://assets/Weapons/Icons/%s.png" % ability_id
 

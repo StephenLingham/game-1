@@ -466,19 +466,25 @@ func roll_aura_rarity_upgrade(aura_id: String) -> Dictionary:
 	var mult: float = GameConstants.RARITY_MULTIPLIERS[rarity]
 	var base: float = aura_data.value
 	var value: float = base * mult
-	var stat: String = aura_data.stat
-	var display: String
-	var display_name: String = aura_data.get("display_name", aura_data.name)
-	if stat.ends_with("_multiplier") or stat.ends_with("_percent") or stat.ends_with("_chance") or stat == "thorns_percentage" or stat == "spawn_rate_multiplier" or stat == "luck":
-		display = "+%d%% %s" % [int(round(value * 100)), display_name]
-	else:
-		display = "+%.2f %s" % [value, display_name]
+	var display := get_aura_upgrade_display(aura_id, value)
 	return {
 		"trait": "aura_boost",
 		"rarity": rarity,
 		"value": value,
 		"display": display
 	}
+
+func get_aura_upgrade_display(aura_id: String, value: float) -> String:
+	var aura_data: Dictionary = GameConstants.AURAS.get(aura_id, {})
+	if aura_data.is_empty():
+		return ""
+	var stat: String = aura_data.stat
+	var display_name: String = aura_data.get("display_name", aura_data.name)
+	if stat.ends_with("_multiplier") or stat.ends_with("_percent") or stat.ends_with("_chance") or stat == "thorns_percentage" or stat == "spawn_rate_multiplier" or stat == "luck" or stat == "lifesteal":
+		return "+%d%% %s" % [int(round(value * 100.0)), display_name]
+	if is_equal_approx(value, round(value)):
+		return "+%d %s" % [int(round(value)), display_name]
+	return "+%.2f %s" % [value, display_name]
 
 func add_aura_rarity_bonus(aura_id: String, value: float) -> void:
 	var current: float = run_aura_rarity_bonuses.get(aura_id, 0.0)
@@ -664,6 +670,15 @@ func get_health_regen() -> float:
 		bonus += stats.get("health_regen", 0.0)
 	bonus += run_gift_bonuses.get("health_regen", 0.0)
 	return base + bonus
+
+func get_lifesteal() -> float:
+	return max(0.0, run_lifesteal + _get_aura_bonus("lifesteal"))
+
+func get_evasion_chance() -> float:
+	var chance := _get_aura_bonus("evasion_chance")
+	chance += get_item_stat_total("evasion_chance")
+	chance += float(run_gift_bonuses.get("evasion_chance", 0.0))
+	return clamp(chance, 0.0, GameConstants.MAX_EVASION_CHANCE)
 
 func get_crit_chance() -> float:
 	var lvl = GameConstants.MAX_PERM_UPGRADE_LEVEL if GameConstants.DEBUG_MAX_PERM_UPGRADES else min(perm_crit_level, GameConstants.MAX_PERM_UPGRADE_LEVEL)

@@ -70,6 +70,9 @@ var _damage_buff_timers: Array = []
 func _ready() -> void:
 	add_to_group("player")
 	add_to_group("allies")
+	# Keep the high-resolution character sprite hidden until both its texture and
+	# scale are initialized, preventing a one-frame full-size flash on scene load.
+	sprite.visible = false
 	refresh_stats()
 	health = max_health
 	
@@ -77,16 +80,15 @@ func _ready() -> void:
 	var char_id = GameState.current_character
 	var char_data = GameConstants.CHARACTERS.get(char_id, GameConstants.CHARACTERS["starter"])
 	if char_data.has("texture"):
-		sprite.texture = load(char_data.texture)
-		# Adjust scale if needed. Many character assets are large.
-		# A good default scale for these assets might be 0.05 or similar.
-		sprite.scale = Vector2(0.05, 0.05)
+		sprite.texture = load(char_data.texture) as Texture2D
+		sprite.scale = Vector2.ONE * GameConstants.PLAYER_SPRITE_SCALE
 	
 	# Hide old visual nodes if they exist
 	var gun = get_node_or_null("Sprite2D/Gun")
 	if gun: gun.visible = false
 	var body = get_node_or_null("Sprite2D/Body")
 	if body: body.visible = false
+	sprite.visible = true
 	
 	# Reset muzzle to center
 	muzzle.position = Vector2.ZERO
@@ -808,6 +810,8 @@ func _create_blood_effect(pos: Vector2) -> void:
 	timer.timeout.connect(particles.queue_free)
 
 func take_damage(amount: int = 1, attacker: Node2D = null) -> void:
+	if GameState.roll_proc(GameState.get_evasion_chance()):
+		return
 	var percent_red = GameState.get_armor_percent()
 	var after_percent = float(amount) * (1.0 - percent_red)
 	var reduced = max(1, int(round(after_percent)) - GameState.get_armor())
@@ -1044,7 +1048,7 @@ func on_enemy_hit(enemy: Node2D, actual_damage: int, source: String, is_crit: bo
 	if actual_damage <= 0:
 		return
 
-	var lifesteal := GameState.run_lifesteal + 0.01 * float(GameState.count_run_item("vampire_tooth"))
+	var lifesteal := GameState.get_lifesteal() + 0.01 * float(GameState.count_run_item("vampire_tooth"))
 	if lifesteal > 0.0 and _source_can_trigger_on_hit(source):
 		heal(max(1, int(round(float(actual_damage) * lifesteal))))
 

@@ -136,6 +136,9 @@ func _icon_path(id: String, kind: String) -> String:
 	if kind == "weapon":
 		candidates.append("res://assets/Weapons/%s.png" % id)
 	elif kind == "aura":
+		var aura_data: Dictionary = GameConstants.AURAS.get(id, {})
+		if not aura_data.is_empty() and aura_data.has("icon"):
+			candidates.append(String(aura_data.icon))
 		candidates.append("res://assets/Auras/%s.png" % id)
 	else:
 		candidates.append("res://assets/Items/%s.png" % id)

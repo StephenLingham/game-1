@@ -178,13 +178,16 @@ func _physics_process(delta: float) -> void:
 func take_damage(amount: int = 1, source: String = "", is_crit: bool = false) -> int:
 	if _death_processed:
 		return 0
-	var actual_damage = max(0, min(amount, health))
+	var hit_damage: int = max(0, amount)
+	var actual_damage: int = min(hit_damage, health)
 	if actual_damage <= 0:
 		return 0
 
-	_spawn_damage_number(actual_damage, is_crit)
+	# Show the full hit strength even when it overkills this enemy. The capped
+	# value is still returned for damage statistics, lifesteal, and on-hit effects.
+	_spawn_damage_number(hit_damage, is_crit)
 	var before_health = health
-	health -= amount
+	health -= hit_damage
 	_update_boss_health_bar()
 
 	sprite.modulate = Color(10, 10, 10)
