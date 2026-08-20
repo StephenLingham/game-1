@@ -29,6 +29,7 @@ var _death_processed: bool = false
 var _boss_health_bar: Node2D = null
 var _boss_health_fill: ColorRect = null
 var _boss_health_label: Label = null
+var _boss_collision_debug: Node2D = null
 const TEXTURE_NORMAL = preload("res://assets/Enemies/dark-creature.png")
 const TEXTURE_FAST = preload("res://assets/Enemies/wisp.png")
 const TEXTURE_BIG = preload("res://assets/Enemies/tree-ent.png")
@@ -36,6 +37,7 @@ const TEXTURE_TREE = preload("res://assets/Enemies/enemy6.png")
 const TEXTURE_ELITE = preload("res://assets/Enemies/enemy5.png")
 const TEXTURE_GOLEM = preload("res://assets/Enemies/stone-golem-3.png")
 const BOSS_TEXTURE_PATH: String = "res://assets/Enemies/Bosses/fox-boss.png"
+const BOSS_COLLISION_DEBUG_SCRIPT = preload("res://scripts/boss_collision_debug.gd")
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var body_shape: CollisionShape2D = $CollisionShape2D
@@ -95,14 +97,13 @@ func _ready() -> void:
 			xp_drop_max = GameConstants.ENEMY_GOLEM_XP_MAX
 		"Boss":
 			sprite.texture = _load_boss_texture()
-			sprite.scale = Vector2.ONE * GameConstants.ENEMY_BOSS_SPRITE_SCALE
+			_set_boss_scale(GameConstants.ENEMY_BOSS_SCALE)
 			speed = GameConstants.ENEMY_BOSS_SPEED
 			health = GameConstants.ENEMY_BOSS_HEALTH
 			damage = GameConstants.ENEMY_BOSS_DAMAGE
 			attack_cooldown = GameConstants.ENEMY_BOSS_ATTACK_COOLDOWN
 			xp_drop_min = GameConstants.ENEMY_BOSS_XP_MIN
 			xp_drop_max = GameConstants.ENEMY_BOSS_XP_MAX
-			_set_collision_radius(GameConstants.ENEMY_BOSS_COLLISION_RADIUS, GameConstants.ENEMY_BOSS_HITBOX_RADIUS)
 		_, "Normal":
 			sprite.texture = TEXTURE_NORMAL
 			sprite.scale = Vector2.ONE * GameConstants.ENEMY_NORMAL_SPRITE_SCALE
@@ -267,6 +268,16 @@ func _load_boss_texture() -> Texture2D:
 	# when a run containing a boss was stopped from the editor.
 	return load(BOSS_TEXTURE_PATH) as Texture2D
 
+func _set_boss_scale(boss_scale: float) -> void:
+	sprite.scale = Vector2.ONE * GameConstants.ENEMY_BOSS_SPRITE_SCALE * boss_scale
+	var body_radius := GameConstants.ENEMY_BOSS_COLLISION_RADIUS * boss_scale
+	var damage_hitbox_radius := GameConstants.ENEMY_BOSS_HITBOX_RADIUS * boss_scale
+	_set_collision_radius(
+		body_radius,
+		damage_hitbox_radius
+	)
+	_update_boss_collision_debug(body_radius, damage_hitbox_radius)
+
 func _set_collision_radius(body_radius: float, hitbox_radius: float) -> void:
 	if body_shape and body_shape.shape is CircleShape2D:
 		body_shape.shape = body_shape.shape.duplicate()
@@ -274,6 +285,16 @@ func _set_collision_radius(body_radius: float, hitbox_radius: float) -> void:
 	if hitbox_shape and hitbox_shape.shape is CircleShape2D:
 		hitbox_shape.shape = hitbox_shape.shape.duplicate()
 		hitbox_shape.shape.radius = hitbox_radius
+
+func _update_boss_collision_debug(body_radius: float, damage_hitbox_radius: float) -> void:
+	if not GameConstants.ENEMY_BOSS_SHOW_COLLISION_AREAS:
+		return
+	if _boss_collision_debug == null:
+		_boss_collision_debug = BOSS_COLLISION_DEBUG_SCRIPT.new() as Node2D
+		_boss_collision_debug.name = "BossCollisionDebug"
+		_boss_collision_debug.z_index = 30
+		add_child(_boss_collision_debug)
+	_boss_collision_debug.call("set_radii", body_radius, damage_hitbox_radius)
 
 func _create_boss_health_bar() -> void:
 	_boss_health_bar = Node2D.new()

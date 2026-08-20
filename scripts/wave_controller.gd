@@ -29,7 +29,8 @@ func _ready() -> void:
 
 func start_run() -> void:
 	GameState.reset_run()
-	wave = 0
+	# _next_wave() increments first, so seed one below the configured start wave.
+	wave = clampi(GameConstants.DEBUG_STARTING_WAVE, 1, GameConstants.TOTAL_WAVES) - 1
 	_next_wave()
 
 func _next_wave() -> void:

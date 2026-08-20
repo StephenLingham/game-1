@@ -54,6 +54,7 @@ const ZAP_SECOND_WEAPON_DAMAGE: int = 100
 
 # --- WAVES & SPAWN SETTINGS ---
 const TOTAL_WAVES: int = 10
+const DEBUG_STARTING_WAVE: int = 1 # First wave of a new run; set to 9 to begin on wave 9 for faster boss testing.
 const WAVE_SECONDS: float = 30.0
 const MAX_ENEMIES_ALIVE: int = 500
 const FINAL_WAVE_SPAWN_WAIT: float = 0.1
@@ -126,15 +127,17 @@ const ENEMY_GOLEM_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_GOLEM_XP_MIN: int = 80
 const ENEMY_GOLEM_XP_MAX: int = 120
 
-const ENEMY_BOSS_SPRITE_SCALE: float = 0.25
+const ENEMY_BOSS_SCALE: float = 0.8 # Overall multiplier applied to the sprite and both collision circles below.
+const ENEMY_BOSS_SPRITE_SCALE: float = 1.0 # Base visual sprite scale; adjust this without changing either collision circle.
+const ENEMY_BOSS_COLLISION_RADIUS: float = 168.0 # Base physical-body radius used for movement, obstacles, spacing, and direct player-projectile hits; it does not trigger boss contact damage.
+const ENEMY_BOSS_HITBOX_RADIUS: float = 216.0 # Base boss-to-player contact-damage radius; touching this Area2D lets the boss attack the player, but direct player projectiles use COLLISION_RADIUS instead.
+const ENEMY_BOSS_SHOW_COLLISION_AREAS: bool = false # Shows debug circles in-game: cyan is physical collision and red is the player-damage hitbox.
 const ENEMY_BOSS_SPEED: float = 45.0
 const ENEMY_BOSS_HEALTH: int = 30000
 const ENEMY_BOSS_DAMAGE: int = 55
 const ENEMY_BOSS_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_BOSS_XP_MIN: int = 250
 const ENEMY_BOSS_XP_MAX: int = 350
-const ENEMY_BOSS_COLLISION_RADIUS: float = 42.0
-const ENEMY_BOSS_HITBOX_RADIUS: float = 54.0
 
 # --- COLLECTION SETTINGS ---
 const BASE_COLLECTION_RADIUS: float = 50.0
