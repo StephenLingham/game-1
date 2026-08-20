@@ -181,7 +181,7 @@ func _choose_all_enemy_spawn_data() -> Dictionary:
 func _spawn_boss() -> void:
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	var center: Vector2 = player.global_position if player else arena_rect.get_center()
-	var spawn_pos: Vector2 = _clamp_to_arena(center + Vector2(0, -280), 70.0)
+	var spawn_pos: Vector2 = _clamp_to_arena(center + Vector2(0, 280), 70.0)
 	GameState.record_boss_spawn()
 	_spawn_enemy({"scene": enemy_scene, "type": "Boss"}, spawn_pos, true)
 

@@ -127,7 +127,7 @@ const ENEMY_GOLEM_ATTACK_COOLDOWN: float = 1.0
 const ENEMY_GOLEM_XP_MIN: int = 80
 const ENEMY_GOLEM_XP_MAX: int = 120
 
-const ENEMY_BOSS_SCALE: float = 0.8 # Overall multiplier applied to the sprite and both collision circles below.
+const ENEMY_BOSS_SCALE: float = 0.6 # Overall multiplier applied to the sprite and both collision circles below.
 const ENEMY_BOSS_SPRITE_SCALE: float = 1.0 # Base visual sprite scale; adjust this without changing either collision circle.
 const ENEMY_BOSS_COLLISION_RADIUS: float = 168.0 # Base physical-body radius used for movement, obstacles, spacing, and direct player-projectile hits; it does not trigger boss contact damage.
 const ENEMY_BOSS_HITBOX_RADIUS: float = 216.0 # Base boss-to-player contact-damage radius; touching this Area2D lets the boss attack the player, but direct player projectiles use COLLISION_RADIUS instead.
