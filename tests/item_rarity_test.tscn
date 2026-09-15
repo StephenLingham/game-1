@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/item_rarity_test.gd" id="1"]
+
+[node name="TestHarness" type="Node"]
+
+[node name="Driver" type="Node" parent="."]
+script = ExtResource("1")

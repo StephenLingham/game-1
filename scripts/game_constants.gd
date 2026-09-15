@@ -525,342 +525,425 @@ const LARGE_MAP_FOG_REVEAL_CELLS: int = 20
 # --- ITEMS ---
 const ITEMS: Dictionary = {
 	"nuclear_giraffe": {
+		"rarity": "common",
 		"name": "Nuclear Giraffe",
 		"stats": {"crit_multiplier": 0.1}
 	},
 	"wholemeal_sandwich": {
+		"rarity": "common",
 		"name": "Wholemeal Sandwich",
 		"stats": {"max_health": 10}
 	},
 	"banana_peel": {
+		"rarity": "uncommon",
 		"name": "Slippery Banana Peel Dispenser",
 		"stats": {"speed_multiplier": 0.1}
 	},
 	"meatloaf": {
+		"rarity": "common",
 		"name": "Grandma’s Hearty Meatloaf",
 		"stats": {"health_regen": 0.1}
 	},
 	"quantum_socks": {
+		"rarity": "common",
 		"name": "Quantum Socks",
 		"stats": {"pickup_radius": 5.0}
 	},
 	"pirate_rum": {
+		"rarity": "uncommon",
 		"name": "Drunken Pirate’s Bottomless Rum",
 		"stats": {"damage_multiplier": 0.1}
 	},
 	"friendly_spoon": {
+		"rarity": "uncommon",
 		"name": "Friendly Spoon",
 		"stats": {"armor": 5}
 	},
 	"bouncy_armor": {
+		"rarity": "uncommon",
 		"name": "Inflatable Bouncy Castle Armor",
 		"stats": {"armor_percent": 0.1}
 	},
 	"coffee_thermos": {
+		"rarity": "uncommon",
 		"name": "Bottomless Coffee Thermos",
 		"stats": {"atkspd_multiplier": 0.1}
 	},
 	"pet_rock": {
+		"rarity": "common",
 		"name": "Loyal Pet Rock",
 		"stats": {"thorns_percentage": 0.1}
 	},
 	"disco_ball": {
+		"rarity": "uncommon",
 		"name": "Laser Disco Ball",
 		"stats": {"crit_chance": 0.1}
 	},
 	"clown_horn": {
+		"rarity": "uncommon",
 		"name": "The Over-Enthusiastic Megaphone",
 		"stats": {"damage_multiplier": 0.1}
 	},
 	"hamster_wheel": {
+		"rarity": "uncommon",
 		"name": "Unstable Hamster Wheel",
 		"stats": {"speed_multiplier": 0.1}
 	},
 	"toaster": {
+		"rarity": "uncommon",
 		"name": "Fiery Toaster Attachment",
 		"stats": {"damage_multiplier": 0.1}
 	},
 	"boomerang": {
+		"rarity": "common",
 		"name": "Sentient Boomerang",
 		"stats": {"crit_multiplier": 0.1}
 	},
 	"lunchbox": {
+		"rarity": "common",
 		"name": "Lunchbox of Plenty",
 		"stats": {"max_health": 10}
 	},
 	"eight_ball": {
+		"rarity": "uncommon",
 		"name": "Magic 8-Ball of Chaos",
 		"stats": {"crit_chance": 0.1}
 	},
 	"squirrel_launcher": {
+		"rarity": "uncommon",
 		"name": "Hyperactive Squirrel Acorn Launcher",
 		"stats": {"atkspd_multiplier": 0.1}
 	},
 	"springy_shoes": {
+		"rarity": "uncommon",
 		"name": "Springy Shoes",
 		"stats": {"speed_multiplier": 0.1}
 	},
 	"pinata_buddy": {
+		"rarity": "uncommon",
 		"name": "Sentient Piñata Buddy",
 		"stats": {"xp_drop_multiplier": 0.1}
 	},
 	"cosmic_sausage": {
+		"rarity": "uncommon",
 		"name": "Cosmic Sausage",
 		"stats": {"damage": 5}
 	},
 	"titanblood_core": {
+		"rarity": "rare",
 		"name": "Titanblood Core",
 		"desc": "Gain +10% damage for each 100 max health."
 	},
 	"volley_charm": {
+		"rarity": "epic",
 		"name": "Volley Charm",
 		"stats": {"projectiles": 1},
 		"desc": "+1 projectile."
 	},
 	"ricochet_rune": {
+		"rarity": "rare",
 		"name": "Ricochet Rune",
 		"stats": {"bounces": 1},
 		"desc": "+1 bounce to all attacks that can bounce."
 	},
 	"execution_pin": {
+		"rarity": "epic",
 		"name": "Execution Pin",
 		"desc": "Each hit deals bonus damage equal to 1% of the target's max health."
 	},
 	"vampire_tooth": {
+		"rarity": "epic",
 		"name": "Vampire Tooth",
 		"desc": "+1% lifesteal."
 	},
 	"vampire_cape": {
+		"rarity": "common",
 		"name": "Vampire Cape",
 		"desc": "1% chance per hit to heal 1 health."
 	},
 	"frostbite_needle": {
+		"rarity": "uncommon",
 		"name": "Frostbite Needle",
 		"desc": "1% chance per hit to freeze enemies."
 	},
 	"chilling_dust": {
+		"rarity": "common",
 		"name": "Chilling Dust",
 		"desc": "1% chance per hit to slow enemies."
 	},
 	"vitality_sap": {
+		"rarity": "legendary",
 		"name": "Vitality Sap",
 		"desc": "Heal 5 health whenever you collect XP."
 	},
 	"crystal_tracker": {
+		"rarity": "common",
 		"name": "Crystal Tracker",
 		"desc": "Reveal the crystal on the map."
 	},
 	"crystal_magnet": {
+		"rarity": "rare",
 		"name": "Crystal Magnet",
 		"desc": "The crystal is pulled toward you from anywhere."
 	},
 	"giftforge_sigil": {
+		"rarity": "rare",
 		"name": "Giftforge Sigil",
 		"desc": "Gain +1 permanent damage each time you pick up a gift."
 	},
 	"close_quarters_core": {
+		"rarity": "rare",
 		"name": "Close Quarters Core",
 		"desc": "Gain up to +30 flat damage the closer you are to your target."
 	},
 	"desperation_brand": {
+		"rarity": "epic",
 		"name": "Desperation Brand",
 		"desc": "Gain +10 permanent damage each time your health drops below 30%."
 	},
 	"bloodrush_boots": {
+		"rarity": "rare",
 		"name": "Bloodrush Boots",
 		"desc": "Gain movement speed equal to the percentage of health you have lost."
 	},
 	"cartographers_lens": {
+		"rarity": "uncommon",
 		"name": "Cartographer's Lens",
 		"desc": "Reveal a much larger radius on the full map."
 	},
 	"legendfinder_compass": {
+		"rarity": "rare",
 		"name": "Legendfinder Compass",
 		"desc": "Reveal the legendary gift on the map."
 	},
 	"ember_plague": {
+		"rarity": "epic",
 		"name": "Ember Plague",
 		"desc": "Attacks have a 10% chance to burn enemies. Burning spreads on contact."
 	},
 	"phoenix_idol": {
+		"rarity": "legendary",
 		"name": "Phoenix Idol",
 		"desc": "Fatal damage instead heals you to full and freezes all enemies. One use. Can only carry one."
 	},
 	"sentry_root": {
+		"rarity": "uncommon",
 		"name": "Sentry Root",
 		"desc": "Standing still charges up to +100% damage over 60 seconds. Moving resets the charge."
 	},
 	"stillwater_idol": {
+		"rarity": "rare",
 		"name": "Stillwater Idol",
 		"desc": "Heal 1% max health per second while standing still."
 	},
 	"momentum_greaves": {
+		"rarity": "uncommon",
 		"name": "Momentum Greaves",
 		"desc": "While moving, build up to +50% speed over 120 seconds. Stopping resets it."
 	},
 	"bloodletter_prism": {
+		"rarity": "epic",
 		"name": "Bloodletter Prism",
 		"desc": "Critical hits heal you for 1 health."
 	},
 	"shrapnel_seal": {
+		"rarity": "rare",
 		"name": "Shrapnel Seal",
 		"desc": "Critical hits have a 50% chance to explode for 25% damage to nearby enemies."
 	},
 	"trail_medicine": {
+		"rarity": "uncommon",
 		"name": "Trail Medicine",
 		"desc": "Heal 1 health for every 1000 pixels travelled."
 	},
 	"pureheart_badge": {
+		"rarity": "common",
 		"name": "Pureheart Badge",
 		"desc": "+10% damage while at full health."
 	},
 	"corpse_charge": {
+		"rarity": "uncommon",
 		"name": "Corpse Charge",
 		"desc": "1% chance for killed enemies to explode for 50% of their max health."
 	},
 	"hex_nails": {
+		"rarity": "legendary",
 		"name": "Hex Nails",
 		"desc": "Hits curse targets, dealing 25% of their max health per second. One active curse per copy."
 	},
 	"pain_furnace": {
+		"rarity": "common",
 		"name": "Pain Furnace",
 		"desc": "Taking damage hurts for 50 extra damage, but grants +1 permanent damage each time."
 	},
 	"quake_pulse": {
+		"rarity": "rare",
 		"name": "Quake Pulse",
 		"desc": "1% chance per hit to knock back all enemies."
 	},
 	"giant_slayer": {
+		"rarity": "common",
 		"name": "Giant Slayer",
 		"desc": "+10% damage to bosses."
 	},
 	"iron_dumbbell": {
+		"rarity": "uncommon",
 		"name": "Iron Dumbbell",
 		"stats": {"damage": 5},
 		"desc": "+5 flat damage."
 	},
 	"hardy_apple": {
+		"rarity": "common",
 		"name": "Hardy Apple",
 		"stats": {"max_health": 5},
 		"desc": "+5 max health."
 	},
 	"windlace": {
+		"rarity": "common",
 		"name": "Windlace",
 		"stats": {"speed_multiplier": 0.05},
 		"desc": "+5% movement speed."
 	},
 	"training_gloves": {
+		"rarity": "common",
 		"name": "Training Gloves",
 		"stats": {"atkspd_multiplier": 0.05},
 		"desc": "+5% attack speed."
 	},
 	"whetstone": {
+		"rarity": "common",
 		"name": "Whetstone",
 		"stats": {"crit_chance": 0.05},
 		"desc": "+5% crit chance."
 	},
 	"vengeance_drum": {
+		"rarity": "uncommon",
 		"name": "Vengeance Drum",
 		"desc": "Taking damage grants a stacking +20% damage buff for 3 seconds."
 	},
 	"longshot_scope": {
+		"rarity": "rare",
 		"name": "Longshot Scope",
 		"desc": "Deal up to +50% more damage to distant enemies."
 	},
 	"trophy_heart": {
+		"rarity": "epic",
 		"name": "Trophy Heart",
 		"desc": "Gain +1 max health every 10 kills, up to +100 per copy."
 	},
 	"warpath_ledger": {
+		"rarity": "epic",
 		"name": "Warpath Ledger",
 		"desc": "Gain +1% damage every 10 kills, up to +100% per copy."
 	},
 	"lesson_seed": {
+		"rarity": "uncommon",
 		"name": "Lesson Seed",
 		"desc": "10% chance for enemies to drop an extra XP orb."
 	},
 	"striders_lesson": {
+		"rarity": "common",
 		"name": "Strider's Lesson",
 		"desc": "Gain 1 XP every 5 seconds while moving."
 	},
 	"glass_canon_item": {
+		"rarity": "rare",
 		"name": "Glass Canon",
 		"stats": {"damage_multiplier": 0.5},
 		"desc": "+50% damage, but halve max health."
 	},
 	"mirror_sigil": {
+		"rarity": "common",
 		"name": "Mirror Sigil",
 		"desc": "Reflect the next incoming hit back to the attacker. 10 second cooldown."
 	},
 	"menagerie_crate": {
+		"rarity": "uncommon",
 		"name": "Menagerie Crate",
 		"desc": "Opening a chest summons 3 temporary pets for 20 seconds."
 	},
 	"spirit_lantern": {
+		"rarity": "common",
 		"name": "Spirit Lantern",
 		"desc": "1% chance on hit to fire 5 ghost spirits at random enemies for 10 damage each."
 	},
 	"stride_to_fury": {
+		"rarity": "rare",
 		"name": "Stride-to-Fury Boots",
 		"desc": "Every +2% movement speed grants +1% attack speed."
 	},
 	"crowd_fang": {
+		"rarity": "epic",
 		"name": "Crowd Fang",
 		"desc": "Gain +1 flat damage for each enemy currently visible on screen."
 	},
 	"last_stand_stride": {
+		"rarity": "uncommon",
 		"name": "Last Stand Stride",
 		"desc": "Gain movement speed equal to half the percentage of health you have lost."
 	},
 	"stormlink_fang": {
+		"rarity": "epic",
 		"name": "Stormlink Fang",
 		"desc": "Critical hits have a 50% chance to chain to a nearby enemy. Crit chains can keep chaining."
 	},
 	"echo_trigger": {
+		"rarity": "epic",
 		"name": "Echo Trigger",
 		"desc": "On-hit effects get one extra chance to trigger."
 	},
 	"catastrophe_die": {
+		"rarity": "epic",
 		"name": "Catastrophe Die",
 		"desc": "2% chance on hit to deal 20x damage."
 	},
 	"shockwave_shell": {
+		"rarity": "rare",
 		"name": "Shockwave Shell",
 		"desc": "20% chance on hit to splash 50% damage to nearby enemies."
 	},
 	"snowball_fang": {
+		"rarity": "legendary",
 		"name": "Snowball Fang",
 		"desc": "Each crit permanently grants +1% crit chance."
 	},
 	"mega_magnet": {
+		"rarity": "epic",
 		"name": "Mega Magnet",
 		"desc": "Every 25 seconds, pull all XP orbs to you."
 	},
 	"ninja_wizard_cat": {
+		"rarity": "legendary",
 		"name": "Ninja Wizard Cat",
 		"desc": "Summon a permanent cat that dashes across the screen and instantly kills enemies it touches."
 	},
 	"gift_vacuum": {
+		"rarity": "uncommon",
 		"name": "Gift Vacuum",
 		"desc": "Your pickup radius also collects gifts."
 	},
 	"chest_vacuum": {
+		"rarity": "uncommon",
 		"name": "Chest Vacuum",
 		"desc": "Your pickup radius also collects chests."
 	},
 	"atlas_eye": {
+		"rarity": "rare",
 		"name": "Atlas Eye",
 		"desc": "Reveal the entire map."
 	},
 	"wave_blessing": {
+		"rarity": "epic",
 		"name": "Wave Blessing",
 		"desc": "At the end of each wave, gain a random stat bonus."
 	},
 	"pain_lottery": {
+		"rarity": "epic",
 		"name": "Pain Lottery",
 		"desc": "Whenever you take damage, gain a random flat stat bonus."
 	},
 	"spirit_kennel": {
+		"rarity": "uncommon",
 		"name": "Spirit Kennel",
 		"desc": "1% chance for killed enemies to summon a temporary invulnerable pet."
 	}

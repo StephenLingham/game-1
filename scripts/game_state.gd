@@ -1238,3 +1238,14 @@ func _ensure_boss_kill_keys() -> void:
 	for level_name in ["Level 1", "Level 2", "Level 3"]:
 		if not fastest_boss_kill_by_level.has(level_name):
 			fastest_boss_kill_by_level[level_name] = -1.0
+
+## Chest items use fixed power tiers; upgrade/gift rarity rolls remain independent.
+func roll_chest_options(count: int = 3) -> Array:
+	var eligible: Array = []
+	for item_id in unlocked_treasure_items:
+		if sealed_items.has(item_id):
+			continue
+		if GameConstants.UNIQUE_RUN_ITEMS.has(item_id) and has_run_item(item_id):
+			continue
+		eligible.append(item_id)
+	return ItemRarity.roll_options(eligible, count)

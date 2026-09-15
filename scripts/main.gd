@@ -1069,17 +1069,7 @@ func _abandon_run() -> void:
 	pause_panel.visible = false
 
 func show_item_window(_deprecated_item_id: String = "") -> void:
-	# Only show items the player has unlocked AND NOT sealed
-	var all_keys = []
-	for item_id in GameState.unlocked_treasure_items:
-		if GameState.sealed_items.has(item_id):
-			continue
-		if GameConstants.UNIQUE_RUN_ITEMS.has(item_id) and GameState.has_run_item(item_id):
-			continue
-		all_keys.append(item_id)
-			
-	all_keys.shuffle()
-	current_chest_options = all_keys.slice(0, 3)
+	current_chest_options = GameState.roll_chest_options()
 	
 	if not item_popup_panel:
 		_ensure_item_popup_exists()
@@ -1097,15 +1087,28 @@ func show_item_window(_deprecated_item_id: String = "") -> void:
 			continue
 		var item_data = GameConstants.ITEMS[item_id]
 		var btn = Button.new()
-		btn.custom_minimum_size = Vector2(250, 180)
+		btn.custom_minimum_size = Vector2(250, 230)
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		var accent := ItemRarity.color(item_id)
+		btn.add_theme_stylebox_override("normal", ItemRarity.card_style(accent))
+		btn.add_theme_stylebox_override("hover", ItemRarity.card_style(accent, true))
+		btn.add_theme_stylebox_override("pressed", ItemRarity.card_style(accent.darkened(0.15), true))
+		btn.add_theme_stylebox_override("focus", ItemRarity.card_style(accent, true))
+		for font_state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+			btn.add_theme_color_override(font_state, accent.lightened(0.15))
 		btn.add_theme_font_size_override("font_size", 18)
 		
-		var text = _build_item_card_text(item_data)
+		var text = ItemRarity.label(item_id).to_upper() + "\n\n" + _build_item_card_text(item_data)
 
 		
 		btn.text = text
 		btn.pressed.connect(_on_item_chosen.bind(item_id))
 		grid.add_child(btn)
+	if current_chest_options.is_empty():
+		var empty := Label.new()
+		empty.text = "No eligible items remain. You can skip this chest."
+		grid.add_child(empty)
 
 func _on_item_chosen(item_id: String) -> void:
 	if item_id != "skip":
@@ -1181,9 +1184,7 @@ func _build_item_card_text(item_data: Dictionary) -> String:
 	if desc != "":
 		text += desc + "\n"
 	var stats = item_data.get("stats", {})
-	if not stats.is_empty():
-		if desc != "":
-			text += "\n"
+	if not stats.is_empty() and desc == "":
 		for stat_key in stats.keys():
 			var val = stats[stat_key]
 			var sign_str = "+" if val > 0 else ""

@@ -165,6 +165,8 @@ func _show_items() -> void:
 		var is_unlocked = unlocked.has(id)
 		
 		var panel = PanelContainer.new()
+		var accent := ItemRarity.color(id)
+		panel.add_theme_stylebox_override("panel", ItemRarity.card_style(accent))
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var vbox = VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 10)
@@ -173,10 +175,17 @@ func _show_items() -> void:
 		
 		var title = Label.new()
 		# Friendly names for all, including locked
-		title.text = item_data.name 
+		title.text = item_data.name
+		title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		title.add_theme_color_override("font_color", accent.lightened(0.15))
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		title.add_theme_font_size_override("font_size", 22)
 		vbox.add_child(title)
+		var rarity_label := Label.new()
+		rarity_label.text = ItemRarity.label(id).to_upper()
+		rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		rarity_label.add_theme_color_override("font_color", accent)
+		vbox.add_child(rarity_label)
 		
 		var status = Label.new()
 		status.text = "Unlocked" if is_unlocked else "Locked"
@@ -195,7 +204,6 @@ func _show_items() -> void:
 				desc_lbl.modulate = Color(0.9, 0.9, 1.0)
 				vbox.add_child(desc_lbl)
 
-			var stats_lbl = Label.new()
 			var stats_text = ""
 			var stats = item_data.get("stats", {})
 			for stat_key in stats.keys():
@@ -213,6 +221,7 @@ func _show_items() -> void:
 				stats_text += "%s%s%s %s\n" % [sign_str, str(val), percent, human_name]
 
 			if stats_text != "":
+				var stats_lbl = Label.new()
 				stats_lbl.text = stats_text
 				stats_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 				stats_lbl.modulate = Color.LIGHT_BLUE

@@ -101,18 +101,23 @@ func _add_category(title_text: String, entries: Array, kind: String) -> void:
 
 func _make_entry(entry: Dictionary, kind: String) -> Control:
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _entry_style(_category_color(kind)))
+	var accent := ItemRarity.color(String(entry.id)) if kind == "item" else _category_color(kind)
+	panel.add_theme_stylebox_override("panel", _entry_style(accent))
 	panel.tooltip_text = String(entry.get("name", "Unknown"))
+	if kind == "item":
+		panel.tooltip_text += "\n" + ItemRarity.label(String(entry.id))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	panel.add_child(row)
 	row.add_child(_make_icon(String(entry.get("id", "")), kind))
 	var name_label := Label.new()
 	name_label.text = String(entry.get("name", "Unknown"))
+	if kind == "item":
+		name_label.text += "\n" + ItemRarity.label(String(entry.id))
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_label.add_theme_font_size_override("font_size", 12)
-	name_label.add_theme_color_override("font_color", Color(0.9, 0.94, 1.0))
+	name_label.add_theme_color_override("font_color", accent.lightened(0.15) if kind == "item" else Color(0.9, 0.94, 1.0))
 	row.add_child(name_label)
 	var value := Label.new()
 	value.text = "Lv %d" % int(entry.level) if entry.has("level") else "x%d" % int(entry.get("count", 1))
