@@ -11,6 +11,15 @@ var enemy_elite_scene := preload("res://scenes/enemy_elite.tscn")
 var powerup_scene := preload("res://scenes/PowerupPickup.tscn")
 var chest_scene := preload("res://scenes/TreasureChest.tscn")
 
+var campaign_enemy_scene := preload("res://scenes/campaign_enemy.tscn")
+var stage: int = 0
+var stage_boss_killed := false
+var bosses_defeated := 0
+var completed_waves := 0
+var finished := false
+var failure_reason := ""
+var _last_completed_wave := -1
+var _roster_cursor := 0
 var wave: int = 0
 var wave_time_left: float = 0.0
 var spawning: bool = false
@@ -29,22 +38,29 @@ func _ready() -> void:
 
 func start_run() -> void:
 	GameState.reset_run()
-	# _next_wave() increments first, so seed one below the configured start wave.
+	stage = clampi(GameConstants.DEBUG_STARTING_STAGE, 1, RunCampaign.NAMES.size()) - 1
+	# _next_wave() increments first; the wave setting is local to this stage.
 	wave = clampi(GameConstants.DEBUG_STARTING_WAVE, 1, GameConstants.TOTAL_WAVES) - 1
+	# Treat skipped content as completed so portals and final victory still work.
+	bosses_defeated = stage
+	completed_waves = stage * GameConstants.TOTAL_WAVES + wave
+	_last_completed_wave = completed_waves
+	GameState.run_elapsed_seconds = float(stage) * RunCampaign.AREA_SECONDS + float(wave) * GameConstants.WAVE_SECONDS
+	if stage > 0:
+		game.transition_to_area(stage)
 	_next_wave()
 
 func _next_wave() -> void:
 	wave += 1
 	if wave > GameConstants.TOTAL_WAVES:
-		game.call_deferred("end_run", GameState.run_boss_killed, GameConstants.TOTAL_WAVES)
-		return
+		return # The campaign clock owns all deadlines.
 
 	wave_time_left = GameConstants.WAVE_SECONDS
 	spawning = true
 
 	var base_wait: float = GameConstants.WAVE_BASE_SPAWN_WAIT
 	var wait: float = max(base_wait - (GameConstants.WAVE_SPAWN_WAIT_DECREMENT * float(wave - 1)), GameConstants.WAVE_MIN_SPAWN_WAIT)
-	match wave:
+	match wave if stage == 0 else -1:
 		3:
 			wait = GameConstants.WAVE_3_SPAWN_WAIT
 		7:
@@ -59,11 +75,12 @@ func _next_wave() -> void:
 	spawn_timer.start()
 
 	game.on_wave_started(wave)
-	match wave:
-		5:
-			_spawn_tree_circle()
-		GameConstants.TOTAL_WAVES:
-			_spawn_boss()
+	if stage == 0 and wave == 5:
+		_spawn_tree_circle()
+	if stage > 0 and wave in [4, 7]:
+		_spawn_miniboss(0 if wave == 4 else 1)
+	if wave == GameConstants.TOTAL_WAVES:
+		_spawn_boss()
 func refresh_spawn_rate(previous_multiplier: float) -> void:
 	if not spawning or previous_multiplier <= 0.0:
 		return
@@ -74,27 +91,90 @@ func refresh_spawn_rate(previous_multiplier: float) -> void:
 
 
 func _process(delta: float) -> void:
-	if not spawning:
+	advance_time(delta)
+
+func advance_time(delta: float) -> void:
+	if finished:
 		return
-	wave_time_left = max(wave_time_left - delta, 0.0)
-	game.call_deferred("on_wave_time", wave_time_left)
+	# One authoritative active-play clock; pauses and upgrade choices pause it.
+	GameState.track_run_time(minf(maxf(delta, 0.0), float(stage + 1) * RunCampaign.AREA_SECONDS - GameState.run_elapsed_seconds))
+	var elapsed := GameState.run_elapsed_seconds
+	var deadline := float(stage + 1) * RunCampaign.AREA_SECONDS
+	if elapsed >= deadline:
+		if stage == 2 and stage_boss_killed and bosses_defeated == 3:
+			_complete_wave()
+			_finish(true, "")
+		else:
+			_finish(false, "Area deadline missed: defeat the boss and enter its portal." if stage < 2 else "The final boss survived the 15-minute deadline.")
+		return
+	# A portal moves the player immediately, but the next five-minute slot
+	# starts on its fixed boundary, never shortening a successful run.
+	var stage_start := float(stage) * RunCampaign.AREA_SECONDS
+	if elapsed < stage_start:
+		game.on_wave_time(stage_start - elapsed)
+		return
+	if wave == 0:
+		_next_wave()
+	while wave < GameConstants.TOTAL_WAVES and elapsed >= stage_start + float(wave) * GameConstants.WAVE_SECONDS:
+		_complete_wave()
+		_next_wave()
+	wave_time_left = maxf(0.0, stage_start + float(wave) * GameConstants.WAVE_SECONDS - elapsed)
+	game.on_wave_time(wave_time_left)
 
-	if wave_time_left <= 0.0:
-		_end_wave()
-
-func _end_wave() -> void:
-	spawning = false
-	spawn_timer.stop()
-
+func _complete_wave() -> void:
+	if wave <= 0 or _last_completed_wave == stage * 10 + wave:
+		return
+	_last_completed_wave = stage * 10 + wave
+	completed_waves += 1
 	var player = get_tree().get_first_node_in_group("player")
 	if player and player.has_method("on_wave_completed"):
 		player.on_wave_completed()
 
+func _end_wave() -> void:
+	_complete_wave()
 	if wave < GameConstants.TOTAL_WAVES:
-		var timer = get_tree().create_timer(2.0)
-		timer.timeout.connect(_next_wave)
-	else:
-		game.call_deferred("end_run", GameState.run_boss_killed, wave)
+		_next_wave()
+
+func _finish(won: bool, reason: String) -> void:
+	finished = true
+	spawning = false
+	spawn_timer.stop()
+	failure_reason = reason
+	game.call_deferred("end_run", won, completed_waves)
+
+func _on_boss_killed(enemy: Node2D) -> void:
+	if stage_boss_killed or finished:
+		return
+	stage_boss_killed = true
+	bosses_defeated += 1
+	spawning = false
+	spawn_timer.stop()
+	if stage < 2:
+		_create_portal.call_deferred(enemy.global_position)
+
+func _create_portal(pos: Vector2) -> void:
+	if finished or not is_inside_tree():
+		return
+	var portal := preload("res://scripts/stage_portal.gd").new()
+	portal.destination = stage + 1
+	portal.controller = self
+	portal.position = _clamp_to_arena(pos, 80.0)
+	game.add_child(portal)
+	game.on_wave_time(wave_time_left)
+
+func enter_portal() -> void:
+	if finished or not stage_boss_killed or stage >= 2:
+		return
+	if GameState.run_elapsed_seconds >= float(stage + 1) * RunCampaign.AREA_SECONDS:
+		return
+	_complete_wave()
+	stage += 1
+	wave = 0
+	stage_boss_killed = false
+	spawning = false
+	spawn_timer.stop()
+	game.transition_to_area(stage)
+	game.on_wave_started(0)
 
 func resume_after_shop() -> void:
 	for e in get_tree().get_nodes_in_group("enemies"):
@@ -105,7 +185,7 @@ func resume_after_shop() -> void:
 func _remove_oldest_enemy_if_needed() -> void:
 	var valid_enemies: Array[Node] = []
 	for enemy in get_tree().get_nodes_in_group("enemies"):
-		if is_instance_valid(enemy) and enemy.get("enemy_type") != "Boss":
+		if is_instance_valid(enemy) and not RunCampaign.is_boss(str(enemy.get("enemy_type"))) and not RunCampaign.is_miniboss(str(enemy.get("enemy_type"))):
 			valid_enemies.append(enemy)
 
 	if valid_enemies.size() < GameConstants.MAX_ENEMIES_ALIVE:
@@ -120,10 +200,10 @@ func _remove_oldest_enemy_if_needed() -> void:
 		oldest.free()
 
 func _spawn_tick() -> void:
-	if enemy_scene == null:
+	if enemy_scene == null or not spawning or finished:
 		return
 
-	if wave == 7:
+	if stage == 0 and wave == 7:
 		_spawn_clump_in_front_of_player()
 		return
 
@@ -133,7 +213,7 @@ func _spawn_tick() -> void:
 		_spawn_enemy(spawn_data, _get_random_offscreen_spawn_position())
 
 func _get_burst_count() -> int:
-	match wave:
+	match wave if stage == 0 else -1:
 		3:
 			return 1
 		8:
@@ -142,6 +222,11 @@ func _get_burst_count() -> int:
 			return 1 + int(floor((wave - 1) / 2.0))
 
 func _choose_spawn_data_for_wave() -> Dictionary:
+	if stage > 0:
+		var roster: Array = RunCampaign.ENEMIES[stage]
+		var kind: String = roster[_roster_cursor % roster.size()]
+		_roster_cursor += 1
+		return {"scene": campaign_enemy_scene, "type": kind}
 	match wave:
 		1:
 			return {"scene": enemy_tree_scene, "type": ""}
@@ -183,7 +268,8 @@ func _spawn_boss() -> void:
 	var center: Vector2 = player.global_position if player else arena_rect.get_center()
 	var spawn_pos: Vector2 = _clamp_to_arena(center + Vector2(0, 280), 70.0)
 	GameState.record_boss_spawn()
-	_spawn_enemy({"scene": enemy_scene, "type": "Boss"}, spawn_pos, true)
+	var boss_scene: PackedScene = enemy_scene if stage == 0 else campaign_enemy_scene
+	_spawn_enemy({"scene": boss_scene, "type": RunCampaign.BOSSES[stage]}, spawn_pos, true)
 
 func _spawn_tree_circle() -> void:
 	var player = get_tree().get_first_node_in_group("player")
@@ -233,6 +319,8 @@ func _spawn_enemy(spawn_data: Dictionary, spawn_pos: Vector2, ignore_cap: bool =
 	_next_spawn_order += 1
 	e.global_position = spawn_pos
 	game.get_node("EnemyContainer").add_child(e)
+	if RunCampaign.is_boss(e.enemy_type):
+		e.enemy_killed.connect(_on_boss_killed.bind(e))
 	e.reset_physics_interpolation()
 	return e
 
@@ -263,3 +351,7 @@ func _clamp_to_arena(pos: Vector2, safety: float = 45.0) -> Vector2:
 		clamp(pos.x, arena_rect.position.x + safety, arena_rect.position.x + arena_rect.size.x - safety),
 		clamp(pos.y, arena_rect.position.y + safety, arena_rect.position.y + arena_rect.size.y - safety)
 	)
+
+func _spawn_miniboss(index: int) -> void:
+	var kind: String = RunCampaign.MINIBOSSES[stage][index]
+	_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _get_random_offscreen_spawn_position(), true)

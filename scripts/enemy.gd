@@ -117,7 +117,7 @@ func _ready() -> void:
 	health = int(health * GameState.run_difficulty_health_mult)
 	damage = int(damage * GameState.run_difficulty_damage_mult)
 	max_health = health
-	if enemy_type == "Boss":
+	if RunCampaign.is_boss(enemy_type) or RunCampaign.is_miniboss(enemy_type):
 		_create_boss_health_bar()
 		_update_boss_health_bar()
 
@@ -171,10 +171,14 @@ func _physics_process(delta: float) -> void:
 				else:
 					sprite.flip_h = desired_velocity.x > 0
 
+	desired_velocity = _modify_movement(desired_velocity, delta)
 	velocity = desired_velocity + _knockback_velocity
 	_knockback_velocity = _knockback_velocity.move_toward(Vector2.ZERO, 900.0 * delta)
 	move_and_slide()
 	_update_boss_health_bar()
+
+func _modify_movement(desired_velocity: Vector2, _delta: float) -> Vector2:
+	return desired_velocity
 
 func take_damage(amount: int = 1, source: String = "", is_crit: bool = false) -> int:
 	if _death_processed:
@@ -203,8 +207,9 @@ func take_damage(amount: int = 1, source: String = "", is_crit: bool = false) ->
 		_death_processed = true
 		GameState.record_enemy_killed()
 		if enemy_type == "Boss":
-			GameState.run_boss_killed = true
 			GameState.record_boss_kill()
+		if enemy_type == "ObsidianDeath":
+			GameState.run_boss_killed = true
 		if source != "":
 			GameState.record_kill(source)
 		enemy_killed.emit()
@@ -323,7 +328,7 @@ func _create_boss_health_bar() -> void:
 	_boss_health_bar.add_child(_boss_health_label)
 
 func _update_boss_health_bar() -> void:
-	if enemy_type != "Boss" or _boss_health_bar == null or max_health <= 0:
+	if _boss_health_bar == null or max_health <= 0:
 		return
 	var hp = max(health, 0)
 	var pct = clamp(float(hp) / float(max_health), 0.0, 1.0)

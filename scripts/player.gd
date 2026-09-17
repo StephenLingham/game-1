@@ -1230,7 +1230,7 @@ func _get_longshot_bonus(enemy: Node2D, base_damage: int) -> int:
 	return int(round(float(base_damage) * 0.5 * scale * float(count)))
 
 func _is_boss(enemy: Node2D) -> bool:
-	return enemy.get("enemy_type") == "Boss"
+	return RunCampaign.is_boss(str(enemy.get("enemy_type"))) or RunCampaign.is_miniboss(str(enemy.get("enemy_type")))
 
 func _damage_nearby_enemies(center_enemy: Node2D, damage_amount: int, radius: float, source: String) -> void:
 	for enemy in get_tree().get_nodes_in_group("enemies"):

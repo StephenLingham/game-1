@@ -54,7 +54,10 @@ const ZAP_SECOND_WEAPON_DAMAGE: int = 100
 
 # --- WAVES & SPAWN SETTINGS ---
 const TOTAL_WAVES: int = 10
-const DEBUG_STARTING_WAVE: int = 1 # First wave of a new run; set to 9 to begin on wave 9 for faster boss testing.
+# Debug run entry: 1 = Mushroom Forest, 2 = Crimson Citadel,
+# 3 = Obsidian Obelisk - The Darkest Darkness. Keep both at 1 for normal runs.
+const DEBUG_STARTING_STAGE: int = 1
+const DEBUG_STARTING_WAVE: int = 1 # Wave within that stage (1-10); 10 starts directly at its boss.
 const WAVE_SECONDS: float = 30.0
 const MAX_ENEMIES_ALIVE: int = 500
 const FINAL_WAVE_SPAWN_WAIT: float = 0.1

@@ -245,6 +245,13 @@ func _draw_minimap() -> void:
 					draw_circle(pos, 3.5, Color(0.0, 0.85, 1.0, 1.0)) # Electric cyan
 					draw_circle(pos, 5.0, Color(0.0, 0.85, 1.0, 0.3))
 
+	# A portal is always visible, clamped to the rim when offscreen.
+	for portal in get_tree().get_nodes_in_group("stage_portals"):
+		var offset: Vector2 = (portal.global_position - player_pos) * minimap_scale
+		var marker: Vector2 = mm_center + offset.limit_length(minimap_radius - 9.0)
+		draw_circle(marker, 7.0, Color("171020"))
+		draw_arc(marker, 6.0, 0, TAU, 24, Color("ffd48a"), 2.5, true)
+
 	# Draw player in center
 	var p_pulse = 3.5 + sin(Time.get_ticks_msec() / 150.0) * 0.7
 	draw_circle(mm_center, p_pulse, Color(0.2, 1.0, 0.2, 1.0)) # Glowing green player dot
@@ -341,6 +348,11 @@ func _draw_full_map() -> void:
 				var pos = bounds_rect.position + local_offset * fm_scale
 				draw_circle(pos, 4.5, Color(0.0, 0.85, 1.0, 1.0))
 				draw_circle(pos, 6.0, Color(0.0, 0.85, 1.0, 0.3))
+
+	for portal in get_tree().get_nodes_in_group("stage_portals"):
+		var marker: Vector2 = bounds_rect.position + (portal.global_position - arena_rect.position) * fm_scale
+		draw_circle(marker, 8.0, Color("171020"))
+		draw_arc(marker, 7.0, 0, TAU, 24, Color("ffd48a"), 2.5, true)
 
 	# Draw player pulsing green dot
 	var local_offset = player_pos - arena_rect.position
