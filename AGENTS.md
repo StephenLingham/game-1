@@ -1,5 +1,10 @@
 # Project verification notes
 
+## Repository folders
+
+- `docs/` is reserved for exported builds of the game published through GitHub Pages. Do not store design notes or other working documentation there.
+- Put agent-authored project notes in `AgentNotes/`.
+
 When adding or changing textures, fonts, generated artwork, visual effects, or nodes that own rendering resources:
 
 - Do not rely only on headless import or parser checks.

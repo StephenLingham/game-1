@@ -56,6 +56,32 @@ func _run() -> void:
 	check(wc.stage == 0 and wc.wave == 1, "Run must begin in Mushroom Forest")
 	check(wc._choose_spawn_data_for_wave().scene == wc.enemy_tree_scene, "Forest first wave changed")
 	check(GameConstants.ENEMY_BOSS_HEALTH == 30000, "Fox health changed")
+	for area in [1, 2]:
+		var wave_types: Array = RunCampaign.WAVE_ENEMIES[area]
+		var unique_types := {}
+		for kind in wave_types:
+			unique_types[kind] = true
+		check(wave_types.size() == 10 and unique_types.size() == 10, "Every late-campaign wave needs an exclusive enemy type")
+		check(RunCampaign.WAVE_MECHANICS[area].size() == 10, "Every late-campaign wave needs a mechanic")
+		var projectile_waves := wave_types.filter(func(kind): return RunCampaign.enemy_data(kind).behavior in ["ranged", "breath", "orbit", "inferno", "death"])
+		check(projectile_waves.size() == 2, "Projectile enemies must be limited to one marksman wave and the boss")
+	check(RunCampaign.enemy_data("Cinderling").health == 1 and RunCampaign.enemy_data("Cinderling").speed > GameConstants.PLAYER_SPEED, "Cinderling rush balance changed")
+	check(is_equal_approx(float(RunCampaign.enemy_data("MagmaSentinel").speed), GameConstants.PLAYER_SPEED * 0.9), "Endurance miniboss must move at 90% player speed")
+	await clear_enemies()
+	wc.stage = 1
+	wc.wave = 1
+	wc._wave_spawn_step = 0
+	wc._spawn_campaign_tick()
+	var rushers := get_tree().get_nodes_in_group("enemies").filter(func(e): return e.enemy_type == "Cinderling")
+	check(rushers.size() == 4 and rushers.all(func(e): return e.health == 1), "Rapid rush tick must spawn four one-health Cinderlings")
+	await clear_enemies()
+	wc.wave = 8
+	wc._wave_spawn_step = 0
+	for i in range(5):
+		wc._spawn_campaign_tick()
+	var wall_enemies := get_tree().get_nodes_in_group("enemies").filter(func(e): return e.enemy_type == "LavaCrawler")
+	check(wall_enemies.size() == 32, "Four delayed wall steps must spawn exactly four eight-enemy walls")
+	await clear_enemies()
 	# Render all new assets and exercise attacks/status effects at all difficulties.
 	for difficulty in [[1.0, 1.0, 1.0], [2.0, 1.5, 1.3], [4.0, 3.0, 1.8]]:
 		GameState.run_difficulty_health_mult = difficulty[0]
@@ -65,11 +91,12 @@ func _run() -> void:
 			wc.stage = area
 			wc.wave = 0
 			wc._next_wave()
-			check(is_equal_approx(wc.spawn_timer.wait_time, 0.75 / difficulty[2] / GameState.get_spawn_rate_multiplier()), "Spawn difficulty scaling failed")
+			var base_wait := 0.42 if area == 1 else 2.8
+			check(is_equal_approx(wc.spawn_timer.wait_time, base_wait / difficulty[2] / GameState.get_spawn_rate_multiplier()), "Spawn difficulty scaling failed")
 			wc.spawn_timer.stop()
 			main.transition_to_area(area)
 			await frames()
-			var kinds: Array = RunCampaign.ENEMIES[area] + RunCampaign.MINIBOSSES[area] + [RunCampaign.BOSSES[area]]
+			var kinds: Array = RunCampaign.WAVE_ENEMIES[area] + RunCampaign.SUPPORT_ENEMIES[area]
 			var spawned: Array = []
 			for i in range(kinds.size()):
 				var kind: String = kinds[i]
@@ -78,12 +105,14 @@ func _run() -> void:
 				e.set_physics_process(false)
 				spawned.append(e)
 				var data := RunCampaign.enemy_data(kind)
-				check(e.health == int(data.health * difficulty[0]), "Health scaling: " + kind)
+				var expected_health := 1 if kind == "Cinderling" else int(data.health * difficulty[0])
+				check(e.health == expected_health, "Health scaling: " + kind)
 				check(e.damage == int(data.damage * difficulty[1]), "Damage scaling: " + kind)
 				check(e.sprite.texture is AtlasTexture, "Imported atlas missing: " + kind)
 				e.ability_time = 0
 				e._modify_movement(Vector2.RIGHT * e.speed, 0.1)
-				check(e.attacks_cast == 1, "Ability did not activate: " + kind)
+				var casts_ability: bool = data.behavior in ["breath", "slam", "orbit", "ranged", "charge", "banshee", "inferno", "death"]
+				check(e.attacks_cast == (1 if casts_ability else 0), "Ability policy failed: " + kind)
 				e.freeze(1.0)
 				check(e._modify_movement(Vector2.RIGHT * e.speed, 0.1) == Vector2.ZERO, "Freeze failed: " + kind)
 				e._freeze_timer = 0.0
@@ -138,13 +167,10 @@ func _run() -> void:
 		for wave_number in range(1, 11):
 			check(wc.wave == wave_number, "Wave schedule mismatch")
 			if area > 0:
-				var types: Array = []
-				for i in range(3):
-					var data: Dictionary = wc._choose_spawn_data_for_wave()
-					types.append(data.type)
-					wc._spawn_enemy(data, main.player.global_position + Vector2(600, 300))
-				for kind in RunCampaign.ENEMIES[area]:
-					check(kind in types, "Roster omitted from wave: " + kind)
+				var signature := RunCampaign.wave_enemy(area, wave_number)
+				var data: Dictionary = wc._choose_spawn_data_for_wave()
+				check(data.type == signature, "Wrong signature enemy for wave: " + signature)
+				check(get_tree().get_nodes_in_group("enemies").any(func(e): return e.enemy_type == signature), "Signature enemy did not appear: " + signature)
 				if wave_number in [4, 7]:
 					var expected: String = RunCampaign.MINIBOSSES[area][0 if wave_number == 4 else 1]
 					check(get_tree().get_nodes_in_group("enemies").any(func(e): return e.enemy_type == expected), "Missing miniboss " + expected)

@@ -24,6 +24,7 @@ var wave: int = 0
 var wave_time_left: float = 0.0
 var spawning: bool = false
 var _next_spawn_order: int = 0
+var _wave_spawn_step: int = 0
 
 @onready var spawn_timer: Timer = $SpawnTimer
 @onready var game: Node = get_tree().current_scene
@@ -57,6 +58,7 @@ func _next_wave() -> void:
 
 	wave_time_left = GameConstants.WAVE_SECONDS
 	spawning = true
+	_wave_spawn_step = 0
 
 	var base_wait: float = GameConstants.WAVE_BASE_SPAWN_WAIT
 	var wait: float = max(base_wait - (GameConstants.WAVE_SPAWN_WAIT_DECREMENT * float(wave - 1)), GameConstants.WAVE_MIN_SPAWN_WAIT)
@@ -67,6 +69,8 @@ func _next_wave() -> void:
 			wait = GameConstants.WAVE_7_CLUMP_WAIT
 		8:
 			wait = GameConstants.WAVE_8_TREE_SPAWN_WAIT
+	if stage > 0:
+		wait = _campaign_spawn_wait()
 
 	wait /= GameState.run_difficulty_spawn_mult
 	wait /= GameState.get_spawn_rate_multiplier()
@@ -81,6 +85,14 @@ func _next_wave() -> void:
 		_spawn_miniboss(0 if wave == 4 else 1)
 	if wave == GameConstants.TOTAL_WAVES:
 		_spawn_boss()
+	if stage > 0:
+		if wave in [4, GameConstants.TOTAL_WAVES]:
+			spawning = false
+			spawn_timer.stop()
+		elif wave != 7:
+			# Show the signature encounter immediately instead of making the
+			# player wait through the first timer interval.
+			_spawn_campaign_tick()
 func refresh_spawn_rate(previous_multiplier: float) -> void:
 	if not spawning or previous_multiplier <= 0.0:
 		return
@@ -203,6 +215,10 @@ func _spawn_tick() -> void:
 	if enemy_scene == null or not spawning or finished:
 		return
 
+	if stage > 0:
+		_spawn_campaign_tick()
+		return
+
 	if stage == 0 and wave == 7:
 		_spawn_clump_in_front_of_player()
 		return
@@ -223,10 +239,7 @@ func _get_burst_count() -> int:
 
 func _choose_spawn_data_for_wave() -> Dictionary:
 	if stage > 0:
-		var roster: Array = RunCampaign.ENEMIES[stage]
-		var kind: String = roster[_roster_cursor % roster.size()]
-		_roster_cursor += 1
-		return {"scene": campaign_enemy_scene, "type": kind}
+		return {"scene": campaign_enemy_scene, "type": RunCampaign.wave_enemy(stage, wave)}
 	match wave:
 		1:
 			return {"scene": enemy_tree_scene, "type": ""}
@@ -355,3 +368,128 @@ func _clamp_to_arena(pos: Vector2, safety: float = 45.0) -> Vector2:
 func _spawn_miniboss(index: int) -> void:
 	var kind: String = RunCampaign.MINIBOSSES[stage][index]
 	_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _get_random_offscreen_spawn_position(), true)
+
+func _campaign_spawn_wait() -> float:
+	var waits := [
+		[],
+		[0.42, 2.0, 2.4, 30.0, 8.0, 2.6, 4.8, 3.2, 2.0, 30.0],
+		[2.8, 2.5, 2.7, 30.0, 9.0, 2.8, 5.0, 3.2, 2.2, 30.0],
+	]
+	return float(waits[stage][wave - 1])
+
+func _spawn_campaign_tick() -> void:
+	var kind := RunCampaign.wave_enemy(stage, wave)
+	if kind.is_empty():
+		return
+	var step := _wave_spawn_step
+	_wave_spawn_step += 1
+	if stage == 1:
+		match wave:
+			1:
+				_spawn_scattered(kind, 4)
+			2:
+				_spawn_pincer(kind, 3)
+			3:
+				_spawn_ring(kind, 6, step * 0.48)
+			5:
+				_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _get_random_offscreen_spawn_position())
+			6:
+				_spawn_wedge(kind, step % 4, 5)
+			7:
+				# The Elder Drake is unique to this wave; its escorts reuse a
+				# melee-only guard rather than adding projectile pressure.
+				_spawn_pincer("CrimsonEscort", 1)
+			8:
+				if step < 4:
+					_spawn_wall(kind, step, 8)
+			9:
+				_spawn_mirrored_pair(kind, step * 0.55)
+	elif stage == 2:
+		match wave:
+			1:
+				_spawn_ring(kind, 10 if step == 0 else 4, step * 0.7)
+			2:
+				_spawn_ring(kind, 7, -step * 0.52)
+			3:
+				_spawn_wall(kind, step % 2, 9, (step * 2 + 2) % 9)
+			5:
+				_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _get_random_offscreen_spawn_position())
+			6:
+				_spawn_from_corners(kind)
+			7:
+				_spawn_mirrored_pair("VoidEscort", step * 0.45)
+			8:
+				if step < 4:
+					_spawn_wall(kind, step, 9, (step * 2 + 3) % 9)
+			9:
+				_spawn_pincer(kind, 2)
+
+func _spawn_scattered(kind: String, count: int) -> void:
+	for i in range(count):
+		_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _get_random_offscreen_spawn_position())
+
+func _spawn_ring(kind: String, count: int, angle_offset: float) -> void:
+	var center := _player_center()
+	var viewport_size := get_viewport().get_visible_rect().size
+	var radius := maxf(360.0, minf(viewport_size.x, viewport_size.y) * 0.52)
+	for i in range(count):
+		var angle := angle_offset + TAU * float(i) / float(count)
+		_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _clamp_to_arena(center + Vector2.from_angle(angle) * radius))
+
+func _spawn_pincer(kind: String, per_side: int) -> void:
+	var center := _player_center()
+	var viewport_size := get_viewport().get_visible_rect().size
+	var horizontal := _wave_spawn_step % 2 == 0
+	for side in [-1.0, 1.0]:
+		for i in range(per_side):
+			var offset := (float(i) - float(per_side - 1) * 0.5) * 64.0
+			var pos := center + (Vector2(side * (viewport_size.x * 0.5 + 70.0), offset) if horizontal else Vector2(offset, side * (viewport_size.y * 0.5 + 70.0)))
+			_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _clamp_to_arena(pos))
+
+func _spawn_wedge(kind: String, side: int, count: int) -> void:
+	var center := _player_center()
+	var viewport_size := get_viewport().get_visible_rect().size
+	var outward: Vector2 = [Vector2.UP, Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT][side]
+	var tangent: Vector2 = outward.orthogonal()
+	var distance := maxf(viewport_size.x, viewport_size.y) * 0.52
+	for i in range(count):
+		var row := float(i / 2)
+		var lateral := (float(i % 2) - 0.5) * (row + 1.0) * 70.0
+		var pos: Vector2 = center + outward * (distance + row * 55.0) + tangent * lateral
+		_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _clamp_to_arena(pos))
+
+func _spawn_wall(kind: String, side: int, count: int, gap: int = -1) -> void:
+	var center := _player_center()
+	var viewport_size := get_viewport().get_visible_rect().size
+	for i in range(count):
+		if i == gap:
+			continue
+		var t := (float(i) + 0.5) / float(count) - 0.5
+		var pos: Vector2
+		match side:
+			0:
+				pos = center + Vector2(t * viewport_size.x, -viewport_size.y * 0.5 - 75.0)
+			1:
+				pos = center + Vector2(viewport_size.x * 0.5 + 75.0, t * viewport_size.y)
+			2:
+				pos = center + Vector2(t * viewport_size.x, viewport_size.y * 0.5 + 75.0)
+			_:
+				pos = center + Vector2(-viewport_size.x * 0.5 - 75.0, t * viewport_size.y)
+		_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _clamp_to_arena(pos))
+
+func _spawn_mirrored_pair(kind: String, angle: float) -> void:
+	var center := _player_center()
+	var offset := Vector2.from_angle(angle) * 410.0
+	_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _clamp_to_arena(center + offset))
+	_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _clamp_to_arena(center - offset))
+
+func _spawn_from_corners(kind: String) -> void:
+	var center := _player_center()
+	var viewport_size := get_viewport().get_visible_rect().size
+	var offset := viewport_size * 0.5 + Vector2(55.0, 55.0)
+	for signs in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		_spawn_enemy({"scene": campaign_enemy_scene, "type": kind}, _clamp_to_arena(center + offset * signs))
+
+func _player_center() -> Vector2:
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	return player.global_position if player else arena_rect.get_center()

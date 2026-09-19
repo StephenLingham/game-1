@@ -16,6 +16,8 @@ func _ready() -> void:
 	super._ready()
 	var data := RunCampaign.enemy_data(enemy_type)
 	health = int(data.health * GameState.run_difficulty_health_mult)
+	if enemy_type == "Cinderling":
+		health = 1
 	max_health = health
 	damage = int(data.damage * GameState.run_difficulty_damage_mult)
 	speed = float(data.speed)
@@ -23,7 +25,7 @@ func _ready() -> void:
 	xp_drop_min = int(data.xp)
 	xp_drop_max = int(data.xp * 1.3)
 	behavior = data.behavior
-	ability_time = randf_range(1.2, 2.8)
+	ability_time = randf_range(4.8, 6.2) if behavior == "ranged" else randf_range(1.2, 2.8)
 	tint = Color("b8a0ff") if data.dark else Color("ff7848")
 	var atlas := AtlasTexture.new()
 	atlas.atlas = DARK_ATLAS if data.dark else FIRE_ATLAS
@@ -67,18 +69,33 @@ func _modify_movement(default_velocity: Vector2, delta: float) -> Vector2:
 		if windup <= 0:
 			charge_left = 0.7
 		return Vector2.ZERO
-	if ability_time <= 0 and distance < 850:
+	if ability_time <= 0 and distance < 850 and behavior in ["breath", "slam", "orbit", "ranged", "charge", "banshee", "inferno", "death"]:
 		_cast_ability(dir)
-		ability_time = 3.6 if RunCampaign.is_boss(enemy_type) else 4.5
+		ability_time = 3.6 if RunCampaign.is_boss(enemy_type) else (6.0 if behavior == "ranged" else 4.5)
 	match behavior:
+		"spiral", "spiral_reverse":
+			var desired_radius := maxf(42.0, 430.0 - life_time * 46.0)
+			var turn := -1.0 if behavior == "spiral_reverse" else 1.0
+			return (dir * clampf((distance - desired_radius) / 85.0, -0.7, 1.0) + dir.orthogonal() * turn * 0.92).normalized() * speed * _slow_factor
+		"orbit_melee":
+			var desired_radius := maxf(35.0, 210.0 - life_time * 30.0)
+			var turn := -1.0 if int(get_meta("_spawn_order", 0)) % 2 else 1.0
+			return (dir * clampf((distance - desired_radius) / 70.0, -0.6, 1.0) + dir.orthogonal() * turn * 0.72).normalized() * speed * _slow_factor
 		"orbit":
 			return (dir * clampf((distance - 230.0) / 100.0, -1, 1) + dir.orthogonal() * 0.8).normalized() * speed * _slow_factor
+		"ranged":
+			return dir * speed * _slow_factor * clampf((distance - 360.0) / 100.0, -0.65, 1.0)
 		"breath":
 			return dir * speed * _slow_factor * clampf((distance - 220.0) / 90.0, -0.7, 1.0)
 		"phase":
 			var phasing := fmod(life_time, 4.0) < 1.2
 			sprite.self_modulate.a = 0.38 if phasing else 1.0
 			return default_velocity * (2.0 if phasing else 0.65)
+		"leap":
+			return default_velocity * (2.35 if fmod(life_time, 3.0) < 0.55 else 0.62)
+		"hunt":
+			var weave := sin(life_time * 3.2 + float(int(get_meta("_spawn_order", 0)) % 4))
+			return (dir + dir.orthogonal() * weave * 0.42).normalized() * speed * _slow_factor
 	return default_velocity
 
 func _cast_ability(dir: Vector2) -> void:
@@ -90,12 +107,14 @@ func _cast_ability(dir: Vector2) -> void:
 			_slam(target.global_position, 105 if RunCampaign.is_miniboss(enemy_type) else 70)
 		"orbit":
 			_bolt(dir)
+		"ranged":
+			_bolt(dir)
 		"charge":
 			charge_direction = dir
 			windup = 0.85
 		"banshee":
-			_ring(10)
-			_slam(target.global_position, 85)
+			_slam_ring(target.global_position, 6, 115.0, 52.0)
+			_slam(target.global_position, 72)
 		"inferno":
 			_fan(dir, 7)
 			for i in range(3):
@@ -113,6 +132,10 @@ func _fan(dir: Vector2, count: int) -> void:
 func _ring(count: int) -> void:
 	for i in range(count):
 		_bolt(Vector2.from_angle(TAU * float(i) / float(count) + life_time * 0.3))
+
+func _slam_ring(center: Vector2, count: int, distance: float, size: float) -> void:
+	for i in range(count):
+		_slam(center + Vector2.from_angle(TAU * float(i) / float(count) + life_time * 0.25) * distance, size)
 
 func _bolt(dir: Vector2) -> void:
 	var attack := HAZARD.new()

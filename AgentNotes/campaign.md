@@ -16,22 +16,20 @@ The same live player travels between areas. Current health, level, XP, items, we
 
 ## New enemies
 
-All three regular enemy types cycle through every wave of their area. Minibosses appear on waves 4 and 7 (01:30 and 03:00 into that area's slot).
+Stages 2 and 3 each have ten signature types: one exclusive to every wave. Most enemies use contact movement, charges, formations, phasing, or warned ground attacks. Only wave 5's sparse marksman and wave 10's boss use projectiles in each area.
 
-| Area | Enemy | Behavior |
+| Wave | Crimson Citadel | Obsidian Obelisk |
 | --- | --- | --- |
-| Crimson Citadel | Dragon | Holds range and fires a spread of firebolts |
-| Crimson Citadel | Fire Golem | Slow pursuit and a ground slam with a warning circle |
-| Crimson Citadel | Fire Elemental | Circles the player and launches aimed bolts |
-| Crimson Citadel | Magma Sentinel (miniboss) | Large warned ground slams |
-| Crimson Citadel | Elder Drake (miniboss) | Wider five-bolt breath attacks |
-| Crimson Citadel | Inferno Dragon (boss) | Seven-bolt breath and three ground eruptions |
-| Obsidian Obelisk | Ghost | Alternates slow drifting with fast translucent pursuit |
-| Obsidian Obelisk | Void Wisp | Orbits at range and shoots void bolts |
-| Obsidian Obelisk | Reaper | Aims a visible charge line, then rushes forward |
-| Obsidian Obelisk | Dread Knight (miniboss) | Heavy warned charges |
-| Obsidian Obelisk | Banshee Queen (miniboss) | Radial bolts and a warned spectral blast |
-| Obsidian Obelisk | Obsidian Death (boss) | Radial volleys, ground blasts, and warned charges |
+| 1 | One-health Cinderlings arrive in rapid rush swarms | Blink Stalkers phase inward from an ambush ring |
+| 2 | Ash Guards attack in alternating pincer columns | Gravity Wisps spiral counter-clockwise and close in |
+| 3 | Flame Dancers form clockwise closing spirals | Obsidian Phalanxes march in rows with shifting safe lanes |
+| 4 | A 9,000-health Magma Sentinel pursues at 90% of base player speed | Dread Knight endurance duel with warned charges |
+| 5 | A few slow-firing Ember Archers spawn far apart | A few slow-firing Void Oracles hold their distance |
+| 6 | Furnace Rams arrive in charging wedge formations | Rift Hounds leap inward from all four corners |
+| 7 | Elder Drake miniboss with staggered melee escort pairs | Banshee Queen uses rings of warned ground pulses |
+| 8 | Four Lava Crawler walls arrive several seconds apart: top, right, bottom, left | Four rotating Night Maw walls leave a moving escape gap |
+| 9 | Pyre Twins arrive as mirrored melee pairs and orbit inward | Soul Reapers alternate pincer directions |
+| 10 | Inferno Dragon boss | Obsidian Death boss |
 
 Health, contact damage, attack damage, and spawn intervals respect the original three difficulty selections. Existing burn, curse, freeze, slow, knockback, XP, and boss-damage item mechanics apply. Bosses and minibosses are exempt from regular enemy-cap eviction. Existing fastest-fox-kill statistics retain their prior meaning; a difficulty win now requires all three bosses.
 
