@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 GameState="*res://scripts/game_state.gd"
+DebugFps="*res://scripts/debug_fps.gd"
 
 [debug]
 
